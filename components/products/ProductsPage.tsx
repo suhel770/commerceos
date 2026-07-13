@@ -1,19 +1,36 @@
-import PageHeader from "@/components/ui/PageHeader";
-import ProductStats from "./ProductStats";
-import ProductTable from "./ProductTable";
+"use client";
+
+import ProductControlHeader from "./ProductControlHeader";
+import ProductKPIStrip from "./ProductKPIStrip";
+import ProductToolbar from "./toolbar/ProductToolbar";
+import ProductDataTable from "./table/ProductDataTable";
+
+import ProductPagination from "@/components/shared/pagination/ProductPagination";
+
+import { useProducts } from "@/hooks/useProducts";
 
 export default function ProductsPage() {
+  const {
+    products,
+    loading,
+  } = useProducts();
+
   return (
-    <div className="space-y-4">
-      <PageHeader
-        title="Products"
-        description="Manage your products across all marketplaces."
-        buttonText="+ Add Product"
+    <div className="space-y-5">
+
+      <ProductControlHeader />
+
+      <ProductKPIStrip />
+
+      <ProductToolbar />
+
+      <ProductDataTable
+        products={products}
+        loading={loading}
       />
 
-      <ProductStats />
+      <ProductPagination />
 
-      <ProductTable />
     </div>
   );
 }

@@ -1,23 +1,31 @@
+import { ReactNode } from "react";
+
 interface SectionHeaderProps {
   title: string;
-  description?: string;
+  subtitle?: string;
+  action?: ReactNode;
 }
 
 export default function SectionHeader({
   title,
-  description,
+  subtitle,
+  action,
 }: SectionHeaderProps) {
   return (
-    <div className="mb-6">
-      <h1 className="text-3xl font-bold text-slate-900">
-        {title}
-      </h1>
+    <div className="mb-5 flex items-center justify-between">
+      <div>
+        <h2 className="text-xl font-bold tracking-tight text-slate-900">
+          {title}
+        </h2>
 
-      {description && (
-        <p className="mt-2 text-slate-500">
-          {description}
-        </p>
-      )}
+        {subtitle && (
+          <p className="mt-1 text-sm text-slate-500">
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      {action}
     </div>
   );
 }

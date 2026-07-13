@@ -1,20 +1,28 @@
-import { TrendingUp } from "lucide-react";
+import { LucideIcon, TrendingUp } from "lucide-react";
 
 interface KPICardProps {
   title: string;
   value: string;
-  growth: string;
+  change: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
 }
 
 export default function KPICard({
   title,
   value,
-  growth,
+  change,
+  description,
+  icon: Icon,
+  color,
+  bg,
 }: KPICardProps) {
   return (
     <div className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
 
         <div>
 
@@ -22,16 +30,16 @@ export default function KPICard({
             {title}
           </p>
 
-          <h2 className="mt-4 text-4xl font-bold text-slate-900">
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
             {value}
           </h2>
 
         </div>
 
-        <div className="rounded-2xl bg-blue-50 p-3">
-          <TrendingUp
-            className="text-blue-600"
-            size={28}
+        <div className={`rounded-2xl p-3 ${bg}`}>
+          <Icon
+            size={26}
+            className={color}
           />
         </div>
 
@@ -39,13 +47,30 @@ export default function KPICard({
 
       <div className="mt-6 flex items-center justify-between">
 
-        <p className="font-semibold text-green-600">
-          ↑ {growth}
-        </p>
+        <div>
+
+          <div className="flex items-center gap-2">
+
+            <TrendingUp
+              size={16}
+              className="text-emerald-600"
+            />
+
+            <span className="font-semibold text-emerald-600">
+              {change}
+            </span>
+
+          </div>
+
+          <p className="mt-1 text-sm text-slate-500">
+            {description}
+          </p>
+
+        </div>
 
         <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
 
-          <div className="h-full w-3/4 rounded-full bg-blue-600"></div>
+          <div className="h-full w-3/4 rounded-full bg-emerald-500"></div>
 
         </div>
 

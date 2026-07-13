@@ -1,4 +1,4 @@
-import { orders } from "@/lib/data/orders";
+import { orders } from "@/lib/mocks/orders";
 
 export default function RecentOrders() {
   return (

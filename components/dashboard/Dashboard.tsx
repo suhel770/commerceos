@@ -1,50 +1,51 @@
-import KPICard from "./KPICard";
-import RevenueChart from "./RevenueChart";
-import SalesOverview from "./SalesOverview";
+import DashboardHero from "./DashboardHero";
+import KPIGrid from "./KPIGrid";
+import MarketplacePerformance from "./MarketplacePerformance";
+import InventoryHealth from "./InventoryHealth";
+import OrderPipeline from "./OrderPipeline";
+import BusinessHealth from "./BusinessHealth";
+import RecentActivity from "./RecentActivity";
 import RecentOrders from "./RecentOrders";
 
 export default function Dashboard() {
   return (
-    <>
-      <div className="grid gap-6 lg:grid-cols-4">
-        <KPICard
-          title="Revenue"
-          value="₹2,48,760"
-          growth="18.6%"
-        />
+    <div className="space-y-8">
 
-        <KPICard
-          title="Orders"
-          value="748"
-          growth="12.4%"
-        />
+      {/* KPI Cards */}
+      <KPIGrid />
 
-        <KPICard
-          title="Profit"
-          value="₹2,31,540"
-          growth="20.4%"
-        />
+      {/* AI + Marketplace */}
+      <div className="grid gap-6 lg:grid-cols-3">
 
-        <KPICard
-          title="Inventory"
-          value="12,847"
-          growth="4.2%"
-        />
-      </div>
-
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <RevenueChart />
+          <DashboardHero />
         </div>
 
-        <div>
-          <SalesOverview />
-        </div>
-      </div>
-      <div className="mt-6">
-        <RecentOrders />
+        <MarketplacePerformance />
+
       </div>
 
-    </>
+      {/* Inventory + Pipeline */}
+      <div className="grid gap-6 lg:grid-cols-2">
+
+        <InventoryHealth />
+
+        <OrderPipeline />
+
+      </div>
+
+      {/* Health + Activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+
+        <BusinessHealth />
+
+        <RecentActivity />
+
+      </div>
+
+      {/* Recent Orders */}
+      <RecentOrders />
+
+    </div>
   );
 }
