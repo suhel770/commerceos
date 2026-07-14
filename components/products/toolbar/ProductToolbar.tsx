@@ -79,7 +79,10 @@ const statusOptions: CommerceSelectOption[] = [
   },
 ];
 
-export default function ProductToolbar() {
+export default function ProductToolbar({
+  filters,
+  onFiltersChange,
+}: ProductToolbarProps) {
 
 
   return (
@@ -96,11 +99,18 @@ export default function ProductToolbar() {
             className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
           />
 
-          <input
-            type="text"
-            placeholder="Search by product, SKU, barcode, brand..."
-            className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
+            <input
+              type="text"
+              value={filters.search}
+              onChange={(e) =>
+                onFiltersChange({
+                  ...filters,
+                  search: e.target.value,
+                })
+              }
+              placeholder="Search by product, SKU, barcode..."
+              className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
 
         </div>
 
@@ -109,9 +119,14 @@ export default function ProductToolbar() {
         <div className="min-w-[170px]">
 
           <CommerceSelect
-            value={marketplace}
+            value={filters.marketplace}
             options={marketplaceOptions}
-            onChange={setMarketplace}
+            onChange={(value) =>
+              onFiltersChange({
+                ...filters,
+                marketplace: value,
+              })
+            }
             searchable={false}
           />
 
@@ -122,9 +137,14 @@ export default function ProductToolbar() {
         <div className="min-w-[160px]">
 
           <CommerceSelect
-            value={category}
+            value={filters.category}
             options={categoryOptions}
-            onChange={setCategory}
+            onChange={(value) =>
+              onFiltersChange({
+                ...filters,
+                category: value,
+              })
+            }
             searchable={false}
           />
 
@@ -134,12 +154,17 @@ export default function ProductToolbar() {
 
         <div className="min-w-[150px]">
 
-          <CommerceSelect
-            value={status}
-            options={statusOptions}
-            onChange={setStatus}
-            searchable={false}
-          />
+<CommerceSelect
+  value={filters.status}
+  options={statusOptions}
+  onChange={(value) =>
+    onFiltersChange({
+      ...filters,
+      status: value,
+    })
+  }
+  searchable={false}
+/>
 
         </div>
 
