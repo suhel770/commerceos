@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import {
   Bookmark,
   Download,
@@ -12,6 +10,17 @@ import {
 import CommerceSelect, {
   CommerceSelectOption,
 } from "@/components/ui/CommerceSelect";
+
+import type {
+  ProductFilters,
+} from "@/lib/services/product.service";
+
+interface ProductToolbarProps {
+  filters: ProductFilters;
+  onFiltersChange: (
+    filters: ProductFilters
+  ) => void;
+}
 
 const marketplaceOptions: CommerceSelectOption[] = [
   {
@@ -71,14 +80,7 @@ const statusOptions: CommerceSelectOption[] = [
 ];
 
 export default function ProductToolbar() {
-  const [marketplace, setMarketplace] =
-    useState("all");
 
-  const [category, setCategory] =
-    useState("all");
-
-  const [status, setStatus] =
-    useState("all");
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs">

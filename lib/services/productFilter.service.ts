@@ -1,7 +1,5 @@
 import type { Product } from "@/lib/types/product";
 
-import { productRepository } from "@/lib/repositories/product.repository";
-
 export interface ProductFilters {
   search: string;
   marketplace: string;
@@ -9,29 +7,21 @@ export interface ProductFilters {
   status: string;
 }
 
-const defaultFilters: ProductFilters = {
-  search: "",
-  marketplace: "all",
-  category: "all",
-  status: "all",
-};
-
-export async function getAllProducts(
-  filters: ProductFilters = defaultFilters
-): Promise<Product[]> {
-  const products = await productRepository.findAll();
-
+export function filterProducts(
+  products: Product[],
+  filters: ProductFilters
+): Product[] {
   return products.filter((product) => {
     // Search
     if (filters.search.trim()) {
       const query = filters.search.toLowerCase();
 
-      const matches =
+      const matchesSearch =
         product.name.toLowerCase().includes(query) ||
         product.sku.toLowerCase().includes(query) ||
         product.brand.toLowerCase().includes(query);
 
-      if (!matches) {
+      if (!matchesSearch) {
         return false;
       }
     }
@@ -71,8 +61,4 @@ export async function getAllProducts(
 
     return true;
   });
-}
-
-export async function getProductById(id: string) {
-  return productRepository.findById(id);
 }
