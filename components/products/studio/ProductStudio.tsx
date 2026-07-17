@@ -50,7 +50,7 @@ function ProductStudioContent() {
 
       <main className="min-h-[700px]">
 
-        <ActiveWorkspace />
+        <ActiveWorkspace product={product} />
 
       </main>
 
