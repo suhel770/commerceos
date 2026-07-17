@@ -2,27 +2,34 @@
 
 import { useEffect, useState } from "react";
 
-import { Product } from "@/lib/types/product";
-import { productRepository } from "@/lib/repositories/product.repository";
+import type { Product } from "@/lib/types/product";
 
-export function useProducts() {
+import { getAllProducts } from "@/lib/services/product.service";
+import type { ProductFilters } from "@/lib/types/product-filter";
+
+export function useProducts(
+  filters?: ProductFilters
+) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
+    async function loadProducts() {
+      setLoading(true);
+
       try {
-        const data =
-          await productRepository.findAll();
+        const data = await getAllProducts(filters);
 
         setProducts(data);
+      } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }
     }
 
-    load();
-  }, []);
+    loadProducts();
+  }, [filters]);
 
   return {
     products,

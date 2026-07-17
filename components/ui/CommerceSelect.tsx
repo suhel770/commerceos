@@ -154,7 +154,7 @@ export default function CommerceSelect({
     };
 
     window.addEventListener(
-      "mousedown",
+      "click",
       handleClick
     );
 
@@ -166,7 +166,7 @@ export default function CommerceSelect({
     return () => {
 
       window.removeEventListener(
-        "mousedown",
+        "click",
         handleClick
       );
 

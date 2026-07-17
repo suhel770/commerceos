@@ -1,76 +1,63 @@
 import type { Product } from "@/lib/types/product";
-
 import { productRepository } from "@/lib/repositories/product.repository";
 
-export interface ProductFilters {
-  search: string;
-  marketplace: string;
-  category: string;
-  status: string;
-}
+import type { ProductFilters } from "@/lib/types/product-filter";
 
-const defaultFilters: ProductFilters = {
-  search: "",
-  marketplace: "all",
-  category: "all",
-  status: "all",
-};
+
 
 export async function getAllProducts(
-  filters: ProductFilters = defaultFilters
+  filters?: ProductFilters
 ): Promise<Product[]> {
   const products = await productRepository.findAll();
 
-  return products.filter((product) => {
-    // Search
-    if (filters.search.trim()) {
-      const query = filters.search.toLowerCase();
+  if (!filters) {
+    return products;
+  }
 
-      const matches =
+  let filtered = [...products];
+
+  // Search
+  if (filters.search.trim()) {
+    const query = filters.search.trim().toLowerCase();
+
+    filtered = filtered.filter(
+      (product) =>
         product.name.toLowerCase().includes(query) ||
         product.sku.toLowerCase().includes(query) ||
-        product.brand.toLowerCase().includes(query);
+        product.brand.toLowerCase().includes(query)
+    );
+  }
 
-      if (!matches) {
-        return false;
-      }
-    }
-
-    // Marketplace
-    if (filters.marketplace !== "all") {
-      const hasMarketplace = product.listings.some(
+  // Marketplace
+  if (filters.marketplace !== "all") {
+    filtered = filtered.filter((product) =>
+      product.listings.some(
         (listing) =>
           listing.marketplace.toLowerCase() ===
           filters.marketplace.toLowerCase()
-      );
+      )
+    );
+  }
 
-      if (!hasMarketplace) {
-        return false;
-      }
-    }
-
-    // Category
-    if (filters.category !== "all") {
-      if (
-        product.category.toLowerCase() !==
+  // Category
+  if (filters.category !== "all") {
+    filtered = filtered.filter(
+      (product) =>
+        product.category.toLowerCase() ===
         filters.category.toLowerCase()
-      ) {
-        return false;
-      }
-    }
+    );
+  }
 
-    // Status
-    if (filters.status !== "all") {
-      if (
-        product.status.toLowerCase() !==
+  // Status
+  if (filters.status !== "all") {
+    filtered = filtered.filter(
+      (product) =>
+        product.status.toLowerCase() ===
         filters.status.toLowerCase()
-      ) {
-        return false;
-      }
-    }
+    );
+  }
 
-    return true;
-  });
+  return filtered;
 }
 
 export async function getProductById(id: string) {

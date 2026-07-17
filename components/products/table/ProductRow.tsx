@@ -15,15 +15,37 @@ import ActionCell from "./cells/ActionCell";
 
 interface ProductRowProps {
   product: Product;
+  selected: boolean;
+  onToggle: () => void;
 }
 
 export default function ProductRow({
   product,
+  selected,
+  onToggle,
 }: ProductRowProps) {
   return (
-    <tr className="border-b border-slate-100 transition-all duration-200 hover:bg-blue-50/40">
+    <tr
+      className={`
+        border-b
+        border-slate-100
+        transition-all
+        duration-200
+        hover:bg-blue-50/40
+        ${
+          selected
+            ? "bg-blue-50 ring-1 ring-inset ring-blue-200"
+            : ""
+        }
+      `}
+    >
       <td className="px-3 py-4 align-top">
-        <input type="checkbox" />
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggle}
+          className="h-4 w-4 rounded border-slate-300"
+        />
       </td>
 
       <td className="w-[360px] px-3 py-4">
@@ -31,15 +53,21 @@ export default function ProductRow({
       </td>
 
       <td className="px-3 py-4">
-        <OrdersCell orders={product.performance.ordersToday} />
+        <OrdersCell
+          orders={product.performance.ordersToday}
+        />
       </td>
 
       <td className="px-3 py-4">
-        <StockCell stock={product.inventory.available} />
+        <StockCell
+          stock={product.inventory.available}
+        />
       </td>
 
       <td className="px-3 py-4">
-        <RevenueCell revenue={product.performance.revenueToday} />
+        <RevenueCell
+          revenue={product.performance.revenueToday}
+        />
       </td>
 
       <td className="px-3 py-4">
@@ -51,7 +79,9 @@ export default function ProductRow({
 
       <td className="px-3 py-4">
         <ReturnCell
-          returns={product.performance.returnsPercentage}
+          returns={
+            product.performance.returnsPercentage
+          }
         />
       </td>
 
@@ -63,7 +93,9 @@ export default function ProductRow({
 
       <td className="w-36 px-3 py-4">
         <AIRecommendationCell
-          recommendation={product.aiRecommendations[0]}
+          recommendation={
+            product.aiRecommendations[0]
+          }
         />
       </td>
 

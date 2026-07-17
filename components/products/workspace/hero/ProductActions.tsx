@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import {
   Archive,
   Copy,
@@ -17,6 +19,8 @@ interface ProductActionsProps {
 export default function ProductActions({
   product,
 }: ProductActionsProps) {
+  const router = useRouter();
+
   return (
     <div className="flex h-full flex-col">
 
@@ -40,7 +44,12 @@ export default function ProductActions({
           primary
           icon={<Pencil size={16} />}
           title="Edit Product"
-          subtitle="Open product editor"
+          subtitle="Open Product Studio"
+          onClick={() =>
+            router.push(
+              `/products/${product.slug}/edit`
+            )
+          }
         />
 
         <ActionButton
@@ -88,6 +97,9 @@ interface ActionButtonProps {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
+
+  onClick?: () => void;
+
   primary?: boolean;
   purple?: boolean;
   blue?: boolean;
@@ -100,6 +112,7 @@ function ActionButton({
   icon,
   title,
   subtitle,
+  onClick,
   primary,
   purple,
   blue,
@@ -107,7 +120,6 @@ function ActionButton({
   orange,
   danger,
 }: ActionButtonProps) {
-
   let button =
     "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm";
 
@@ -134,13 +146,21 @@ function ActionButton({
       "text-blue-100";
   }
 
-  if (purple) iconBg = "bg-violet-100 text-violet-600";
+  if (purple)
+    iconBg =
+      "bg-violet-100 text-violet-600";
 
-  if (blue) iconBg = "bg-sky-100 text-sky-600";
+  if (blue)
+    iconBg =
+      "bg-sky-100 text-sky-600";
 
-  if (amber) iconBg = "bg-amber-100 text-amber-600";
+  if (amber)
+    iconBg =
+      "bg-amber-100 text-amber-600";
 
-  if (orange) iconBg = "bg-orange-100 text-orange-600";
+  if (orange)
+    iconBg =
+      "bg-orange-100 text-orange-600";
 
   if (danger) {
     button =
@@ -158,6 +178,8 @@ function ActionButton({
 
   return (
     <button
+      type="button"
+      onClick={onClick}
       className={`
         flex
         w-full
@@ -173,7 +195,6 @@ function ActionButton({
         ${button}
       `}
     >
-
       <div
         className={`
           flex

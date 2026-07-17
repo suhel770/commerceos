@@ -11,18 +11,16 @@ import ProductPagination from "@/components/shared/pagination/ProductPagination"
 
 import { useProducts } from "@/hooks/useProducts";
 
-import type { ProductFilters } from "@/lib/services/product.service";
+import {
+  defaultProductFilters,
+  type ProductFilters,
+} from "@/lib/types/product-filter";
 
-const defaultFilters: ProductFilters = {
-  search: "",
-  marketplace: "all",
-  category: "all",
-  status: "all",
-};
+
 
 export default function ProductsPage() {
-  const [filters, setFilters] =
-    useState<ProductFilters>(defaultFilters);
+const [filters, setFilters] =
+  useState<ProductFilters>(defaultProductFilters);
 
   const {
     products,
