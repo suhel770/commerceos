@@ -7,7 +7,7 @@ import { products } from "@/lib/mocks/products";
 
 interface ListingPageProps {
   params: Promise<{
-    id: string;
+    slug: string;
     listingId: string;
   }>;
 }
@@ -16,10 +16,10 @@ export default async function ListingPage({
   params,
 }: ListingPageProps) {
 
-  const { id, listingId } = await params;
+  const { slug, listingId } = await params;
 
   const product = products.find(
-    (p) => p.id === id
+    (p) => p.slug === slug
   );
 
   if (!product) {
