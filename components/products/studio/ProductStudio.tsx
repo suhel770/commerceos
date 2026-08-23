@@ -1,61 +1,64 @@
 "use client";
 
-import { StudioProvider, useStudio } from "./context/StudioContext";
+import StudioHeader from "./components/header/StudioHeader";
+import StudioAIDock from "./components/ai/StudioAIDock";
+import StudioLoadingScreen from "./components/shared/StudioLoadingScreen";
+import StudioFieldEditorDialog from "./components/dialogs/StudioFieldEditorDialog";
+import WorkspacePage from "./components/workspaces/WorkspacePage";
+import StudioWorkflowNavigation from "./navigation/StudioWorkflowNavigation";
 
-import StudioHeader from "./navigation/StudioHeader";
+import ProductControlCenter from "./overview/ProductControlCenter";
+import WorkspaceGrid from "./overview/WorkspaceGrid";
 
-import ProductHealthStrip from "./navigation/ProductHealthStrip";
+import { useStudio } from "./context/StudioContext";
 
-import { STUDIO_WORKSPACE_COMPONENTS } from "./registry/studio-workspaces";
-
-import StudioEditDialog from "./shared/StudioEditDialog";
-
-import type { Product } from "@/lib/types/product";
-
-interface ProductStudioProps {
-  product: Product;
-}
-
-export default function ProductStudio({
-  product,
-}: ProductStudioProps) {
-  return (
-    <StudioProvider product={product}>
-      <ProductStudioContent />
-    </StudioProvider>
-  );
-}
-
-function ProductStudioContent() {
+export default function ProductStudio() {
   const {
-    draft,
+    loading,
     activeWorkspace,
+    fieldEditor,
+    closeFieldEditor,
   } = useStudio();
 
-  const ActiveWorkspace =
-    STUDIO_WORKSPACE_COMPONENTS[
-      activeWorkspace
-    ];
+  if (loading) {
+    return <StudioLoadingScreen />;
+  }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-full flex-col bg-slate-50">
 
-      <StudioHeader
-        image={draft.image}
-        productName={draft.name}
-        sku={draft.sku}
-        status={draft.status}
-        slug={draft.slug}
-      />
+      <div className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+        <StudioHeader />
+        <StudioWorkflowNavigation />
+      </div>
 
-      <ProductHealthStrip />
+      <main className="flex-1">
 
-      <main className="min-h-[700px]">
-        <ActiveWorkspace product={draft} />
+        {activeWorkspace === "overview" ? (
+          <div className="mx-auto max-w-[1800px] px-4 pb-5 pt-4 sm:px-6">
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+
+              <ProductControlCenter />
+
+              <WorkspaceGrid />
+
+            </section>
+
+          </div>
+        ) : (
+          <WorkspacePage />
+        )}
 
       </main>
 
-      <StudioEditDialog />
+      <StudioAIDock />
+
+      <StudioFieldEditorDialog
+        open={Boolean(fieldEditor)}
+        editor={fieldEditor}
+        onClose={closeFieldEditor}
+      />
 
     </div>
   );

@@ -16,36 +16,48 @@ import {
   type ProductFilters,
 } from "@/lib/types/product-filter";
 
-
-
 export default function ProductsPage() {
-const [filters, setFilters] =
-  useState<ProductFilters>(defaultProductFilters);
+  const [filters, setFilters] = useState<ProductFilters>(defaultProductFilters);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
-  const {
-    products,
-    loading,
-  } = useProducts(filters);
+  const { products, loading } = useProducts(filters);
+  const totalItems = products.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const visibleProducts = products.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const handleFiltersChange = (nextFilters: ProductFilters) => {
+    setFilters(nextFilters);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-5">
-
       <ProductControlHeader />
 
-      <ProductKPIStrip />
+      <ProductKPIStrip products={products} />
 
       <ProductToolbar
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
       />
 
       <ProductDataTable
-        products={products}
+        products={visibleProducts}
         loading={loading}
       />
 
-      <ProductPagination />
-
+      <ProductPagination
+        page={safePage}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onPageChange={setPage}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPage(1);
+        }}
+      />
     </div>
   );
 }

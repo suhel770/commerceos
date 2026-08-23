@@ -81,9 +81,9 @@ export function LayoutProvider({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      const isMac = navigator.platform
-        .toUpperCase()
-        .includes("MAC");
+      const isMac =
+        typeof navigator !== "undefined" &&
+        navigator.platform.toUpperCase().includes("MAC");
 
       const pressedShortcut =
         (isMac && event.metaKey && event.key === "k") ||

@@ -6,132 +6,119 @@ import type { Product } from "@/lib/types/product";
 
 import HeroWorkspace from "./hero/HeroWorkspace";
 import OverviewWorkspace from "./overview/OverviewWorkspace";
-
-type WorkspaceTab =
-  | "overview"
-  | "listings"
-  | "inventory"
-  | "orders"
-  | "returns"
-  | "analytics"
-  | "ai"
-  | "activity";
+import ListingsWorkspace from "./listings/ListingsWorkspace";
+import InventoryWorkspace from "./inventory/InventoryWorkspace";
+import PackagingConsumablesWorkspace from "./consumables/PackagingConsumablesWorkspace";
+import OrdersWorkspace from "./orders/OrdersWorkspace";
+import ReturnsWorkspace from "./returns/ReturnsWorkspace";
+import AnalyticsWorkspace from "./analytics/AnalyticsWorkspace";
+import AIStudioWorkspace from "./ai/AIStudioWorkspace";
+import ActivityWorkspace from "./activity/ActivityWorkspace";
+import type { ProductWorkspaceTab } from "./types";
 
 interface ProductWorkspaceProps {
   product: Product;
 }
 
+/** Bible Product Overview order first; cross-module tabs follow. */
+const tabs: Array<[ProductWorkspaceTab, string]> = [
+  ["overview", "Overview"],
+  ["listings", "Listings"],
+  ["performance", "Performance"],
+  ["inventory", "Inventory"],
+  ["consumables", "Packaging & Consumables"],
+  ["activity", "Activity"],
+  ["orders", "Orders"],
+  ["returns", "Returns"],
+  ["ai", "AI Studio"],
+];
+
 export default function ProductWorkspace({
   product,
 }: ProductWorkspaceProps) {
   const [activeWorkspace, setActiveWorkspace] =
-    useState<WorkspaceTab>("overview");
+    useState<ProductWorkspaceTab>("overview");
+  const [returnsFormKey, setReturnsFormKey] = useState(0);
+
+  const navigate = (tab: ProductWorkspaceTab) => {
+    setActiveWorkspace(tab);
+    if (tab === "returns") {
+      setReturnsFormKey((key) => key + 1);
+    }
+  };
 
   return (
     <div className="space-y-6">
 
-      {/* HERO */}
-
       <HeroWorkspace
         product={product}
+        onNavigate={navigate}
       />
 
-      {/* WORKSPACE NAVIGATION */}
-
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-
-        <div className="flex min-w-max">
-
-          {[
-            ["overview", "Overview"],
-            ["listings", "Listings"],
-            ["inventory", "Inventory"],
-            ["orders", "Orders"],
-            ["returns", "Returns"],
-            ["analytics", "Analytics"],
-            ["ai", "AI Studio"],
-            ["activity", "Activity"],
-          ].map(([key, label]) => (
-
-            <button
-              key={key}
-              onClick={() =>
-                setActiveWorkspace(
-                  key as WorkspaceTab
-                )
-              }
-              className={`border-b-2 px-6 py-4 text-sm font-semibold transition ${
-                activeWorkspace === key
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              {label}
-            </button>
-
-          ))}
-
+      <div className="sticky top-0 z-30 -mx-1 bg-slate-100/95 px-1 py-1.5 backdrop-blur-xl">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex min-w-max" role="tablist" aria-label="Product workspaces">
+            {tabs.map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={activeWorkspace === key}
+                onClick={() => navigate(key)}
+                className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+                  activeWorkspace === key
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-
       </div>
-
-      {/* ACTIVE WORKSPACE */}
 
       {activeWorkspace === "overview" && (
         <OverviewWorkspace
           product={product}
+          onNavigate={navigate}
         />
       )}
 
       {activeWorkspace === "listings" && (
-        <ComingSoon title="Listings Workspace" />
+        <ListingsWorkspace product={product} />
+      )}
+
+      {activeWorkspace === "performance" && (
+        <AnalyticsWorkspace product={product} />
       )}
 
       {activeWorkspace === "inventory" && (
-        <ComingSoon title="Inventory Workspace" />
+        <InventoryWorkspace product={product} />
       )}
 
-      {activeWorkspace === "orders" && (
-        <ComingSoon title="Orders Workspace" />
-      )}
-
-      {activeWorkspace === "returns" && (
-        <ComingSoon title="Returns Workspace" />
-      )}
-
-      {activeWorkspace === "analytics" && (
-        <ComingSoon title="Analytics Workspace" />
-      )}
-
-      {activeWorkspace === "ai" && (
-        <ComingSoon title="AI Studio Workspace" />
+      {activeWorkspace === "consumables" && (
+        <PackagingConsumablesWorkspace product={product} />
       )}
 
       {activeWorkspace === "activity" && (
-        <ComingSoon title="Activity Workspace" />
+        <ActivityWorkspace product={product} />
       )}
 
-    </div>
-  );
-}
+      {activeWorkspace === "orders" && (
+        <OrdersWorkspace product={product} />
+      )}
 
-interface ComingSoonProps {
-  title: string;
-}
+      {activeWorkspace === "returns" && (
+        <ReturnsWorkspace
+          key={returnsFormKey}
+          product={product}
+        />
+      )}
 
-function ComingSoon({
-  title,
-}: ComingSoonProps) {
-  return (
-    <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-24 text-center">
-
-      <h2 className="text-xl font-semibold text-slate-800">
-        {title}
-      </h2>
-
-      <p className="mt-2 text-slate-500">
-        This workspace will be built in the next sprint.
-      </p>
+      {activeWorkspace === "ai" && (
+        <AIStudioWorkspace product={product} />
+      )}
 
     </div>
   );

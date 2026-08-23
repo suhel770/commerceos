@@ -1,65 +1,41 @@
 import type { Product } from "@/lib/types/product";
-import { productRepository } from "@/lib/repositories/product.repository";
-
 import type { ProductFilters } from "@/lib/types/product-filter";
-
-
+import { filterProducts } from "@/lib/services/productFilter.service";
+import { safeResponseJson } from "@/lib/api/client";
 
 export async function getAllProducts(
   filters?: ProductFilters
 ): Promise<Product[]> {
-  const products = await productRepository.findAll();
+  try {
+    const params = new URLSearchParams();
+    if (filters?.search) params.set("search", filters.search);
+    if (filters?.category && filters.category !== "all") params.set("category", filters.category);
+    if (filters?.status && filters.status !== "all") params.set("status", filters.status);
 
-  if (!filters) {
-    return products;
+    const res = await fetch(`/api/v1/products${params.toString() ? `?${params.toString()}` : ""}`);
+    const payload = await safeResponseJson(res);
+    const list: Product[] =
+      payload?.success && Array.isArray(payload.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : [];
+
+    if (!filters) return list;
+    return filterProducts(list, filters);
+  } catch {
+    return [];
   }
-
-  let filtered = [...products];
-
-  // Search
-  if (filters.search.trim()) {
-    const query = filters.search.trim().toLowerCase();
-
-    filtered = filtered.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.sku.toLowerCase().includes(query) ||
-        product.brand.toLowerCase().includes(query)
-    );
-  }
-
-  // Marketplace
-  if (filters.marketplace !== "all") {
-    filtered = filtered.filter((product) =>
-      product.listings.some(
-        (listing) =>
-          listing.marketplace.toLowerCase() ===
-          filters.marketplace.toLowerCase()
-      )
-    );
-  }
-
-  // Category
-  if (filters.category !== "all") {
-    filtered = filtered.filter(
-      (product) =>
-        product.category.toLowerCase() ===
-        filters.category.toLowerCase()
-    );
-  }
-
-  // Status
-  if (filters.status !== "all") {
-    filtered = filtered.filter(
-      (product) =>
-        product.status.toLowerCase() ===
-        filters.status.toLowerCase()
-    );
-  }
-
-  return filtered;
 }
 
-export async function getProductById(id: string) {
-  return productRepository.findById(id);
+export async function getProductById(
+  id: string
+): Promise<Product | undefined> {
+  try {
+    const res = await fetch(`/api/v1/products/${id}`);
+    const payload = await safeResponseJson(res);
+    return payload?.success ? payload.data : undefined;
+  } catch {
+    return undefined;
+  }
 }

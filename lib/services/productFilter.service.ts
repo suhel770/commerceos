@@ -1,10 +1,14 @@
 import type { Product } from "@/lib/types/product";
+import type { ProductFilters } from "@/lib/types/product-filter";
 
-export interface ProductFilters {
-  search: string;
-  marketplace: string;
-  category: string;
-  status: string;
+function inRange(
+  value: number,
+  range: ProductFilters["sellingPrice"],
+) {
+  return (
+    (range.min === undefined || value >= range.min) &&
+    (range.max === undefined || value <= range.max)
+  );
 }
 
 export function filterProducts(
@@ -54,6 +58,91 @@ export function filterProducts(
       if (
         product.status.toLowerCase() !==
         filters.status.toLowerCase()
+      ) {
+        return false;
+      }
+    }
+
+    if (
+      filters.brands.length > 0 &&
+      !filters.brands.some(
+        (brand) =>
+          brand.toLowerCase() ===
+          product.brand.toLowerCase(),
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      !inRange(
+        product.pricing.sellingPrice,
+        filters.sellingPrice,
+      ) ||
+      !inRange(
+        product.pricing.costPrice,
+        filters.costPrice,
+      ) ||
+      !inRange(
+        product.pricing.margin,
+        filters.profitMargin,
+      ) ||
+      !inRange(
+        product.inventory.available,
+        filters.stockQuantity,
+      )
+    ) {
+      return false;
+    }
+
+    if (filters.stockStatus.length > 0) {
+      const available =
+        product.inventory.available;
+      const stockStatus =
+        available === 0
+          ? "out-of-stock"
+          : available <= 20
+            ? "low-stock"
+            : "in-stock";
+
+      if (
+        !filters.stockStatus.includes(
+          stockStatus,
+        )
+      ) {
+        return false;
+      }
+    }
+
+    if (filters.marketplaceCount.length > 0) {
+      const counts =
+        filters.marketplaceCount.map(Number);
+      const matchesCount = counts.some(
+        (count) =>
+          count === 1
+            ? product.listings.length === 1
+            : product.listings.length >= count,
+      );
+
+      if (!matchesCount) {
+        return false;
+      }
+    }
+
+    if (filters.productHealth.length > 0) {
+      const score =
+        product.performance.healthScore;
+      const health =
+        score >= 90
+          ? "excellent"
+          : score >= 75
+            ? "good"
+            : "attention";
+
+      if (
+        !filters.productHealth.includes(
+          health,
+        )
       ) {
         return false;
       }

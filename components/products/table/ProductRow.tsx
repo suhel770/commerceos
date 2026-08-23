@@ -1,16 +1,11 @@
 "use client";
 
-import { Product } from "@/lib/types/product";
+import type { Product } from "@/lib/types/product";
 
 import ProductCell from "./cells/ProductCell";
-import OrdersCell from "./cells/OrdersCell";
-import StockCell from "./cells/StockCell";
-import RevenueCell from "./cells/RevenueCell";
-import ProfitCell from "./cells/ProfitCell";
-import ReturnCell from "./cells/ReturnCell";
-import HealthCell from "./cells/HealthCell";
-import AIRecommendationCell from "./cells/AIRecommendationCell";
+import MarketplaceBadges from "./badges/MarketplaceBadges";
 import StatusCell from "./cells/StatusCell";
+import HealthCell from "./cells/HealthCell";
 import ActionCell from "./cells/ActionCell";
 
 interface ProductRowProps {
@@ -24,87 +19,76 @@ export default function ProductRow({
   selected,
   onToggle,
 }: ProductRowProps) {
+  const ats = product.inventory?.available ?? 0;
+  const reserved = product.inventory?.reserved ?? 0;
+  const damaged = product.inventory?.damaged ?? 0;
+  const hasListings = Boolean(product.listings && product.listings.length > 0);
+  const slug = product.slug || product.sku?.toLowerCase() || product.id;
+
   return (
     <tr
       className={`
         border-b
         border-slate-100
         transition-all
-        duration-200
+        duration-150
         hover:bg-blue-50/40
-        ${
-          selected
-            ? "bg-blue-50 ring-1 ring-inset ring-blue-200"
-            : ""
-        }
+        ${selected ? "bg-blue-50/70 ring-1 ring-inset ring-blue-200" : ""}
       `}
     >
-      <td className="px-3 py-4 align-top">
+      <td className="w-10 px-3 py-3.5 text-center align-middle">
         <input
           type="checkbox"
           checked={selected}
           onChange={onToggle}
-          className="h-4 w-4 rounded border-slate-300"
+          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
         />
       </td>
 
-      <td className="w-[360px] px-3 py-4">
+      <td className="min-w-[280px] px-3 py-3.5 align-middle">
         <ProductCell product={product} />
       </td>
 
-      <td className="px-3 py-4">
-        <OrdersCell
-          orders={product.performance.ordersToday}
-        />
+      <td className="w-24 px-3 py-3.5 text-right align-middle">
+        <span
+          className={`font-mono text-xs font-black ${
+            ats > 10 ? "text-emerald-600" : ats > 0 ? "text-amber-600" : "text-rose-600"
+          }`}
+        >
+          {ats}
+        </span>
       </td>
 
-      <td className="px-3 py-4">
-        <StockCell
-          stock={product.inventory.available}
-        />
+      <td className="w-24 px-3 py-3.5 text-right align-middle">
+        <span className="font-mono text-xs font-semibold text-slate-600">
+          {reserved}
+        </span>
       </td>
 
-      <td className="px-3 py-4">
-        <RevenueCell
-          revenue={product.performance.revenueToday}
-        />
+      <td className="w-24 px-3 py-3.5 text-right align-middle">
+        <span
+          className={`font-mono text-xs font-semibold ${
+            damaged > 0 ? "text-rose-500 font-bold" : "text-slate-400"
+          }`}
+        >
+          {damaged}
+        </span>
       </td>
 
-      <td className="px-3 py-4">
-        <ProfitCell
-          profit={product.pricing.profit}
-          margin={product.pricing.margin}
-        />
+      <td className="w-40 px-3 py-3.5 text-center align-middle">
+        <MarketplaceBadges listings={product.listings} />
       </td>
 
-      <td className="px-3 py-4">
-        <ReturnCell
-          returns={
-            product.performance.returnsPercentage
-          }
-        />
+      <td className="w-32 px-3 py-3.5 text-center align-middle">
+        <StatusCell status={product.status} hasListings={hasListings} />
       </td>
 
-      <td className="px-3 py-4">
-        <HealthCell
-          score={product.performance.healthScore}
-        />
+      <td className="w-36 px-3 py-3.5 text-center align-middle">
+        <HealthCell product={product} />
       </td>
 
-      <td className="w-36 px-3 py-4">
-        <AIRecommendationCell
-          recommendation={
-            product.aiRecommendations[0]
-          }
-        />
-      </td>
-
-      <td className="px-3 py-4">
-        <StatusCell status={product.status} />
-      </td>
-
-      <td className="px-3 py-4">
-        <ActionCell productId={product.slug} />
+      <td className="w-24 px-3 py-3.5 text-center align-middle">
+        <ActionCell slug={slug} />
       </td>
     </tr>
   );

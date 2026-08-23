@@ -25,7 +25,7 @@ export default function DashboardCard({
         "relative overflow-hidden",
 
         // Shape
-        "rounded-xl",
+        "rounded-2xl",
 
         // Border
         "border border-slate-200/80 dark:border-slate-800",
@@ -49,13 +49,13 @@ export default function DashboardCard({
           <div className="min-w-0">
 
             {title && (
-              <h2 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">
+              <h2 className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white">
                 {title}
               </h2>
             )}
 
             {subtitle && (
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {subtitle}
               </p>
             )}

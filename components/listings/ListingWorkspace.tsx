@@ -46,9 +46,9 @@ export default function ListingWorkspace({
 
       {activeTab === "overview" && (
         <div className="grid gap-4 lg:grid-cols-3">
-          <MarketplaceHealth />
+          <MarketplaceHealth listing={listing} />
           <ListingValidation />
-          <SyncStatus />
+          <SyncStatus product={product} listing={listing} />
         </div>
       )}
 

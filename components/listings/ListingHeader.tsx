@@ -1,3 +1,4 @@
+import { Package } from "lucide-react";
 import type {
   MarketplaceListing,
   Product,
@@ -13,6 +14,11 @@ export default function ListingHeader({
   product,
   listing,
 }: ListingHeaderProps) {
+  const hasValidImage =
+    typeof product?.image === "string" &&
+    product.image.trim().length > 0 &&
+    product.image !== "{}";
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
@@ -22,11 +28,17 @@ export default function ListingHeader({
 
         <div className="flex items-center gap-4">
 
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-16 w-16 rounded-xl border border-slate-200 object-cover"
-          />
+          {hasValidImage ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              className="h-16 w-16 rounded-xl border border-slate-200 object-cover"
+            />
+          ) : (
+            <div className="h-16 w-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center">
+              <Package className="h-8 w-8 text-slate-400" />
+            </div>
+          )}
 
           <div>
 

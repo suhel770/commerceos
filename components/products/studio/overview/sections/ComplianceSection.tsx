@@ -2,230 +2,439 @@
 
 import {
   ShieldCheck,
-  AlertTriangle,
-  Globe2,
-  FileCheck,
+  FileCheck2,
+  BadgeCheck,
   Sparkles,
 } from "lucide-react";
 
-import StudioAccordion from "../../shared/StudioAccordion";
+import StudioField from "../../shared/StudioField";
+
+const marketplaceCompliance: Array<{
+  name: string;
+  status: string;
+  color: string;
+}> = [];
+
+const requiredDocuments: Array<{
+  title: string;
+  status: string;
+}> = [];
+
+const complianceTimeline: Array<{
+  title: string;
+  date: string;
+}> = [];
 
 export default function ComplianceSection() {
   return (
-    <StudioAccordion
-      title="Compliance"
-      description="Regulatory information required across marketplaces."
-      badge="82% Complete"
-      rightSlot={
-        <div className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-          3 Pending
-        </div>
-      }
-    >
-      <div className="grid gap-5 lg:grid-cols-4">
+    <div className="space-y-8">
 
-        <ComplianceCard
-          icon={<ShieldCheck size={18} />}
-          title="Compliance"
-          value="82%"
-          color="emerald"
-        />
+      {/* Header */}
 
-        <ComplianceCard
-          icon={<FileCheck size={18} />}
-          title="Documents"
-          value="5"
-          color="blue"
-        />
+      <div className="flex items-start justify-between">
 
-        <ComplianceCard
-          icon={<Globe2 size={18} />}
-          title="Country"
-          value="India"
-          color="violet"
-        />
+        <div>
 
-        <ComplianceCard
-          icon={<AlertTriangle size={18} />}
-          title="Warnings"
-          value="3"
-          color="amber"
-        />
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <ShieldCheck className="h-4 w-4" />
+            Compliance Workspace
+          </div>
 
-      </div>
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
+            Compliance & Regulations
+          </h2>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200">
-
-        <ComplianceRow
-          label="Country of Origin"
-          value="India"
-          status="Complete"
-        />
-
-        <ComplianceRow
-          label="HSN Code"
-          value="64029990"
-          status="Complete"
-        />
-
-        <ComplianceRow
-          label="GST Rate"
-          value="18%"
-          status="Complete"
-        />
-
-        <ComplianceRow
-          label="Manufacturer"
-          value="Pending"
-          status="Required"
-        />
-
-        <ComplianceRow
-          label="Importer"
-          value="Pending"
-          status="Required"
-        />
-
-        <ComplianceRow
-          label="Warranty"
-          value="Not Configured"
-          status="Optional"
-        />
-
-      </div>
-
-      <div className="mt-6 rounded-2xl border border-violet-200 bg-violet-50 p-5">
-
-        <div className="flex items-center gap-3">
-
-          <Sparkles
-            size={18}
-            className="text-violet-600"
-          />
-
-          <h3 className="font-semibold text-violet-700">
-
-            AI Compliance Advisor
-
-          </h3>
+          <p className="mt-2 max-w-3xl text-[15px] leading-7 text-slate-500">
+            Manage GST, HSN, certifications, manufacturer details,
+            regulatory requirements and marketplace compliance from one
+            centralized workspace.
+          </p>
 
         </div>
 
-        <p className="mt-3 text-sm leading-7 text-violet-700">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
 
-          CommerceOS detected missing manufacturer
-          information required for Amazon and ONDC.
-          Completing these fields will improve
-          publishing success.
+          <div className="flex items-center gap-3">
 
-        </p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white">
+              <Sparkles className="h-5 w-5 text-emerald-600" />
+            </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
+            <div>
 
-          <button className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white">
+              <p className="text-xs text-slate-500">
+                Compliance Score
+              </p>
 
-            Complete Compliance
+              <h3 className="text-2xl font-bold text-emerald-700">
+                0%
+              </h3>
 
-          </button>
+            </div>
 
-          <button className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-violet-700">
-
-            Review Requirements
-
-          </button>
+          </div>
 
         </div>
 
       </div>
 
-    </StudioAccordion>
-  );
-}
+      <div className="grid gap-6 xl:grid-cols-2">
 
-interface ComplianceCardProps {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-  color: "emerald" | "blue" | "violet" | "amber";
-}
+        <div className="rounded-3xl border border-slate-200 bg-white p-7">
 
-function ComplianceCard({
-  icon,
-  title,
-  value,
-  color,
-}: ComplianceCardProps) {
+          <div className="mb-6 flex items-center gap-3">
 
-  const styles = {
-    emerald:
-      "border-emerald-200 bg-emerald-50 text-emerald-700",
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
+              <FileCheck2 className="h-5 w-5 text-emerald-600" />
+            </div>
 
-    blue:
-      "border-sky-200 bg-sky-50 text-sky-700",
+            <div>
 
-    violet:
-      "border-violet-200 bg-violet-50 text-violet-700",
+              <h3 className="text-lg font-semibold text-slate-900">
+                Tax & Regulatory
+              </h3>
 
-    amber:
-      "border-amber-200 bg-amber-50 text-amber-700",
-  };
+              <p className="text-sm text-slate-500">
+                Mandatory marketplace information
+              </p>
 
-  return (
-    <div className={`rounded-2xl border p-5 ${styles[color]}`}>
+            </div>
 
-      <div className="flex items-center justify-between">
-        {icon}
+          </div>
+
+          <div className="space-y-5">
+
+            <StudioField
+              label="GST Rate"
+              value="—"
+            />
+
+            <StudioField
+              label="HSN Code"
+              value="—"
+            />
+
+            <StudioField
+              label="Country of Origin"
+              value="—"
+            />
+
+            <StudioField
+              label="Manufacturer"
+              value="—"
+            />
+
+            <StudioField
+              label="Importer"
+              value="—"
+            />
+
+            <StudioField
+              label="Marketed By"
+              value="—"
+            />
+
+          </div>
+
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-7">
+
+          <div className="mb-6 flex items-center gap-3">
+
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
+              <BadgeCheck className="h-5 w-5 text-blue-600" />
+            </div>
+
+            <div>
+
+              <h3 className="text-lg font-semibold text-slate-900">
+                Certifications
+              </h3>
+
+              <p className="text-sm text-slate-500">
+                Required certificates and declarations
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="space-y-5">
+
+            <StudioField
+              label="BIS Certification"
+              value="—"
+            />
+
+            <StudioField
+              label="Quality Certificate"
+              value="—"
+            />
+
+            <StudioField
+              label="Safety Declaration"
+              value="—"
+            />
+
+            <StudioField
+              label="Packaging Compliance"
+              value="—"
+            />
+
+            <StudioField
+              label="Marketplace Validation"
+              value="—"
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+            <div className="grid gap-6 xl:grid-cols-2">
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-7">
+
+          <div className="mb-6">
+
+            <h3 className="text-lg font-semibold text-slate-900">
+              Marketplace Compliance
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Validation status across connected marketplaces.
+            </p>
+
+          </div>
+
+          <div className="space-y-4">
+
+            {marketplaceCompliance.length === 0 ? (
+              <p className="text-sm text-slate-500">No data yet</p>
+            ) : (
+              marketplaceCompliance.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 p-5"
+                >
+                  <div>
+
+                    <h4 className="font-semibold text-slate-900">
+                      {item.name}
+                    </h4>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Product compliance validation
+                    </p>
+
+                  </div>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      item.color === "emerald"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-orange-50 text-orange-700"
+                    }`}
+                  >
+                    {item.status}
+                  </span>
+
+                </div>
+              ))
+            )}
+
+          </div>
+
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-7">
+
+          <div className="mb-6">
+
+            <h3 className="text-lg font-semibold text-slate-900">
+              CommerceOS Compliance Intelligence
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              AI continuously checks your product against marketplace
+              policies.
+            </p>
+
+          </div>
+
+          <div className="space-y-4">
+
+            <p className="text-sm text-slate-500">No data yet</p>
+
+          </div>
+
+        </div>
+
+      </div>
+            <div className="grid gap-6 xl:grid-cols-2">
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-7">
+
+          <div className="mb-6">
+
+            <h3 className="text-lg font-semibold text-slate-900">
+              Required Documents
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Documents linked with this product.
+            </p>
+
+          </div>
+
+          <div className="space-y-4">
+
+            {requiredDocuments.length === 0 ? (
+              <p className="text-sm text-slate-500">No data yet</p>
+            ) : (
+              requiredDocuments.map((doc) => (
+                <div
+                  key={doc.title}
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 p-5"
+                >
+                  <div>
+
+                    <h4 className="font-semibold text-slate-900">
+                      {doc.title}
+                    </h4>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Compliance document
+                    </p>
+
+                  </div>
+
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    {doc.status}
+                  </span>
+
+                </div>
+              ))
+            )}
+
+          </div>
+
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-7">
+
+          <div className="mb-6">
+
+            <h3 className="text-lg font-semibold text-slate-900">
+              Compliance Timeline
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Recent validation history.
+            </p>
+
+          </div>
+
+          <div className="space-y-5">
+
+            {complianceTimeline.length === 0 ? (
+              <p className="text-sm text-slate-500">No data yet</p>
+            ) : (
+              complianceTimeline.map((event) => (
+                <div
+                  key={event.title}
+                  className="flex gap-4"
+                >
+
+                  <div className="mt-2 h-3 w-3 rounded-full bg-emerald-500" />
+
+                  <div>
+
+                    <h4 className="font-semibold text-slate-900">
+                      {event.title}
+                    </h4>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {event.date}
+                    </p>
+
+                  </div>
+
+                </div>
+              ))
+            )}
+
+          </div>
+
+        </div>
+
       </div>
 
-      <p className="mt-5 text-xs font-semibold uppercase tracking-wider opacity-70">
-        {title}
-      </p>
+            {/* Workspace Footer */}
 
-      <h3 className="mt-2 text-2xl font-bold">
-        {value}
-      </h3>
+      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-7">
 
-    </div>
-  );
-}
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 
-function ComplianceRow({
-  label,
-  value,
-  status,
-}: {
-  label: string;
-  value: string;
-  status: string;
-}) {
-  const colors = {
-    Complete: "bg-emerald-100 text-emerald-700",
-    Required: "bg-amber-100 text-amber-700",
-    Optional: "bg-slate-100 text-slate-700",
-  } as const;
+          <div>
 
-  return (
-    <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 last:border-0">
+            <h3 className="text-xl font-semibold text-slate-900">
+              Compliance Workspace Status
+            </h3>
 
-      <div>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-500">
+              Regulatory information, tax configuration, certifications,
+              manufacturer details and marketplace validations sync from
+              your product data. CommerceOS monitors policy changes and
+              alerts you before compliance issues affect your listings.
+            </p>
 
-        <p className="font-semibold text-slate-900">
-          {label}
-        </p>
+          </div>
 
-        <p className="mt-1 text-sm text-slate-500">
-          {value}
-        </p>
+          <div className="flex gap-10">
+
+            <div className="text-center">
+
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Documents
+              </p>
+
+              <h3 className="mt-2 text-4xl font-bold text-emerald-600">
+                0
+              </h3>
+
+            </div>
+
+            <div className="text-center">
+
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Validations
+              </p>
+
+              <h3 className="mt-2 text-4xl font-bold text-blue-600">
+                0/0
+              </h3>
+
+            </div>
+
+            <div className="text-center">
+
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                AI Score
+              </p>
+
+              <h3 className="mt-2 text-4xl font-bold text-violet-600">
+                0%
+              </h3>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
-
-      <span
-        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-          colors[status as keyof typeof colors]
-        }`}
-      >
-        {status}
-      </span>
 
     </div>
   );

@@ -24,6 +24,23 @@ export interface Product {
 
   status: ProductStatus;
 
+  /** Primary supply vendor (demo-business SSOT). */
+  vendorId?: string;
+
+  vendorSku?: string;
+
+  barcode?: string;
+
+  color?: string;
+
+  size?: string;
+
+  variantLabel?: string;
+
+  weightGrams?: number;
+
+  dimensionsCm?: { l: number; w: number; h: number };
+
   /* -------------------------------------------------------------------------- */
   /* Classification */
   /* -------------------------------------------------------------------------- */
@@ -82,6 +99,10 @@ export interface Product {
     reserved: number;
 
     incoming: number;
+
+    damaged?: number;
+
+    inTransit?: number;
   };
 
   /* -------------------------------------------------------------------------- */

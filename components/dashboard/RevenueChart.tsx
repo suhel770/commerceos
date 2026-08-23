@@ -13,13 +13,13 @@ import {
 } from "recharts";
 
 const data = [
-  { name: "Mon", revenue: 12000 },
-  { name: "Tue", revenue: 18000 },
-  { name: "Wed", revenue: 16000 },
-  { name: "Thu", revenue: 25000 },
-  { name: "Fri", revenue: 22000 },
-  { name: "Sat", revenue: 30000 },
-  { name: "Sun", revenue: 28000 },
+  { name: "Mon", revenue: 0 },
+  { name: "Tue", revenue: 0 },
+  { name: "Wed", revenue: 0 },
+  { name: "Thu", revenue: 0 },
+  { name: "Fri", revenue: 0 },
+  { name: "Sat", revenue: 0 },
+  { name: "Sun", revenue: 0 },
 ];
 
 const filters = ["7D", "30D", "90D", "1Y"];
@@ -39,11 +39,11 @@ export default function RevenueChart() {
         <div>
 
           <h3 className="text-4xl font-bold text-slate-900">
-            ₹1,51,000
+            ₹0
           </h3>
 
-          <p className="mt-2 font-semibold text-emerald-600">
-            ↑ 18.4% vs previous period
+          <p className="mt-2 font-semibold text-slate-500">
+            — vs previous period
           </p>
 
         </div>
@@ -124,7 +124,7 @@ export default function RevenueChart() {
           </p>
 
           <h4 className="mt-1 text-xl font-bold">
-            748
+            0
           </h4>
 
         </div>
@@ -136,7 +136,7 @@ export default function RevenueChart() {
           </p>
 
           <h4 className="mt-1 text-xl font-bold">
-            ₹624
+            ₹0
           </h4>
 
         </div>
@@ -148,7 +148,7 @@ export default function RevenueChart() {
           </p>
 
           <h4 className="mt-1 text-xl font-bold">
-            ₹82,000
+            ₹0
           </h4>
 
         </div>

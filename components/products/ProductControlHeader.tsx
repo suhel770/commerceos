@@ -1,59 +1,120 @@
-import {
-  Plus,
-  Upload,
-  Download,
-} from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Plus, Download, Package, Boxes } from "lucide-react";
+import { useProducts } from "@/hooks/useProducts";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function ProductControlHeader() {
+  const pathname = usePathname();
+  const { products } = useProducts();
+  const [exporting, setExporting] = useState(false);
+
+  const isConsumables = pathname?.startsWith("/products/consumables");
+
+  const handleExportCSV = () => {
+    if (!products || products.length === 0) {
+      alert("No sellable products to export.");
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const headers = [
+        "SKU",
+        "Product Name",
+        "Brand",
+        "Category",
+        "ATS (Sellable Stock)",
+        "Reserved",
+        "Damaged",
+        "Selling Price",
+        "Cost Price",
+        "MRP",
+        "Listing Status",
+      ];
+
+      const rows = products.map((p) => [
+        `"${p.sku}"`,
+        `"${p.name.replace(/"/g, '""')}"`,
+        `"${p.brand || "CommerceOS"}"`,
+        `"${p.category || ""}"`,
+        p.inventory?.available ?? 0,
+        p.inventory?.reserved ?? 0,
+        p.inventory?.damaged ?? 0,
+        p.pricing?.sellingPrice ?? 0,
+        p.pricing?.costPrice ?? 0,
+        p.pricing?.mrp ?? 0,
+        `"${p.status || "Active"}"`,
+      ]);
+
+      const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `CommerceOS_Product_Catalog_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-6">
-
-      {/* Header */}
-
-      <div className="flex items-start justify-between">
-
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">
             Product Control Center
           </h1>
-
-          <p className="mt-2 text-slate-500">
-            Manage and optimize products across all marketplaces.
+          <p className="mt-0.5 text-xs font-semibold text-slate-500">
+            Authoritative product & packaging management layer.
           </p>
-
         </div>
 
-        <div className="flex items-center gap-3">
-
-          <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-medium transition hover:bg-slate-50">
-
-            <Upload size={18} />
-
-            Import Products
-
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            disabled={exporting}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-60"
+          >
+            <Download className="h-4 w-4 text-slate-500" />
+            {exporting ? "Exporting..." : "Export CSV"}
           </button>
-
-          <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-medium transition hover:bg-slate-50">
-
-            <Download size={18} />
-
-            Export
-
-          </button>
-
-          <button className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700">
-
-            <Plus size={18} />
-
-            Add Product
-
-          </button>
-
         </div>
-
       </div>
 
+      {/* Primary Section Switcher */}
+      <div className="flex items-center gap-1 border-b border-slate-200 pb-2">
+        <Link
+          href="/products"
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
+            !isConsumables
+              ? "bg-blue-50 text-blue-700 shadow-2xs"
+              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          }`}
+        >
+          <Package className="h-4 w-4" />
+          <span>Sellable Products</span>
+        </Link>
+
+        <Link
+          href="/products/consumables"
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
+            isConsumables
+              ? "bg-blue-50 text-blue-700 shadow-2xs"
+              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          }`}
+        >
+          <Boxes className="h-4 w-4" />
+          <span>Consumables & Packaging</span>
+        </Link>
+      </div>
     </div>
   );
 }

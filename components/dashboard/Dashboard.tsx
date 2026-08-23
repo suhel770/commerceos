@@ -9,7 +9,7 @@ import ProfitBreakdown from "./ProfitBreakdown";
 import AlertsTasks from "./AlertsTasks";
 import RecentActivity from "./RecentActivity";
 import { getDashboardData } from "@/lib/dashboard/dashboard-data";
-import DashboardControls from "./DashboardControls";
+import DashboardHeader from "./DashboardHeader";
 
 export default async function Dashboard() {
   const dashboardData = await getDashboardData();
@@ -17,13 +17,7 @@ export default async function Dashboard() {
   return (
     <div className="mx-auto max-w-[1800px] space-y-4 px-4 py-4 xl:px-4">
 
-      <header className="flex flex-col gap-4 py-1 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950">Good morning, Amir <span aria-hidden="true">👋</span></h1>
-          <p className="mt-1 text-sm text-slate-500">Here&apos;s what&apos;s happening with your business today.</p>
-        </div>
-        <DashboardControls />
-      </header>
+      <DashboardHeader />
 
       {/* KPI */}
       <KPIGrid kpis={dashboardData.kpis} healthScore={dashboardData.healthScore} />

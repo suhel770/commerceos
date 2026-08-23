@@ -7,10 +7,12 @@ import WorkspaceCard from "@/components/ui/WorkspaceCard";
 
 interface SalesChannelsCardProps {
   product: Product;
+  onViewAll?: () => void;
 }
 
 export default function SalesChannelsCard({
   product,
+  onViewAll,
 }: SalesChannelsCardProps) {
   
   return (
@@ -28,7 +30,11 @@ export default function SalesChannelsCard({
           </p>
         </div>
 
-        <button className="text-sm font-medium text-blue-600 transition hover:text-blue-700">
+        <button
+          type="button"
+          onClick={onViewAll}
+          className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+        >
           View All
         </button>
       </div>

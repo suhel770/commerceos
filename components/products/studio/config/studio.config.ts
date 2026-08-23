@@ -19,6 +19,7 @@ export type StudioWorkspaceId =
   | "identity"
   | "media"
   | "commercials"
+  | "inventory"
   | "supply"
   | "attributes"
   | "variants"
@@ -64,6 +65,13 @@ export const PRODUCT_STUDIO_WORKSPACES: StudioWorkspaceConfig[] = [
     id: "commercials",
     label: "Commercials",
     icon: BadgeIndianRupee,
+    enabled: true,
+    badge: "success",
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    icon: Boxes,
     enabled: true,
     badge: "success",
   },

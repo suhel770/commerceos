@@ -1,30 +1,34 @@
 "use client";
 
 import type { Product } from "@/lib/types/product";
+import type { ProductWorkspaceNavigate } from "../types";
 
 import SalesChannelsCard from "./SalesChannelsCard";
 import SalesProfitCard from "./SalesProfitCard";
 import BusinessInsightsCard from "./BusinessInsightsCard";
 import MarketplacePerformanceCard from "./MarketplacePerformanceCard";
 import ProductTimelineCard from "./ProductTimelineCard";
-import ExecutiveSummaryCard from "./ExecutiveSummaryCard";
+import PackagingOverviewCard from "./PackagingOverviewCard";
 
 interface OverviewWorkspaceProps {
   product: Product;
+  onNavigate: ProductWorkspaceNavigate;
 }
 
 export default function OverviewWorkspace({
   product,
+  onNavigate,
 }: OverviewWorkspaceProps) {
   return (
     <div className="space-y-4">
 
-      {/* Top Row */}
-
       <div className="grid gap-4 xl:grid-cols-12">
 
         <div className="xl:col-span-7">
-          <SalesChannelsCard product={product} />
+          <SalesChannelsCard
+            product={product}
+            onViewAll={() => onNavigate("listings")}
+          />
         </div>
 
         <div className="xl:col-span-5">
@@ -33,21 +37,24 @@ export default function OverviewWorkspace({
 
       </div>
 
-      {/* Middle Row */}
+      <div className="grid gap-4 xl:grid-cols-4 sm:grid-cols-2">
 
-      <div className="grid gap-4 xl:grid-cols-3">
+        <PackagingOverviewCard
+          product={product}
+          onManage={() => onNavigate("consumables")}
+        />
 
-        <BusinessInsightsCard />
+        <BusinessInsightsCard onOpenAi={() => onNavigate("ai")} />
 
-        <MarketplacePerformanceCard />
+        <MarketplacePerformanceCard
+          onViewAll={() => onNavigate("performance")}
+        />
 
-        <ProductTimelineCard />
+        <ProductTimelineCard
+          onViewAll={() => onNavigate("activity")}
+        />
 
       </div>
-
-      {/* Executive Summary */}
-
-      <ExecutiveSummaryCard />
 
     </div>
   );

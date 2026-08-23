@@ -21,22 +21,19 @@ export type DashboardData = {
 
 const demoDashboardData: DashboardData = {
   kpis: [
-    { id: "revenue", label: "Total Revenue", value: "₹12,48,230", change: "+18.6%" },
-    { id: "profit", label: "Net Profit", value: "₹3,82,450", change: "+14.2%" },
-    { id: "orders", label: "Orders", value: "1,243", change: "+11.3%" },
-    { id: "inventory", label: "Inventory Value", value: "₹8,76,120", change: "+7.8%" },
+    { id: "revenue", label: "Total Revenue", value: "₹0", change: "—" },
+    { id: "profit", label: "Net Profit", value: "₹0", change: "—" },
+    { id: "orders", label: "Orders", value: "0", change: "—" },
+    { id: "inventory", label: "Inventory Value", value: "₹0", change: "—" },
   ],
-  healthScore: 92,
+  healthScore: 0,
   executiveBrief: {
     summary: [
-      "Revenue is up 18.6% compared to yesterday.",
-      "Amazon sales increased by 16.4%.",
-      "14 products are running low on stock.",
-      "3 listings have Buy Box at risk.",
-      "Return rate improved by 2.1%.",
+      "No live marketplace data yet.",
+      "Add products and sync channels to populate this dashboard.",
     ],
-    recommendation: "Increase price of 8 high-demand products",
-    estimatedProfit: "₹45,200/month",
+    recommendation: "Create your first product in Product Studio",
+    estimatedProfit: "₹0/month",
   },
 };
 

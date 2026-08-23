@@ -4,12 +4,24 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
 import type { Product } from "@/lib/types/product";
+
+import type {
+  AIInsight,
+  MasterAttribute,
+  MasterListing,
+  MarketplaceName,
+} from "@/lib/types/master-listing";
+
+import StudioEngine from "@/lib/studio/StudioEngine";
+import { httpMasterProductGateway } from "@/lib/gateways/http-master-product.gateway";
 
 import type { StudioWorkspaceId } from "../config/studio.config";
 
@@ -34,77 +46,108 @@ export interface StudioFieldEditorOptions {
 
   marketplace?: string;
 
-  onSave: (value: string) => void;
+  onSave: (
+    value: string,
+  ) => void;
 }
 
 interface StudioContextType {
   /**
-   * Original product (Read Only)
+   * Legacy Product
+   * (temporary compatibility)
    */
   product: Product;
 
-  /**
-   * Editable Draft
-   */
-  draft: Product;
+  resetListing(): void;
 
   /**
-   * Update Draft
+   * New Studio Engine
    */
-  updateDraft: (
-    updates: Partial<Product>
-  ) => void;
+  engine: StudioEngine | null;
 
   /**
-   * Replace Draft
+   * Master Listing
    */
-  replaceDraft: (
-    product: Product
-  ) => void;
+  listing: MasterListing | null;
 
   /**
-   * Reset Draft
+   * Engine Actions
    */
-  resetDraft: () => void;
+  refresh(): Promise<void>;
+
+  validate(): Promise<void>;
+
+  publish(
+    marketplace?: MarketplaceName,
+  ): Promise<void>;
+
+  save(): Promise<void>;
+
+  updateListing(
+    updates: Partial<MasterListing>,
+  ): void;
+
+  updateAttribute(
+    attribute: MasterAttribute,
+  ): void;
+
+  removeAttribute(
+    key: string,
+  ): void;
+
+  addInsight(
+    insight: AIInsight,
+  ): void;
 
   /**
-   * Active Workspace
+   * Workspace
    */
   activeWorkspace: StudioWorkspaceId;
 
   setActiveWorkspace: (
-    workspace: StudioWorkspaceId
+    workspace: StudioWorkspaceId,
   ) => void;
 
   /**
-   * UI State
+   * Studio State
    */
   dirty: boolean;
 
   saving: boolean;
 
+  saveError: string | null;
+
   validating: boolean;
 
-  setSaving: (
-    saving: boolean
-  ) => void;
+  publishing: boolean;
 
-  setValidating: (
-    validating: boolean
-  ) => void;
+  loading: boolean;
 
-  fieldEditor: StudioFieldEditorOptions | null;
+  /**
+   * Existing UI
+   */
+  setSaving(
+    saving: boolean,
+  ): void;
 
-  openFieldEditor: (
-    options: StudioFieldEditorOptions
-  ) => void;
+  setValidating(
+    validating: boolean,
+  ): void;
 
-  closeFieldEditor: () => void;
+  fieldEditor:
+    | StudioFieldEditorOptions
+    | null;
+
+  openFieldEditor(
+    options: StudioFieldEditorOptions,
+  ): void;
+
+  closeFieldEditor(): void;
 }
 
 const StudioContext =
   createContext<StudioContextType | null>(
-    null
+    null,
   );
 
 interface StudioProviderProps {
@@ -112,19 +155,21 @@ interface StudioProviderProps {
 
   product: Product;
 }
-
 export function StudioProvider({
   children,
   product,
 }: StudioProviderProps) {
-  const [draft, setDraft] =
-    useState<Product>(product);
-
   const [dirty, setDirty] =
     useState(false);
 
   const [saving, setSaving] =
     useState(false);
+  const [
+    saveError,
+    setSaveError,
+  ] = useState<string | null>(
+    null,
+  );
 
   const [
     validating,
@@ -132,11 +177,54 @@ export function StudioProvider({
   ] = useState(false);
 
   const [
+    publishing,
+    setPublishing,
+  ] = useState(false);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  /**
+   * ------------------------------------------------------------------
+   * Studio Engine
+   * ------------------------------------------------------------------
+   */
+
+  const engineRef =
+    useRef<StudioEngine | null>(
+      null,
+    );
+
+  const [
+    engine,
+    setEngine,
+  ] =
+    useState<StudioEngine | null>(
+      null,
+    );
+
+  const [
+    listing,
+    setListing,
+  ] =
+    useState<MasterListing | null>(
+      null,
+    );
+
+  /**
+   * ------------------------------------------------------------------
+   * Existing UI State
+   * ------------------------------------------------------------------
+   */
+
+  const [
     fieldEditor,
     setFieldEditor,
   ] =
     useState<StudioFieldEditorOptions | null>(
-      null
+      null,
     );
 
   const [
@@ -144,90 +232,442 @@ export function StudioProvider({
     setActiveWorkspace,
   ] =
     useState<StudioWorkspaceId>(
-      "overview"
+      "overview",
     );
 
-  const updateDraft =
-    useCallback(
-      (
-        updates: Partial<Product>
-      ) => {
-        setDraft((previous) => ({
-          ...previous,
-          ...updates,
-        }));
+  /**
+   * ------------------------------------------------------------------
+   * Initialize Studio Engine
+   * ------------------------------------------------------------------
+   */
 
-        setDirty(true);
+  useEffect(() => {
+    let mounted = true;
 
-        /**
-         * Future
-         *
-         * Validation
-         * Autosave
-         * AI Analysis
-         * Activity
-         */
-      },
-      []
-    );
+    async function initialize() {
+      setLoading(true);
 
-  const replaceDraft =
-    useCallback(
-      (
-        nextProduct: Product
-      ) => {
-        setDraft(nextProduct);
+      try {
+        const masterListing =
+          await httpMasterProductGateway.load(
+            product,
+          );
+
+        if (!mounted) {
+          return;
+        }
+
+        const engine =
+          new StudioEngine(
+            masterListing,
+          );
+
+        engineRef.current =
+          engine;
+        setEngine(engine);
+
+        setListing(
+          engine.listing,
+        );
 
         setDirty(false);
-      },
-      []
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    initialize();
+
+    return () => {
+      mounted = false;
+    };
+  }, [product]);
+
+  useEffect(() => {
+    if (!dirty) {
+      return;
+    }
+
+    const preventUnload = (
+      event: BeforeUnloadEvent,
+    ) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener(
+      "beforeunload",
+      preventUnload,
     );
 
-  const resetDraft =
-    useCallback(() => {
-      setDraft(product);
+    return () =>
+      window.removeEventListener(
+        "beforeunload",
+        preventUnload,
+      );
+  }, [dirty]);
 
+  /**
+   * ------------------------------------------------------------------
+   * Refresh Listing
+   * ------------------------------------------------------------------
+   */
+
+  const refresh =
+    useCallback(async () => {
+      if (
+        !engineRef.current
+      ) {
+        return;
+      }
+
+      const latest =
+        await httpMasterProductGateway.reload(
+          engineRef.current
+            .listing.id,
+        );
+
+      if (!latest) {
+        return;
+      }
+
+      engineRef.current
+        .draft.replace(
+          latest,
+        );
+
+      setListing(
+        latest,
+      );
       setDirty(false);
-    }, [product]);
+      setSaveError(null);
+    }, []);
+
+  /**
+   * ------------------------------------------------------------------
+   * Save
+   * ------------------------------------------------------------------
+   */
+
+  const save =
+    useCallback(async () => {
+      if (
+        !engineRef.current ||
+        !engineRef.current.listing
+          .permissions.canEdit
+      ) {
+        return;
+      }
+
+      setSaving(true);
+      setSaveError(null);
+
+      try {
+        await engineRef.current.save();
+
+        setListing(
+          engineRef.current
+            .listing,
+        );
+
+        setDirty(false);
+      } catch (error) {
+        setSaveError(
+          error instanceof Error
+            ? error.message
+            : "Unable to save changes.",
+        );
+        throw error;
+      } finally {
+        setSaving(false);
+      }
+    }, []);
+
+  /**
+   * ------------------------------------------------------------------
+   * Validate
+   * ------------------------------------------------------------------
+   */
+
+  const validate =
+    useCallback(async () => {
+      if (
+        !engineRef.current
+      ) {
+        return;
+      }
+
+      setValidating(true);
+
+      try {
+        await engineRef.current.validate();
+
+        setListing(
+          engineRef.current
+            .listing,
+        );
+      } finally {
+        setValidating(false);
+      }
+    }, []);
+
+  /**
+   * ------------------------------------------------------------------
+   * Publish
+   * ------------------------------------------------------------------
+   */
+
+  const publish =
+    useCallback(
+      async (
+        marketplace?: MarketplaceName,
+      ) => {
+        if (
+          !engineRef.current
+        ) {
+          return;
+        }
+
+        setPublishing(
+          true,
+        );
+
+        try {
+          await engineRef.current.publishTo(
+            marketplace,
+          );
+
+          setListing(
+            engineRef.current
+              .listing,
+          );
+        } finally {
+          setPublishing(
+            false,
+          );
+        }
+      },
+      [],
+    );
+  const resetListing =
+    useCallback(() => {
+      setDirty(false);
+      setSaveError(null);
+      void refresh();
+    }, [refresh]);
+
+  /**
+   * ------------------------------------------------------------------
+   * Master Listing Updates
+   * ------------------------------------------------------------------
+   */
+
+  const updateListing =
+    useCallback(
+      (
+        updates: Partial<MasterListing>,
+      ) => {
+        if (
+          !engineRef.current
+        ) {
+          return;
+        }
+
+        const current =
+          engineRef.current.listing;
+
+        if (
+          !current.permissions.canEdit ||
+          (updates.pricing &&
+            !current.permissions
+              .canManagePricing) ||
+          (updates.inventory &&
+            !current.permissions
+              .canManageInventory)
+        ) {
+          return;
+        }
+
+        engineRef.current.update(
+          updates,
+        );
+
+        setListing(
+          engineRef.current.listing,
+        );
+
+        setDirty(true);
+        setSaveError(null);
+      },
+      [],
+    );
+
+  const updateAttribute =
+    useCallback(
+      (
+        attribute: MasterAttribute,
+      ) => {
+        if (
+          !engineRef.current ||
+          !engineRef.current.listing
+            .permissions.canEdit
+        ) {
+          return;
+        }
+
+        engineRef.current.updateAttribute(
+          attribute,
+        );
+
+        setListing(
+          engineRef.current.listing,
+        );
+
+        setDirty(true);
+      },
+      [],
+    );
+
+  const removeAttribute =
+    useCallback(
+      (
+        key: string,
+      ) => {
+        if (
+          !engineRef.current ||
+          !engineRef.current.listing
+            .permissions.canEdit
+        ) {
+          return;
+        }
+
+        engineRef.current.draft.removeAttribute(
+          key,
+        );
+
+        setListing(
+          engineRef.current.listing,
+        );
+
+        setDirty(true);
+      },
+      [],
+    );
+
+  /**
+   * ------------------------------------------------------------------
+   * AI
+   * ------------------------------------------------------------------
+   */
+
+  const addInsight =
+    useCallback(
+      (
+        insight: AIInsight,
+      ) => {
+        if (
+          !engineRef.current
+        ) {
+          return;
+        }
+
+        engineRef.current.updateAIInsight(
+          insight,
+        );
+
+        setListing(
+          engineRef.current.listing,
+        );
+      },
+      [],
+    );
+
+  /**
+   * ------------------------------------------------------------------
+   * Field Editor
+   * ------------------------------------------------------------------
+   */
 
   const openFieldEditor =
     useCallback(
       (
-        options: StudioFieldEditorOptions
+        options: StudioFieldEditorOptions,
       ) => {
-        setFieldEditor(options);
+        setFieldEditor(
+          options,
+        );
       },
-      []
+      [],
     );
 
   const closeFieldEditor =
     useCallback(() => {
-      setFieldEditor(null);
+      setFieldEditor(
+        null,
+      );
     }, []);
+
+  /**
+   * ------------------------------------------------------------------
+   * Context Value
+   * ------------------------------------------------------------------
+   */
 
   const value =
     useMemo(
       () => ({
         product,
+        resetListing,
 
-        draft,
+        /**
+         * Studio Engine
+         */
+        engine,
 
-        updateDraft,
+        listing,
 
-        replaceDraft,
+        refresh,
 
-        resetDraft,
+        validate,
 
+        publish,
+
+        save,
+
+        updateListing,
+
+        updateAttribute,
+
+        removeAttribute,
+
+        addInsight,
+
+        /**
+         * Workspace
+         */
         activeWorkspace,
 
         setActiveWorkspace,
 
+        /**
+         * State
+         */
         dirty,
 
         saving,
 
+        saveError,
+
         validating,
 
+        publishing,
+
+        loading,
+
+        /**
+         * UI
+         */
         setSaving,
 
         setValidating,
@@ -240,29 +680,28 @@ export function StudioProvider({
       }),
       [
         product,
-
-        draft,
-
+        engine,
+        listing,
         activeWorkspace,
-
         dirty,
-
         saving,
-
+        saveError,
         validating,
-
+        publishing,
+        loading,
         fieldEditor,
-
-        updateDraft,
-
-        replaceDraft,
-
-        resetDraft,
-
+        refresh,
+        validate,
+        publish,
+        save,
+        updateListing,
+        updateAttribute,
+        removeAttribute,
+        addInsight,
+        resetListing,
         openFieldEditor,
-
         closeFieldEditor,
-      ]
+      ],
     );
 
   return (
@@ -274,15 +713,24 @@ export function StudioProvider({
   );
 }
 
+/**
+ * ------------------------------------------------------------------
+ * Hook
+ * ------------------------------------------------------------------
+ */
+
 export function useStudio() {
   const context =
-    useContext(StudioContext);
+    useContext(
+      StudioContext,
+    );
 
   if (!context) {
     throw new Error(
-      "useStudio must be used inside StudioProvider."
+      "useStudio must be used inside StudioProvider.",
     );
   }
 
   return context;
 }
+

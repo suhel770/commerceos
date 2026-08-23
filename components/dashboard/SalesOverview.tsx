@@ -6,67 +6,23 @@ import {
   Area,
   CartesianGrid,
   Tooltip,
-  TooltipContentProps,
   XAxis,
   YAxis,
 } from "recharts";
 
 import DashboardCard from "./DashboardCard";
 
-import {
-  ChevronDown,
-  TrendingUp,
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 const chartData = [
-  {
-    day: "Jun 19",
-    revenue: 520000,
-    profit: 220000,
-    orders: 620,
-  },
-  {
-    day: "Jun 23",
-    revenue: 690000,
-    profit: 310000,
-    orders: 730,
-  },
-  {
-    day: "Jun 27",
-    revenue: 610000,
-    profit: 280000,
-    orders: 700,
-  },
-  {
-    day: "Jul 01",
-    revenue: 810000,
-    profit: 390000,
-    orders: 910,
-  },
-  {
-    day: "Jul 05",
-    revenue: 720000,
-    profit: 350000,
-    orders: 860,
-  },
-  {
-    day: "Jul 09",
-    revenue: 930000,
-    profit: 470000,
-    orders: 980,
-  },
-  {
-    day: "Jul 13",
-    revenue: 870000,
-    profit: 430000,
-    orders: 950,
-  },
-  {
-    day: "Jul 18",
-    revenue: 1248230,
-    profit: 382450,
-    orders: 1243,
-  },
+  { day: "Jun 19", revenue: 0, profit: 0, orders: 0 },
+  { day: "Jun 23", revenue: 0, profit: 0, orders: 0 },
+  { day: "Jun 27", revenue: 0, profit: 0, orders: 0 },
+  { day: "Jul 01", revenue: 0, profit: 0, orders: 0 },
+  { day: "Jul 05", revenue: 0, profit: 0, orders: 0 },
+  { day: "Jul 09", revenue: 0, profit: 0, orders: 0 },
+  { day: "Jul 13", revenue: 0, profit: 0, orders: 0 },
+  { day: "Jul 18", revenue: 0, profit: 0, orders: 0 },
 ];
 
 export default function SalesOverview() {
@@ -83,33 +39,29 @@ export default function SalesOverview() {
     >
       <div className="flex h-full flex-col">
 
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
 
-          <div>
+          <div className="min-w-0">
 
-            <p className="text-xs font-medium text-slate-500">
+            <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
               Total Revenue
             </p>
 
-            <div className="mt-1 flex items-center gap-3">
+            <div className="mt-1 flex flex-wrap items-center gap-3">
 
-              <h2 className="text-[30px] font-bold tracking-tight text-slate-900">
-                ₹12,48,230
+              <h2 className="text-2xl font-black tracking-tight text-slate-900 font-mono">
+                ₹0
               </h2>
 
-              <div className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-600">
-
-                <TrendingUp className="h-3 w-3" />
-
-                18.6%
-
+              <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 font-mono">
+                —
               </div>
 
             </div>
 
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 flex-nowrap items-center gap-3 whitespace-nowrap xl:justify-end">
 
             <Legend
               color="bg-blue-600"
@@ -134,7 +86,7 @@ export default function SalesOverview() {
 
   <ResponsiveContainer
     width="100%"
-    height={250}
+    height={280}
   >
 
             <AreaChart
@@ -240,7 +192,7 @@ export default function SalesOverview() {
                 }
               />
 
-              <YAxis yAxisId="orders" hide domain={[0, 1400]} />
+              <YAxis yAxisId="orders" hide domain={[0, 1]} />
 
               <Tooltip
                 cursor={{
@@ -313,7 +265,7 @@ function Legend({
   text,
 }: LegendProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 items-center gap-2">
 
       <div
         className={`h-2.5 w-2.5 rounded-full ${color}`}
@@ -330,7 +282,11 @@ function CustomTooltip({
   active,
   payload: unsafePayload,
   label,
-}: TooltipContentProps) {
+}: {
+  active?: boolean;
+  payload?: any[];
+  label?: string | number;
+}) {
   if (!active || !unsafePayload?.length) {
     return null;
   }
@@ -379,7 +335,7 @@ function CustomTooltip({
           </span>
 
           <span className="text-xs font-semibold text-slate-900">
-            4.82%
+            —
           </span>
 
         </div>

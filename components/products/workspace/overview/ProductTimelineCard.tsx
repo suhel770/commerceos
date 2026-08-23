@@ -1,86 +1,17 @@
 "use client";
 
 import WorkspaceCard from "@/components/ui/WorkspaceCard";
+import { getProductTimelinePreview } from "@/lib/mocks/product-activity";
 
-import {
-  Package,
-  Rocket,
-  BadgeIndianRupee,
-  Boxes,
-  ShoppingCart,
-  RotateCcw,
-  User,
-  RefreshCw,
-} from "lucide-react";
+interface ProductTimelineCardProps {
+  onViewAll?: () => void;
+}
 
-const timeline = [
-  {
-    id: 1,
-    title: "Product Created",
-    description: "Product added to CommerceOS",
-    time: "12 Jul 2026 • 10:42 AM",
-    icon: Package,
-    color: "bg-blue-100 text-blue-600",
-  },
-  {
-    id: 2,
-    title: "Published to Amazon",
-    description: "Listing successfully published",
-    time: "13 Jul 2026 • 09:15 AM",
-    icon: Rocket,
-    color: "bg-emerald-100 text-emerald-600",
-  },
-  {
-    id: 3,
-    title: "Price Updated",
-    description: "Selling price increased by ₹20",
-    time: "15 Jul 2026 • 03:40 PM",
-    icon: BadgeIndianRupee,
-    color: "bg-amber-100 text-amber-600",
-  },
-  {
-    id: 4,
-    title: "Inventory Synced",
-    description: "Inventory synced across marketplaces",
-    time: "Today • 2 min ago",
-    icon: Boxes,
-    color: "bg-violet-100 text-violet-600",
-  },
-  {
-    id: 5,
-    title: "Last Order",
-    description: "Amazon Order #LW23891",
-    time: "Today • 1 hour ago",
-    icon: ShoppingCart,
-    color: "bg-green-100 text-green-600",
-  },
-  {
-    id: 6,
-    title: "Last Return",
-    description: "Flipkart Return Request",
-    time: "Yesterday",
-    icon: RotateCcw,
-    color: "bg-red-100 text-red-600",
-  },
-  {
-    id: 7,
-    title: "Edited by Admin",
-    description: "Product description updated",
-    time: "Today • 11:32 AM",
-    icon: User,
-    color: "bg-slate-200 text-slate-700",
-  },
-  {
-    id: 8,
-    title: "Marketplace Sync",
-    description: "Amazon & Flipkart synced",
-    time: "Just now",
-    icon: RefreshCw,
-    color: "bg-cyan-100 text-cyan-600",
-  },
-];
+const timeline = getProductTimelinePreview();
 
-export default function ProductTimelineCard() {
+export default function ProductTimelineCard({
+  onViewAll,
+}: ProductTimelineCardProps) {
   return (
     <WorkspaceCard
       height="h-[570px]"
@@ -99,7 +30,11 @@ export default function ProductTimelineCard() {
 
           </div>
 
-          <button className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+          >
             View All
           </button>
 
@@ -112,7 +47,11 @@ export default function ProductTimelineCard() {
             Updated just now
           </span>
 
-          <button className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+          >
             View Complete History →
           </button>
 
@@ -133,15 +72,11 @@ export default function ProductTimelineCard() {
         className="relative flex gap-4 pb-7 last:pb-0"
       >
 
-        {/* Timeline Line */}
-
         {index !== timeline.length - 1 && (
 
           <div className="absolute left-[19px] top-10 bottom-0 w-px bg-slate-200" />
 
         )}
-
-        {/* Icon */}
 
         <div
           className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.color}`}
@@ -150,8 +85,6 @@ export default function ProductTimelineCard() {
           <Icon size={18} />
 
         </div>
-
-        {/* Event */}
 
         <div className="min-w-0 flex-1">
 

@@ -1,9 +1,9 @@
 const steps = [
-  { name: "New Orders", count: 132, amount: "₹1,24,560" },
-  { name: "Packed", count: 86, amount: "₹86,230" },
-  { name: "Shipped", count: 198, amount: "₹1,98,450" },
-  { name: "Delivered", count: 754, amount: "₹7,64,880" },
-  { name: "Returns / RTO", count: 73, amount: "₹68,110" },
+  { name: "New Orders", count: 0, amount: "₹0" },
+  { name: "Packed", count: 0, amount: "₹0" },
+  { name: "Shipped", count: 0, amount: "₹0" },
+  { name: "Delivered", count: 0, amount: "₹0" },
+  { name: "Returns / RTO", count: 0, amount: "₹0" },
 ];
 
 export default function OrdersPipeline() {

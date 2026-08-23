@@ -12,23 +12,11 @@ interface BrandFilterProps {
   ) => void;
 }
 
-const BRAND_OPTIONS = [
-  {
-    value: "lilwalk",
-    label: "LilWalk",
-    count: 18,
-  },
-  {
-    value: "nike",
-    label: "Nike",
-    count: 6,
-  },
-  {
-    value: "puma",
-    label: "Puma",
-    count: 3,
-  },
-];
+const BRAND_OPTIONS: Array<{
+  value: string;
+  label: string;
+  count: number;
+}> = [];
 
 export default function BrandFilter({
   filters,

@@ -1,19 +1,15 @@
 import AppShell from "@/components/layout/AppShell";
-import PageContainer from "@/components/ui/PageContainer";
-
 import ProductsPage from "@/components/products/ProductsPage";
 
-export default function Page() {
+export default function ProductsRoutePage() {
   return (
     <AppShell
       title="Products"
-      subtitle="Manage and optimize products across all marketplaces."
+      subtitle="Master Product Engine across sales channels and warehouses"
     >
-      <PageContainer>
-
+      <div className="mx-auto w-full max-w-[1700px] p-8">
         <ProductsPage />
-
-      </PageContainer>
+      </div>
     </AppShell>
   );
 }

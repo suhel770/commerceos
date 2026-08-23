@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
-
 import AppShell from "@/components/layout/AppShell";
 import ProductPage from "@/components/products/page/ProductPage";
-
-import { products } from "@/lib/mocks/products";
+import { productRepository } from "@/lib/repositories/product.repository";
 
 interface ProductPageProps {
   params: Promise<{
@@ -16,9 +14,10 @@ export default async function ProductDetailsPage({
 }: ProductPageProps) {
   const { slug } = await params;
 
-  const product = products.find(
-    (p) => p.slug === slug
-  );
+  let product = await productRepository.findById(slug);
+  if (!product) {
+    product = await productRepository.findBySku(slug);
+  }
 
   if (!product) {
     notFound();
@@ -29,10 +28,8 @@ export default async function ProductDetailsPage({
       title={product.name}
       subtitle={`${product.category} • SKU: ${product.sku}`}
     >
-      <div className="mx-auto w-full max-w-[1700px] p-8">
-        <ProductPage
-          product={product}
-        />
+      <div className="mx-auto w-full max-w-[1700px] p-6 lg:p-8">
+        <ProductPage product={product} />
       </div>
     </AppShell>
   );

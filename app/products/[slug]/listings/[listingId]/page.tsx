@@ -4,6 +4,7 @@ import PageContainer from "@/components/ui/PageContainer";
 import ListingWorkspace from "@/components/listings/ListingWorkspace";
 
 import { products } from "@/lib/mocks/products";
+import type { MarketplaceListing } from "@/lib/types/product";
 
 interface ListingPageProps {
   params: Promise<{
@@ -27,7 +28,7 @@ export default async function ListingPage({
   }
 
   const listing = product.listings.find(
-    (l) => l.id === listingId
+    (l: MarketplaceListing) => l.id === listingId
   );
 
   if (!listing) {

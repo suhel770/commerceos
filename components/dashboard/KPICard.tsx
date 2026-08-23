@@ -58,11 +58,11 @@ export default function KPICard({
 
         <div className="min-w-0 flex-1">
 
-          <p className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+          <p className="truncate text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
             {title}
           </p>
 
-          <h2 className="mt-2 truncate text-[26px] font-bold leading-none tracking-tight text-slate-900 dark:text-white">
+          <h2 className="mt-1.5 truncate text-2xl font-black leading-none tracking-tight text-slate-900">
             {value}
           </h2>
 
@@ -91,16 +91,33 @@ export default function KPICard({
       )}
 
       {aiCard ? (
-        <div className="flex items-end justify-between">
-          <p className="text-[11px] font-semibold text-emerald-600">Excellent</p>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border-[5px] border-emerald-500 bg-white text-sm font-bold text-slate-900">{aiScore}</div>
+        <div className="flex items-center gap-3">
+          <p className="shrink-0 text-[11px] font-semibold text-emerald-600">
+            Excellent
+          </p>
+
+          <div
+            className="h-2 flex-1 overflow-hidden rounded-full bg-emerald-100"
+            role="progressbar"
+            aria-label={`${title} progress`}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={aiScore ?? 0}
+          >
+            <div
+              className="h-full rounded-full bg-emerald-500 transition-[width]"
+              style={{
+                width: `${Math.min(100, Math.max(0, aiScore ?? 0))}%`,
+              }}
+            />
+          </div>
         </div>
       ) : (
         <div className="flex items-center justify-between">
 
           <div
             className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold",
+              "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold",
               positive
                 ? "bg-emerald-50 text-emerald-700"
                 : "bg-red-50 text-red-700"
@@ -116,7 +133,7 @@ export default function KPICard({
           </div>
 
           {description && (
-            <p className="max-w-[58%] text-right text-[10px] leading-4 text-slate-500">
+            <p className="max-w-[58%] text-right text-[11px] leading-4 text-slate-500">
               {description}
             </p>
           )}

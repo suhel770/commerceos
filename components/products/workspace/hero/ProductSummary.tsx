@@ -3,137 +3,150 @@
 import Image from "next/image";
 import {
   BadgeCheck,
-  Barcode,
-  Package,
-  Tag,
+  Boxes,
+  FileCheck2,
+  Images,
+  Layers3,
+  ListTree,
+  Tags,
 } from "lucide-react";
 
 import type { Product } from "@/lib/types/product";
+import {
+  deriveProductLifecycle,
+  lifecycleBadgeClasses,
+} from "@/lib/products/product-lifecycle";
+import type { ProductWorkspaceNavigate } from "../types";
 
 interface ProductSummaryProps {
   product: Product;
+  onNavigate: ProductWorkspaceNavigate;
 }
-
-const marketplaces = [
-  {
-    name: "Amazon",
-    logo: "/marketplaces/amazon.png",
-  },
-  {
-    name: "Flipkart",
-    logo: "/marketplaces/flipkart.png",
-  },
-  {
-    name: "Meesho",
-    logo: "/marketplaces/meesho.png",
-  },
-  {
-    name: "Shopify",
-    logo: "/marketplaces/shopify.png",
-  },
-];
 
 export default function ProductSummary({
   product,
+  onNavigate,
 }: ProductSummaryProps) {
+  const lifecycle = deriveProductLifecycle(product);
+  const connectedCount = product.listings.length;
+  const mediaCount =
+    (product.gallery?.length ?? 0) + (product.image ? 1 : 0);
+  const orders30d = product.listings.reduce(
+    (sum, listing) => sum + listing.orders30Days,
+    0,
+  );
+  const returnsCount = Math.round(
+    (orders30d * product.performance.returnsPercentage) / 100,
+  );
+
+  const marketplaceLogos = product.listings
+    .slice(0, 4)
+    .map((listing) => ({
+      name: listing.marketplace,
+      logo: `/marketplaces/${listing.marketplace
+        .toLowerCase()
+        .replace(/\s+/g, "-")}.png`,
+    }));
+
   return (
-    <div className="flex h-full flex-col">
+    <div>
 
-      {/* Product Status */}
-
-      <div className="flex items-center gap-2">
-
-        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${lifecycleBadgeClasses(lifecycle)}`}
+        >
           <BadgeCheck size={14} />
-
-          {product.status}
-
+          {lifecycle}
         </span>
-
+        <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+          Lifecycle
+        </span>
       </div>
 
-      {/* Product Name */}
-
       <h1 className="mt-0.5 text-2xl font-bold leading-tight text-slate-900">
-
         {product.name}
-
       </h1>
 
-
-
-      {/* Marketplace Badges */}
-
       <div className="mt-2 flex items-center gap-1">
-
-        {marketplaces.map((marketplace) => (
-
+        {marketplaceLogos.map((marketplace) => (
           <div
             key={marketplace.name}
-            className="
-              flex
-              h-8
-              w-8
-              items-center
-              justify-center
-              rounded-lg
-              border
-              border-slate-200
-              bg-white
-            "
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white"
           >
-
             <Image
               src={marketplace.logo}
               alt={marketplace.name}
               width={16}
               height={16}
             />
-
           </div>
-
         ))}
 
-        <span className="text-xs font-medium text-slate-500">
-
-          Connected to 4 marketplaces
-
-        </span>
-
+        <button
+          type="button"
+          onClick={() => onNavigate("listings")}
+          className="ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+        >
+          Connected to {connectedCount} marketplace
+          {connectedCount === 1 ? "" : "s"}
+        </button>
       </div>
-      {/* Pricing Strip */}
+
+      {/* Master Product children — Bible Master Product */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <MasterChip
+          icon={<Images size={12} />}
+          label="Media"
+          value={String(mediaCount)}
+          onClick={() => onNavigate("listings")}
+        />
+        <MasterChip
+          icon={<ListTree size={12} />}
+          label="Listings"
+          value={String(connectedCount)}
+          onClick={() => onNavigate("listings")}
+        />
+        <MasterChip
+          icon={<Boxes size={12} />}
+          label="Inventory"
+          value={String(product.inventory.available)}
+          onClick={() => onNavigate("inventory")}
+        />
+        <MasterChip
+          icon={<FileCheck2 size={12} />}
+          label="Compliance"
+          value={product.hsn ? "HSN" : "Gap"}
+          onClick={() => onNavigate("overview")}
+        />
+        <MasterChip
+          icon={<Layers3 size={12} />}
+          label="Variants"
+          value="0"
+        />
+        <MasterChip
+          icon={<Tags size={12} />}
+          label="Attrs"
+          value={String(product.tags?.length ?? 0)}
+        />
+      </div>
 
       <div className="mt-1.5 border-t border-b border-slate-200">
-
         <div className="grid grid-cols-3 divide-x divide-slate-200">
-
-          {/* Selling Price */}
-
           <SummaryMetric
             label="Selling Price"
             value={`₹${product.pricing.sellingPrice}`}
           />
-
-          {/* Cost Price */}
-
           <SummaryMetric
             label="Cost Price"
             value={`₹${product.pricing.costPrice}`}
           />
-
-          {/* Margin */}
-
-          <div className="px-5 py-4">
-
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
               Gross Profit
             </p>
-
-            <div className="mt-1.5 flex items-end gap-2">
-
+            <div className="mt-0.5 flex items-baseline gap-1.5">
               <span
-                className={`text-2xl font-bold ${
+                className={`text-lg font-bold ${
                   product.pricing.margin >= 0
                     ? "text-emerald-600"
                     : "text-red-600"
@@ -141,13 +154,9 @@ export default function ProductSummary({
               >
                 {product.pricing.margin}%
               </span>
-
-              <span className="pb-1 text-slate-300">
-                •
-              </span>
-
+              <span className="text-slate-300">•</span>
               <span
-                className={`pb-1 text-base font-semibold ${
+                className={`text-sm font-semibold ${
                   product.pricing.profit >= 0
                     ? "text-emerald-600"
                     : "text-red-600"
@@ -155,103 +164,79 @@ export default function ProductSummary({
               >
                 ₹{product.pricing.profit}
               </span>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-      {/* Inventory Strip */}
 
       <div className="border-b border-slate-200">
-
         <div className="grid grid-cols-4 divide-x divide-slate-200">
-
           <InventoryMetric
             label="Available"
             value={String(product.inventory.available)}
             subValue="Ready to Sell"
             valueColor="text-emerald-600"
           />
-
           <InventoryMetric
             label="Today"
-            value={String(product.inventory.reserved)}
+            value={String(product.performance.ordersToday)}
             subValue="Orders"
             valueColor="text-orange-500"
           />
-
           <InventoryMetric
             label="Orders (30D)"
-            value={String(product.performance.ordersToday * 30)}
-            subValue="+18%"
+            value={String(orders30d)}
+            subValue={`${product.listings.length} channels`}
             valueColor="text-slate-900"
-            subColor="text-emerald-600"
+            subColor="text-slate-500"
           />
-
           <InventoryMetric
             label="Returns"
-            value={String(
-              Math.round(
-                (product.performance.ordersToday *
-                  30 *
-                  product.performance.returnsPercentage) /
-                  100
-              )
-            )}
+            value={String(returnsCount)}
             subValue={`${product.performance.returnsPercentage}%`}
             valueColor="text-orange-500"
             subColor="text-orange-500"
           />
-
         </div>
-
       </div>
 
-      {/* AI Insight */}
+      {product.aiRecommendations[0] ? (
+        <button
+          type="button"
+          onClick={() => onNavigate("ai")}
+          className="mt-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-left transition hover:border-violet-300"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-violet-700">
+              CommerceOS AI
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500">
+              Optional
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs leading-snug text-violet-700">
+            {product.aiRecommendations[0].message}
+          </p>
+        </button>
+      ) : null}
 
-      <div className="mt-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
-
-        <div className="flex items-center gap-2">
-
-          <span className="text-sm font-semibold text-violet-700">
-            CommerceOS AI
-          </span>
-
-        </div>
-
-        <p className="mt-1 text-sm text-violet-700">
-
-          {product.aiRecommendations[0]?.message ??
-            "Everything looks healthy."}
-
-        </p>
-
-      </div>
-      {/* Footer */}
-
-      <div className="mt-3 border-t border-slate-200 pt-4">
-
-        <div className="grid grid-cols-4 gap-4">
-
+      <div className="mt-2 border-t border-slate-200 pt-2.5">
+        <div className="grid grid-cols-4 gap-3">
           <FooterMetric
             label="Last Sync"
-            value="2 min ago"
+            value={
+              product.listings[0]?.lastSync ?? "—"
+            }
             valueColor="text-emerald-600"
           />
-
           <FooterMetric
             label="Created"
             value={product.createdAt}
           />
-
           <FooterMetric
             label="Updated"
             value={product.updatedAt}
           />
-
           <FooterMetric
             label="Health Score"
             value={`${product.performance.healthScore}%`}
@@ -259,45 +244,67 @@ export default function ProductSummary({
               product.performance.healthScore >= 80
                 ? "text-emerald-600"
                 : product.performance.healthScore >= 60
-                ? "text-orange-500"
-                : "text-red-600"
+                  ? "text-orange-500"
+                  : "text-red-600"
             }
           />
-
         </div>
-
       </div>
 
     </div>
   );
 }
-interface SummaryMetricProps {
+
+function MasterChip({
+  icon,
+  label,
+  value,
+  onClick,
+}: {
+  icon: React.ReactNode;
   label: string;
   value: string;
+  onClick?: () => void;
+}) {
+  const className =
+    "inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700";
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={`${className} transition hover:border-blue-300 hover:bg-blue-50`}>
+        {icon}
+        {label}
+        <span className="text-slate-500">{value}</span>
+      </button>
+    );
+  }
+
+  return (
+    <span className={className}>
+      {icon}
+      {label}
+      <span className="text-slate-500">{value}</span>
+    </span>
+  );
 }
 
 function SummaryMetric({
   label,
   value,
-}: SummaryMetricProps) {
+}: {
+  label: string;
+  value: string;
+}) {
   return (
-    <div className="px-5 py-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <div className="px-3 py-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </p>
-
-      <h3 className="mt-1 text-xl font-bold text-slate-900">
+      <h3 className="mt-0.5 text-lg font-bold leading-tight text-slate-900">
         {value}
       </h3>
     </div>
   );
-}
-interface InventoryMetricProps {
-  label: string;
-  value: string;
-  subValue: string;
-  valueColor?: string;
-  subColor?: string;
 }
 
 function InventoryMetric({
@@ -306,41 +313,43 @@ function InventoryMetric({
   subValue,
   valueColor = "text-slate-900",
   subColor = "text-slate-500",
-}: InventoryMetricProps) {
+}: {
+  label: string;
+  value: string;
+  subValue: string;
+  valueColor?: string;
+  subColor?: string;
+}) {
   return (
-    <div className="px-3 py-2">
+    <div className="px-2.5 py-1.5">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </p>
-
-      <p className={`mt-1 text-xl font-bold ${valueColor}`}>
+      <p className={`mt-0.5 text-lg font-bold leading-tight ${valueColor}`}>
         {value}
       </p>
-
-      <p className={`mt-1 text-xs font-medium ${subColor}`}>
+      <p className={`text-[11px] font-medium leading-tight ${subColor}`}>
         {subValue}
       </p>
     </div>
   );
-}
-interface FooterMetricProps {
-  label: string;
-  value: string;
-  valueColor?: string;
 }
 
 function FooterMetric({
   label,
   value,
   valueColor = "text-slate-900",
-}: FooterMetricProps) {
+}: {
+  label: string;
+  value: string;
+  valueColor?: string;
+}) {
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </p>
-
-      <p className={`mt-1 text-xs font-semibold ${valueColor}`}>
+      <p className={`mt-0.5 text-xs font-semibold ${valueColor}`}>
         {value}
       </p>
     </div>

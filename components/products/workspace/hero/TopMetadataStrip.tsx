@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import {
+  ArrowLeft,
   Barcode,
-  Calendar,
+  FileText,
   Package,
+  Percent,
   Tag,
 } from "lucide-react";
 
@@ -19,64 +22,93 @@ export default function TopMetadataStrip({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white">
 
-      <div className="flex items-center justify-between px-8 py-5">
+      <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
 
-        {/* Breadcrumb */}
+        <div className="flex min-w-0 items-center gap-2.5">
 
-        <div className="flex items-center gap-3">
+          <Link
+            href="/products"
+            aria-label="Back to products"
+            className="inline-flex shrink-0 items-center justify-center text-slate-500 transition-colors hover:text-slate-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
 
-          <span className="text-slate-500">
-            Products
-          </span>
+          <div className="flex min-w-0 items-center gap-2 text-sm">
 
-          <span className="text-slate-300">
-            ›
-          </span>
+            <Link
+              href="/products"
+              className="shrink-0 text-slate-500 transition-colors hover:text-slate-900"
+            >
+              Products
+            </Link>
 
-          <span className="font-semibold text-slate-900">
-            {product.name}
-          </span>
+            <span className="shrink-0 text-slate-300">›</span>
+
+            <span className="truncate font-semibold text-slate-900">
+              {product.name}
+            </span>
+
+          </div>
 
         </div>
 
-        {/* Metadata */}
-
-        <div className="flex items-center gap-12">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3 lg:justify-end">
 
           <MetaItem
-            icon={<Package size={16} />}
+            icon={<Package size={15} />}
+            iconClassName="bg-blue-50 text-blue-600"
             title="SKU"
             value={product.sku}
           />
 
-          <MetaItem
-            icon={<Barcode size={16} />}
-            title="Barcode"
-            value="8901234567890"
-          />
+          <Divider />
 
           <MetaItem
-            icon={<Tag size={16} />}
+            icon={<Barcode size={15} />}
+            iconClassName="bg-violet-50 text-violet-600"
+            title="Barcode"
+            value="—"
+          />
+
+          <Divider />
+
+          <MetaItem
+            icon={<Tag size={15} />}
+            iconClassName="bg-amber-50 text-amber-600"
             title="Category"
             value={product.category}
           />
 
+          <Divider />
+
           <MetaItem
-            icon={<Package size={16} />}
+            icon={<Package size={15} />}
+            iconClassName="bg-emerald-50 text-emerald-600"
             title="Brand"
             value={product.brand}
           />
 
-          <MetaItem
-            icon={<Calendar size={16} />}
-            title="Created"
-            value={product.createdAt}
-          />
+          <Divider />
 
           <MetaItem
-            icon={<Calendar size={16} />}
-            title="Updated"
-            value={product.updatedAt}
+            icon={<FileText size={15} />}
+            iconClassName="bg-sky-50 text-sky-600"
+            title="HSN"
+            value={product.hsn ?? "—"}
+          />
+
+          <Divider />
+
+          <MetaItem
+            icon={<Percent size={15} />}
+            iconClassName="bg-rose-50 text-rose-600"
+            title="GST"
+            value={
+              product.gstRate !== undefined
+                ? `${product.gstRate}%`
+                : "—"
+            }
           />
 
         </div>
@@ -87,31 +119,44 @@ export default function TopMetadataStrip({
   );
 }
 
+function Divider() {
+  return (
+    <div
+      aria-hidden="true"
+      className="hidden h-8 w-px bg-slate-200 sm:block"
+    />
+  );
+}
+
 interface MetaItemProps {
   icon: React.ReactNode;
+  iconClassName: string;
   title: string;
   value: string;
 }
 
 function MetaItem({
   icon,
+  iconClassName,
   title,
   value,
 }: MetaItemProps) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-2">
 
-      <div className="mt-1 text-slate-400">
+      <div
+        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${iconClassName}`}
+      >
         {icon}
       </div>
 
-      <div>
+      <div className="min-w-0">
 
-        <p className="text-xs uppercase tracking-wide text-slate-400">
+        <p className="text-[10px] uppercase tracking-wide text-slate-400">
           {title}
         </p>
 
-        <p className="font-semibold text-slate-900">
+        <p className="truncate text-sm font-semibold text-slate-900">
           {value}
         </p>
 

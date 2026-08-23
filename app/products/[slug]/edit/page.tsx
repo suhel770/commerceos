@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
-
 import AppShell from "@/components/layout/AppShell";
 import ProductStudio from "@/components/products/studio/ProductStudio";
-
-import { products } from "@/lib/mocks/products";
+import { StudioProvider } from "@/components/products/studio/context/StudioContext";
+import { productRepository } from "@/lib/repositories/product.repository";
 
 interface EditProductPageProps {
   params: Promise<{
@@ -16,9 +15,10 @@ export default async function EditProductPage({
 }: EditProductPageProps) {
   const { slug } = await params;
 
-  const product = products.find(
-    (p) => p.slug === slug
-  );
+  let product = await productRepository.findById(slug);
+  if (!product) {
+    product = await productRepository.findBySku(slug);
+  }
 
   if (!product) {
     notFound();
@@ -29,8 +29,10 @@ export default async function EditProductPage({
       title={`Edit • ${product.name}`}
       subtitle="CommerceOS Product Studio"
     >
-      <div className="mx-auto w-full max-w-[1800px] p-8">
-        <ProductStudio product={product} />
+      <div className="mx-auto w-full max-w-[1700px] p-6 lg:p-8">
+        <StudioProvider product={product}>
+          <ProductStudio />
+        </StudioProvider>
       </div>
     </AppShell>
   );

@@ -1,8 +1,52 @@
+/* Fonts loaded via next/font/google in layout.tsx — Inter + JetBrains Mono */
 @import "tailwindcss";
 
 :root {
+  /* CommerceOS Universal Core Tokens */
   --background: #f8fafc;
   --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --input: #e2e8f0;
+  --ring: #6366f1;
+  --radius: 0.75rem;
+
+  /* Semantic Status Tokens */
+  --success: #10b981;
+  --success-bg: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-bg: #fffbeb;
+  --danger: #ef4444;
+  --danger-bg: #fef2f2;
+  --info: #3b82f6;
+  --info-bg: #eff6ff;
+
+  /* Universal CommerceOS AI Identity Tokens */
+  --ai-primary: #7c3aed;
+  --ai-primary-hover: #6d28d9;
+  --ai-primary-foreground: #ffffff;
+  --ai-surface: #faf5ff;
+  --ai-surface-elevated: #ffffff;
+  --ai-border: #e9d5ff;
+  --ai-border-strong: #d8b4fe;
+  --ai-foreground: #581c87;
+  --ai-muted: #7e22ce;
+  --ai-accent: #f59e0b;
+  --ai-glow: rgba(124, 58, 237, 0.15);
 }
 
 html,
@@ -11,9 +55,82 @@ body {
   color: var(--foreground);
   margin: 0;
   padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  font-stretch: normal;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, kbd, samp, pre, .font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Custom Ultra-Sleek Scrollbar Styling (Global) */
+::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #8b5cf6;
+}
+
+/* Firefox scrollbar support */
+*,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Remove SVG focus outline rectangles for Recharts charts */
+svg,
+svg:focus,
+svg:focus-visible,
+svg:active,
+g,
+g:focus,
+path,
+path:focus,
+rect,
+rect:focus,
+.recharts-wrapper,
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-wrapper:active,
+.recharts-surface,
+.recharts-surface:focus,
+.recharts-surface:focus-visible,
+.recharts-surface:active,
+.recharts-layer,
+.recharts-layer:focus,
+.recharts-responsive-container,
+.recharts-responsive-container:focus,
+.recharts-wrapper *,
+.recharts-surface *,
+.recharts-layer * {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+  -webkit-tap-highlight-color: transparent !important;
 }

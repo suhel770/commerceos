@@ -3,17 +3,46 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Bell,
-  ChevronDown,
   Command,
   Menu,
-  Moon,
   Search,
   UserCircle2,
   X,
 } from "lucide-react";
 
+import { useExperience } from "@/providers/ExperienceProvider";
+
+function TopNavbarUserBadge() {
+  const { level } = useExperience();
+  const levelLabel =
+    level === "solo"
+      ? "Solo Seller · Active"
+      : level === "growing"
+        ? "Growing · Active"
+        : "Enterprise · Active";
+  const levelColor =
+    level === "solo"
+      ? "text-emerald-700"
+      : level === "growing"
+        ? "text-amber-700"
+        : "text-rose-700";
+
+  return (
+    <button
+      type="button"
+      className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 px-2.5 py-1.5 transition hover:bg-slate-100"
+    >
+      <UserCircle2 size={30} className="text-blue-600" />
+      <div className="text-left">
+        <p className="text-sm font-semibold text-slate-900">Amir</p>
+        <p className={`text-[11px] font-bold ${levelColor}`}>{levelLabel}</p>
+      </div>
+    </button>
+  );
+}
+
 interface TopNavbarProps {
-  title?: string;
+  title?: React.ReactNode;
   subtitle?: string;
   sidebarCollapsed: boolean;
   onToggleSidebar: () => void;
@@ -84,153 +113,84 @@ export default function TopNavbar({
     <>
       <header className="sticky top-0 z-40 h-16 border-b border-slate-200 bg-white">
 
-        <div className="flex h-full items-center gap-6 px-6">
-
+        <div className="flex h-full items-center justify-between gap-3 px-4 sm:px-6 min-w-0">
           {/* Left */}
-
-          <div className="flex shrink-0 items-center gap-4">
-
+          <div className="flex shrink-0 items-center gap-3 min-w-0">
             <button
               onClick={onToggleSidebar}
-              className="rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-100"
+              className="rounded-lg border border-slate-200 p-2 transition hover:bg-slate-100 shrink-0"
+              aria-label="Toggle Sidebar"
             >
               <Menu size={18} />
             </button>
 
-            <div>
-
-              <h1 className="text-xl font-bold leading-none text-slate-900">
+            <div className="min-w-0 truncate">
+              <h1 className="text-lg font-bold leading-none text-slate-900 truncate">
                 {title}
               </h1>
-
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-[11px] text-slate-500 truncate hidden md:block">
                 {subtitle}
               </p>
-
             </div>
-
           </div>
 
-          {/* Search */}
-
-          <div className="hidden flex-1 xl:flex">
-
+          {/* Search (Flexible & Constrained) */}
+          <div className="hidden min-w-0 flex-1 max-w-md lg:flex">
             <button
               onClick={() => setCommandOpen(true)}
               className="
                 group
                 relative
                 flex
-                h-11
+                h-10
                 w-full
-                max-w-2xl
                 items-center
                 rounded-xl
                 border
                 border-slate-200
                 bg-slate-50
-                px-4
+                px-3
                 transition
                 hover:border-slate-300
                 hover:bg-white
+                min-w-0
               "
             >
-
               <Search
-                size={17}
-                className="text-slate-400"
+                size={16}
+                className="text-slate-400 shrink-0"
               />
 
-              <span className="ml-3 flex-1 text-left text-sm text-slate-500">
-                Search products, listings, orders, customers...
+              <span className="ml-2 flex-1 text-left text-xs text-slate-500 truncate whitespace-nowrap min-w-0">
+                Search products, listings, orders, customers…
               </span>
 
-              <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-500 shadow-sm">
-
+              <div className="flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500 shadow-2xs">
                 {isMac ? (
                   <>
-                    <Command size={12} />
+                    <Command size={11} />
                     <span>K</span>
                   </>
                 ) : (
                   <span>{shortcutLabel}</span>
                 )}
-
               </div>
-
             </button>
-
           </div>
 
           {/* Right */}
-
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-                        {/* Notifications */}
-
-            <button className="relative rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-100">
-
+          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* Notifications */}
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="relative rounded-xl border border-slate-200 p-2 transition hover:bg-slate-100 shrink-0"
+            >
               <Bell size={18} />
-
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-
             </button>
 
-            {/* Theme */}
-
-            <button className="rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-100">
-
-              <Moon size={18} />
-
-            </button>
-
-            {/* Workspace */}
-
-            <button className="hidden items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 transition hover:bg-slate-100 lg:flex">
-
-              <div className="text-left">
-
-                <p className="text-[11px] text-slate-500">
-                  Workspace
-                </p>
-
-                <p className="text-sm font-semibold text-slate-900">
-                  CommerceOS
-                </p>
-
-              </div>
-
-              <ChevronDown
-                size={16}
-                className="text-slate-500"
-              />
-
-            </button>
-
-            {/* User */}
-
-            <button className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 transition hover:bg-slate-100">
-
-              <UserCircle2
-                size={30}
-                className="text-blue-600"
-              />
-
-              <div className="text-left">
-
-                <p className="text-sm font-semibold text-slate-900">
-                  Amir Suhel
-                </p>
-
-                <p className="text-[11px] text-slate-500">
-                  Owner
-                </p>
-
-              </div>
-
-            </button>
-
+            <TopNavbarUserBadge />
           </div>
-
         </div>
 
       </header>

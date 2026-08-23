@@ -2,7 +2,7 @@ import DashboardCard from "./DashboardCard";
 import { HeartPulse, ArrowRight } from "lucide-react";
 
 export default function BusinessHealth() {
-  const score = 94;
+  const score = 0;
 
   return (
     <DashboardCard
@@ -18,15 +18,15 @@ export default function BusinessHealth() {
 
         <div className="flex items-center justify-center">
 
-          <div className="flex h-28 w-28 items-center justify-center rounded-full border-8 border-emerald-500 bg-emerald-50">
+          <div className="flex h-28 w-28 items-center justify-center rounded-full border-8 border-slate-200 bg-slate-50">
 
             <div className="text-center">
 
-              <h2 className="text-4xl font-bold text-slate-900">
+              <h2 className="text-4xl font-black tracking-tight text-slate-900 font-mono">
                 {score}
               </h2>
 
-              <p className="text-xs text-slate-500">
+              <p className="text-xs font-mono font-medium text-slate-400">
                 /100
               </p>
 
@@ -36,73 +36,72 @@ export default function BusinessHealth() {
 
         </div>
 
-        <div className="rounded-2xl bg-emerald-50 p-4">
+        <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
 
           <div className="flex items-center gap-2">
 
             <HeartPulse
-              size={20}
-              className="text-emerald-600"
+              size={18}
+              className="text-slate-400"
             />
 
-            <span className="font-semibold text-emerald-700">
-              Excellent
+            <span className="text-xs font-extrabold text-slate-900">
+              No data yet
             </span>
 
           </div>
 
-          <p className="mt-2 text-sm text-slate-600">
-            Revenue, inventory and order fulfilment are all
-            performing above target.
+          <p className="mt-1 text-xs text-slate-500 font-medium">
+            Sync channels and add products to calculate business health.
           </p>
 
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between text-xs">
 
-            <span className="text-sm text-slate-600">
+            <span className="font-semibold text-slate-600">
               Revenue Growth
             </span>
 
-            <span className="font-semibold text-emerald-600">
-              Healthy
+            <span className="font-mono font-bold text-slate-400">
+              —
             </span>
 
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between text-xs">
 
-            <span className="text-sm text-slate-600">
+            <span className="font-semibold text-slate-600">
               Inventory
             </span>
 
-            <span className="font-semibold text-emerald-600">
-              Stable
+            <span className="font-mono font-bold text-slate-400">
+              —
             </span>
 
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between text-xs">
 
-            <span className="text-sm text-slate-600">
+            <span className="font-semibold text-slate-600">
               Order Fulfilment
             </span>
 
-            <span className="font-semibold text-emerald-600">
-              On Time
+            <span className="font-mono font-bold text-slate-400">
+              —
             </span>
 
           </div>
 
         </div>
 
-        <button className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3 font-medium text-white transition hover:bg-slate-800">
+        <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-xs font-extrabold text-white transition hover:bg-slate-800 shadow-sm cursor-pointer">
 
           Full Business Report
 
-          <ArrowRight size={18} />
+          <ArrowRight size={16} />
 
         </button>
 

@@ -7,7 +7,7 @@ export default function Sidebar() {
         <div className="h-10 w-10 bg-emerald-500 rounded-md" />
         <div>
           <div className="text-sm font-bold">CommerceOS</div>
-          <div className="text-xs text-slate-400">LilWalk Store</div>
+          <div className="text-xs text-slate-400">—</div>
         </div>
       </div>
 

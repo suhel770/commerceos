@@ -2,33 +2,33 @@ import { orders } from "@/lib/mocks/orders";
 
 export default function RecentOrders() {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">
+          <h2 className="text-sm font-extrabold tracking-tight text-slate-900">
             Recent Orders
           </h2>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-0.5 text-xs font-semibold text-slate-500">
             Latest customer purchases
           </p>
         </div>
 
-        <button className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
+        <button className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 shadow-2xs">
           View All
         </button>
       </div>
 
-      <div className="mt-6 overflow-x-auto">
+      <div className="mt-4 overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b text-left text-sm font-semibold text-slate-500">
-              <th className="pb-3">Order</th>
-              <th className="pb-3">Customer</th>
-              <th className="pb-3">Product</th>
-              <th className="pb-3">Marketplace</th>
-              <th className="pb-3">Amount</th>
-              <th className="pb-3">Status</th>
+            <tr className="border-b border-slate-200 text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+              <th className="pb-2.5">Order</th>
+              <th className="pb-2.5">Customer</th>
+              <th className="pb-2.5">Product</th>
+              <th className="pb-2.5">Marketplace</th>
+              <th className="pb-2.5">Amount</th>
+              <th className="pb-2.5">Status</th>
             </tr>
           </thead>
 
