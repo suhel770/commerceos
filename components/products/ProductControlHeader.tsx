@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Download, Package, Boxes, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Download, Package, Boxes, Check, X } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 
 import Link from "next/link";
@@ -96,8 +96,12 @@ export default function ProductControlHeader() {
 
         <div className="flex items-center gap-2">
           {/* Futuristic/Premium Track Consumables Toggle */}
-          <div className="flex h-[42px] items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white/40 backdrop-blur-md px-4 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition duration-200 hover:border-slate-300 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
-            <span className="text-xs font-extrabold tracking-tight text-slate-700 select-none">
+          <div className="flex h-[42px] items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white/40 backdrop-blur-md px-4 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition duration-200 hover:border-slate-300 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
+            <Boxes className={`h-4 w-4 shrink-0 transition-colors duration-300 ${
+              trackConsumables ? "text-emerald-500" : "text-slate-400"
+            }`} />
+            
+            <span className="text-xs font-extrabold tracking-tight text-slate-700 select-none mr-1">
               Track Consumables
             </span>
 
@@ -112,10 +116,16 @@ export default function ProductControlHeader() {
               }`}
             >
               <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.15)] ring-0 transition duration-300 ease-in-out ${
+                className={`pointer-events-none flex items-center justify-center h-5 w-5 transform rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.15)] ring-0 transition duration-300 ease-in-out ${
                   trackConsumables ? "translate-x-5" : "translate-x-0"
                 }`}
-              />
+              >
+                {trackConsumables ? (
+                  <Check className="h-3 w-3 text-emerald-600 stroke-[3px] transition-all duration-300" />
+                ) : (
+                  <X className="h-2.5 w-2.5 text-slate-400 stroke-[3px] transition-all duration-300" />
+                )}
+              </span>
             </button>
 
             {/* Micro Status Label */}
