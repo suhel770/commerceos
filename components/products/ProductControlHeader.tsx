@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Download, Package, Boxes } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Download, Package, Boxes, ToggleLeft, ToggleRight } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 
 import Link from "next/link";
@@ -11,6 +11,24 @@ export default function ProductControlHeader() {
   const pathname = usePathname();
   const { products } = useProducts();
   const [exporting, setExporting] = useState(false);
+  const [trackConsumables, setTrackConsumables] = useState(true);
+
+  // Safely read from localStorage on client-side mount to prevent Next.js hydration mismatch
+  useEffect(() => {
+    const saved = localStorage.getItem("commerceos_track_consumables");
+    if (saved !== null) {
+      setTrackConsumables(saved !== "false");
+    }
+  }, []);
+
+  const handleToggleConsumables = () => {
+    const nextVal = !trackConsumables;
+    setTrackConsumables(nextVal);
+    localStorage.setItem("commerceos_track_consumables", String(nextVal));
+    
+    // Dispatch a custom event to notify other components (like product forms/details)
+    window.dispatchEvent(new CustomEvent("commerceos_toggle_track_consumables", { detail: nextVal }));
+  };
 
   const isConsumables = pathname?.startsWith("/products/consumables");
 
@@ -77,6 +95,29 @@ export default function ProductControlHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Track Consumables Toggle */}
+          <button
+            type="button"
+            onClick={handleToggleConsumables}
+            className={`flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-bold transition shadow-2xs ${
+              trackConsumables
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            {trackConsumables ? (
+              <>
+                <ToggleRight className="h-4 w-4 text-emerald-600" />
+                <span>Track Consumables: ON</span>
+              </>
+            ) : (
+              <>
+                <ToggleLeft className="h-4 w-4 text-slate-400" />
+                <span>Track Consumables: OFF</span>
+              </>
+            )}
+          </button>
+
           <button
             type="button"
             onClick={handleExportCSV}
@@ -103,17 +144,19 @@ export default function ProductControlHeader() {
           <span>Sellable Products</span>
         </Link>
 
-        <Link
-          href="/products/consumables"
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
-            isConsumables
-              ? "bg-blue-50 text-blue-700 shadow-2xs"
-              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-          }`}
-        >
-          <Boxes className="h-4 w-4" />
-          <span>Consumables & Packaging</span>
-        </Link>
+        {trackConsumables && (
+          <Link
+            href="/products/consumables"
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
+              isConsumables
+                ? "bg-blue-50 text-blue-700 shadow-2xs"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            }`}
+          >
+            <Boxes className="h-4 w-4" />
+            <span>Consumables & Packaging</span>
+          </Link>
+        )}
       </div>
     </div>
   );
