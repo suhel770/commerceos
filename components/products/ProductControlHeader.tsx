@@ -96,7 +96,7 @@ export default function ProductControlHeader() {
 
         <div className="flex items-center gap-2">
           {/* Futuristic/Premium Track Consumables Toggle */}
-          <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white/40 backdrop-blur-md px-4 py-2.5 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition duration-200 hover:border-slate-300 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
+          <div className="flex h-[42px] items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white/40 backdrop-blur-md px-4 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition duration-200 hover:border-slate-300 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
             <span className="text-xs font-extrabold tracking-tight text-slate-700 select-none">
               Track Consumables
             </span>
@@ -132,7 +132,7 @@ export default function ProductControlHeader() {
             type="button"
             onClick={handleExportCSV}
             disabled={exporting}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-60"
+            className="flex h-[42px] items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-60"
           >
             <Download className="h-4 w-4 text-slate-500" />
             {exporting ? "Exporting..." : "Export CSV"}
