@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Download, Package, Boxes, Check, X } from "lucide-react";
+import { Plus, Download, Package, Boxes, ToggleLeft, ToggleRight } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 
 import Link from "next/link";
@@ -95,11 +95,11 @@ export default function ProductControlHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Track Consumables Toggle (Matched to Export CSV size) */}
+          {/* Track Consumables Toggle (Matched to Export CSV size with end icon toggle) */}
           <button
             type="button"
             onClick={handleToggleConsumables}
-            className={`flex h-[42px] items-center gap-1.5 rounded-2xl border px-4 text-xs font-bold shadow-2xs transition duration-200 select-none ${
+            className={`flex h-[42px] items-center gap-2 rounded-2xl border px-4 text-xs font-bold shadow-2xs transition duration-200 select-none ${
               trackConsumables
                 ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100/80"
                 : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -108,7 +108,12 @@ export default function ProductControlHeader() {
             <Boxes className={`h-4 w-4 transition-colors duration-300 ${
               trackConsumables ? "text-emerald-600" : "text-slate-500"
             }`} />
-            <span>Consumables: {trackConsumables ? "ON" : "OFF"}</span>
+            <span>Consumables</span>
+            {trackConsumables ? (
+              <ToggleRight className="h-4 w-4 text-emerald-600 ml-1 transition-all duration-200" />
+            ) : (
+              <ToggleLeft className="h-4 w-4 text-slate-400 ml-1 transition-all duration-200" />
+            )}
           </button>
 
           <button
