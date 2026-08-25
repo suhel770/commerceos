@@ -110,9 +110,9 @@ export default function ProductControlHeader() {
             }`} />
             <span>Consumables</span>
             {trackConsumables ? (
-              <ToggleRight className="h-4 w-4 text-emerald-600 ml-1 transition-all duration-200" />
+              <ToggleRight className="h-[22px] w-[22px] text-emerald-600 ml-1 transition-all duration-200" />
             ) : (
-              <ToggleLeft className="h-4 w-4 text-slate-400 ml-1 transition-all duration-200" />
+              <ToggleLeft className="h-[22px] w-[22px] text-slate-400 ml-1 transition-all duration-200" />
             )}
           </button>
 
