@@ -95,28 +95,38 @@ export default function ProductControlHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Track Consumables Toggle */}
-          <button
-            type="button"
-            onClick={handleToggleConsumables}
-            className={`flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-bold transition shadow-2xs ${
-              trackConsumables
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-                : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
-            }`}
-          >
-            {trackConsumables ? (
-              <>
-                <ToggleRight className="h-4 w-4 text-emerald-600" />
-                <span>Track Consumables: ON</span>
-              </>
-            ) : (
-              <>
-                <ToggleLeft className="h-4 w-4 text-slate-400" />
-                <span>Track Consumables: OFF</span>
-              </>
-            )}
-          </button>
+          {/* Futuristic/Premium Track Consumables Toggle */}
+          <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200/80 bg-white/40 backdrop-blur-md px-4 py-2.5 shadow-[0_2px_8px_rgba(15,23,42,0.03)] transition duration-200 hover:border-slate-300 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
+            <span className="text-xs font-extrabold tracking-tight text-slate-700 select-none">
+              Track Consumables
+            </span>
+
+            {/* Custom Interactive Toggle Switch */}
+            <button
+              type="button"
+              onClick={handleToggleConsumables}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-hidden ${
+                trackConsumables
+                  ? "bg-linear-to-r from-emerald-500 to-teal-500 shadow-[0_0_12px_rgba(16,185,129,0.35)]"
+                  : "bg-slate-200"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.15)] ring-0 transition duration-300 ease-in-out ${
+                  trackConsumables ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+
+            {/* Micro Status Label */}
+            <span
+              className={`text-[9px] uppercase tracking-widest font-black transition-all duration-300 select-none w-7 text-right ${
+                trackConsumables ? "text-emerald-600 drop-shadow-[0_0_6px_rgba(16,185,129,0.1)]" : "text-slate-400"
+              }`}
+            >
+              {trackConsumables ? "ON" : "OFF"}
+            </span>
+          </div>
 
           <button
             type="button"
