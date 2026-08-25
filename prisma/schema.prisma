@@ -905,3 +905,92 @@ model ConsumableRule {
   @@index([productSku])
 }
 
+// ----------------------------------------------------------------------------
+// PHASE 5 — Outbox, Reliable Jobs & Persistent Audit Trail
+// ----------------------------------------------------------------------------
+
+/// Transactional outbox record — written atomically with the business mutation.
+/// Consumed by OutboxProcessor to drive secondary/async work.
+model OutboxEvent {
+  id             String    @id @default(uuid())
+  organizationId String
+  workspaceId    String
+  correlationId  String?
+  eventType      String    // e.g. "INVENTORY_ADJUSTED"
+  aggregateType  String    // e.g. "Inventory"
+  aggregateId    String    // e.g. SKU or entity ID
+  payload        Json
+  /// PENDING | PROCESSING | PROCESSED | FAILED
+  status         String    @default("PENDING")
+  attempts       Int       @default(0)
+  maxAttempts    Int       @default(5)
+  availableAt    DateTime  @default(now())
+  processedAt    DateTime?
+  failedAt       DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status, availableAt])
+  @@index([organizationId, workspaceId])
+  @@index([eventType])
+  @@index([aggregateType, aggregateId])
+  @@index([correlationId])
+}
+
+/// Persistent background job — created by Outbox handlers for async secondary work.
+/// idempotencyKey prevents duplicate job creation.
+model BackgroundJob {
+  id             String    @id @default(uuid())
+  organizationId String
+  workspaceId    String
+  correlationId  String?
+  jobType        String    // e.g. "MARKETPLACE_SYNC"
+  outboxEventId  String?   // reference to triggering OutboxEvent
+  payload        Json
+  idempotencyKey String    @unique
+  /// PENDING | PROCESSING | COMPLETED | FAILED
+  status         String    @default("PENDING")
+  attempts       Int       @default(0)
+  maxAttempts    Int       @default(5)
+  availableAt    DateTime  @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+  failedAt       DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status, availableAt])
+  @@index([organizationId, workspaceId])
+  @@index([jobType])
+  @@index([correlationId])
+}
+
+/// Immutable, tenant-scoped audit trail record.
+/// Never stores passwords, API secrets, or access tokens.
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String
+  workspaceId    String
+  correlationId  String?
+  actorId        String
+  actorName      String
+  actorRole      String
+  action         String   // e.g. "inventory.adjusted"
+  entityType     String   // e.g. "Inventory", "PurchaseBill"
+  entityId       String
+  before         Json?
+  after          Json?
+  reason         String?
+  metadata       Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, workspaceId])
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([action])
+  @@index([correlationId])
+  @@index([createdAt])
+}

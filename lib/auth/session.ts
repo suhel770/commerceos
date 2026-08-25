@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { db } from "@/lib/db";
-import { CommerceRole } from "@prisma/generated/prisma";
 
 const SESSION_SECRET = process.env.SESSION_SECRET || "commerceos_default_secure_session_secret_2026_key";
 
@@ -87,17 +86,17 @@ export async function ensureDemoUsersExist(): Promise<void> {
       {
         email: "owner@demo.local",
         name: "Owner",
-        role: "OWNER" as CommerceRole,
+        role: "OWNER" as const,
       },
       {
         email: "ops@demo.local",
         name: "Ops User",
-        role: "WAREHOUSE_MANAGER" as CommerceRole,
+        role: "WAREHOUSE_MANAGER" as const,
       },
       {
         email: "viewer@demo.local",
         name: "Viewer",
-        role: "READ_ONLY" as CommerceRole,
+        role: "READ_ONLY" as const,
       },
     ];
 

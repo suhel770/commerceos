@@ -6,7 +6,6 @@ import {
 } from "@/lib/contracts/api.contract";
 import { AuthorizationError } from "@/lib/platform/authorization";
 import {
-  createMockCommerceContext,
   type CommerceContext,
 } from "@/lib/platform/commerce-context";
 import { RevisionConflictError } from "@/lib/repositories/masterListing.repository";
@@ -27,26 +26,51 @@ export function requestContext(
   request: Request,
 ): CommerceContext {
   const requestId =
-    request.headers.get(
-      "x-request-id",
-    ) ?? crypto.randomUUID();
-  const organizationId =
-    request.headers.get("x-organization-id") ?? "org-commerceos";
-  const workspaceId =
-    request.headers.get("x-workspace-id") ?? "ws-default";
+    request.headers.get("x-request-id") ?? crypto.randomUUID();
 
-  const context = createMockCommerceContext(requestId);
-  context.organizationId = organizationId;
-  context.workspaceId = workspaceId;
+  // Parse the server-verified context injected by Next.js middleware.
+  // This header is set by middleware after session validation; client-supplied
+  // x-user-id / x-workspace-id / x-organization-id are explicitly stripped
+  // by the middleware so they CANNOT be used to spoof identity.
+  const correlationId =
+    request.headers.get("x-correlation-id") ?? crypto.randomUUID();
 
-  const userId = request.headers.get("x-user-id");
-  if (userId) context.actor.id = userId;
+  const raw = request.headers.get("x-verified-commerce-context");
+  if (raw) {
+    try {
+      const verified = JSON.parse(raw);
+      return {
+        organizationId: verified.organizationId || "org-commerceos",
+        workspaceId: verified.workspaceId || "ws-default",
+        requestId,
+        correlationId,
+        actor: {
+          id: verified.actor?.id || "user-unknown",
+          name: verified.actor?.name || "Unknown",
+          role: verified.actor?.role || "read_only",
+          permissions: verified.actor?.permissions || [],
+        },
+      };
+    } catch {
+      // Fall through to unauthenticated context
+    }
+  }
 
-  const userName = request.headers.get("x-user-name");
-  if (userName) context.actor.name = userName;
-
-  return context;
+  // No verified context present: return an empty/anonymous context.
+  // Route handlers that require auth will fail authorization checks.
+  return {
+    organizationId: "org-anonymous",
+    workspaceId: "ws-anonymous",
+    requestId,
+    actor: {
+      id: "user-anonymous",
+      name: "Anonymous",
+      role: "read_only",
+      permissions: [],
+    },
+  };
 }
+
 
 export function successResponse<T>(
   context: CommerceContext,

@@ -27,8 +27,8 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     });
   });
 
-  it("creates valid consumable usage rules and retrieves them by product and SKU", () => {
-    const rule1 = consumableRulesService.createRule({
+  it("creates valid consumable usage rules and retrieves them by product and SKU", async () => {
+    const rule1 = await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-sandal-01",
@@ -41,7 +41,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
       notes: "Primary box",
     });
 
-    const rule2 = consumableRulesService.createRule({
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-sandal-01",
@@ -56,41 +56,41 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     expect(rule1.id).toBeDefined();
     expect(rule1.active).toBe(true);
 
-    const productRules = consumableRulesService.getRulesForProduct("prod-sandal-01", {
+    const productRules = await consumableRulesService.getRulesForProduct("prod-sandal-01", {
       organizationId: orgA,
       workspaceId: wsA,
     });
     expect(productRules.length).toBe(2);
 
-    const skuRules = consumableRulesService.getRulesForSku("SKU-NOVA-SAND-PNK", {
+    const skuRules = await consumableRulesService.getRulesForSku("SKU-NOVA-SAND-PNK", {
       organizationId: orgA,
       workspaceId: wsA,
     });
     expect(skuRules.length).toBe(2);
   });
 
-  it("validates rule quantities and rejects zero, negative, or invalid numbers", () => {
-    expect(() =>
+  it("validates rule quantities and rejects zero, negative, or invalid numbers", async () => {
+    await expect(() =>
       consumableRulesService.createRule({
         productId: "prod-1",
         productSku: "SKU-TEST",
         consumableSku: "SKU-BOX-S",
         quantity: 0,
       })
-    ).toThrowError(ConsumableRuleError);
+    ).rejects.toThrow(ConsumableRuleError);
 
-    expect(() =>
+    await expect(() =>
       consumableRulesService.createRule({
         productId: "prod-1",
         productSku: "SKU-TEST",
         consumableSku: "SKU-BOX-S",
         quantity: -2.5,
       })
-    ).toThrowError(ConsumableRuleError);
+    ).rejects.toThrow(ConsumableRuleError);
   });
 
-  it("rejects duplicate active rules for the same consumable + variant + mode", () => {
-    consumableRulesService.createRule({
+  it("rejects duplicate active rules for the same consumable + variant + mode", async () => {
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-1",
@@ -100,7 +100,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
       consumptionMode: "PER_UNIT",
     });
 
-    expect(() =>
+    await expect(() =>
       consumableRulesService.createRule({
         organizationId: orgA,
         workspaceId: wsA,
@@ -110,11 +110,11 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
         quantity: 2,
         consumptionMode: "PER_UNIT",
       })
-    ).toThrowError(/already exists/i);
+    ).rejects.toThrow(/already exists/i);
   });
 
-  it("calculates PER_UNIT consumption mode (scaled directly with order quantity)", () => {
-    consumableRulesService.createRule({
+  it("calculates PER_UNIT consumption mode (scaled directly with order quantity)", async () => {
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-sandal",
@@ -126,7 +126,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
       consumptionMode: "PER_UNIT",
     });
 
-    consumableRulesService.createRule({
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-sandal",
@@ -138,7 +138,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
       consumptionMode: "PER_UNIT",
     });
 
-    const proposals = consumableRulesService.calculateExpectedUsage({
+    const proposals = await consumableRulesService.calculateExpectedUsage({
       productSku: "SKU-KIDS-SANDAL",
       orderQuantity: 5,
       tenantScope: { organizationId: orgA, workspaceId: wsA },
@@ -152,8 +152,8 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     expect(tape?.calculatedQuantity).toBe(0.75); // 5 * 0.15
   });
 
-  it("calculates PER_ORDER consumption mode (fixed once per order regardless of item count)", () => {
-    consumableRulesService.createRule({
+  it("calculates PER_ORDER consumption mode (fixed once per order regardless of item count)", async () => {
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-furniture",
@@ -165,7 +165,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
       consumptionMode: "PER_ORDER",
     });
 
-    const proposals = consumableRulesService.calculateExpectedUsage({
+    const proposals = await consumableRulesService.calculateExpectedUsage({
       productSku: "SKU-TABLE-WOOD",
       orderQuantity: 10, // Customer bought 10 tables
       tenantScope: { organizationId: orgA, workspaceId: wsA },
@@ -175,8 +175,8 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     expect(proposals[0].calculatedQuantity).toBe(1); // Exactly 1 per order!
   });
 
-  it("calculates PER_SHIPMENT consumption mode (scaled by parcel count)", () => {
-    consumableRulesService.createRule({
+  it("calculates PER_SHIPMENT consumption mode (scaled by parcel count)", async () => {
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-large",
@@ -188,7 +188,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
       consumptionMode: "PER_SHIPMENT",
     });
 
-    const singleShipment = consumableRulesService.calculateExpectedUsage({
+    const singleShipment = await consumableRulesService.calculateExpectedUsage({
       productSku: "SKU-FURNITURE-CHAIR",
       orderQuantity: 6,
       shipmentCount: 1,
@@ -196,7 +196,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     });
     expect(singleShipment[0].calculatedQuantity).toBe(1);
 
-    const splitShipment = consumableRulesService.calculateExpectedUsage({
+    const splitShipment = await consumableRulesService.calculateExpectedUsage({
       productSku: "SKU-FURNITURE-CHAIR",
       orderQuantity: 6,
       shipmentCount: 3, // Split into 3 separate parcel boxes
@@ -205,9 +205,9 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     expect(splitShipment[0].calculatedQuantity).toBe(3);
   });
 
-  it("applies variant-specific override over master default rule", () => {
+  it("applies variant-specific override over master default rule", async () => {
     // 1. Master default: Box Small
-    consumableRulesService.createRule({
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-shoe",
@@ -219,7 +219,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     });
 
     // 2. Variant override for XL size: Box Large
-    consumableRulesService.createRule({
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-shoe",
@@ -232,7 +232,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     });
 
     // Case A: Standard size order (no variant specified) uses master default (Box Small)
-    const stdProposals = consumableRulesService.calculateExpectedUsage({
+    const stdProposals = await consumableRulesService.calculateExpectedUsage({
       productSku: "SKU-NOVA-RUNNER",
       orderQuantity: 2,
       tenantScope: { organizationId: orgA, workspaceId: wsA },
@@ -243,7 +243,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     expect(stdProposals[0].variantOverride).toBe(false);
 
     // Case B: XL size order specifies variantSku -> triggers override (Box Large)
-    const xlProposals = consumableRulesService.calculateExpectedUsage({
+    const xlProposals = await consumableRulesService.calculateExpectedUsage({
       productSku: "SKU-NOVA-RUNNER",
       variantSku: "SKU-NOVA-RUNNER-XL",
       orderQuantity: 2,
@@ -255,8 +255,8 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     expect(xlProposals[0].variantOverride).toBe(true);
   });
 
-  it("strictly enforces multi-tenant boundaries", () => {
-    consumableRulesService.createRule({
+  it("strictly enforces multi-tenant boundaries", async () => {
+    await consumableRulesService.createRule({
       organizationId: orgA,
       workspaceId: wsA,
       productId: "prod-1",
@@ -265,7 +265,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
       quantity: 1,
     });
 
-    consumableRulesService.createRule({
+    await consumableRulesService.createRule({
       organizationId: orgB,
       workspaceId: wsB,
       productId: "prod-2",
@@ -275,7 +275,7 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     });
 
     // Tenant Alpha only sees Alpha rules
-    const alphaRules = consumableRulesService.getRulesForProduct("prod-1", {
+    const alphaRules = await consumableRulesService.getRulesForProduct("prod-1", {
       organizationId: orgA,
       workspaceId: wsA,
     });
@@ -283,27 +283,27 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
     expect(alphaRules[0].productSku).toBe("SKU-ALPHA-SHOE");
 
     // Tenant Alpha cannot see Beta rules
-    const crossCheck = consumableRulesService.getRulesForProduct("prod-2", {
+    const crossCheck = await consumableRulesService.getRulesForProduct("prod-2", {
       organizationId: orgA,
       workspaceId: wsA,
     });
     expect(crossCheck.length).toBe(0);
   });
 
-  it("guarantees that saving product consumable rules does NOT mutate physical inventory stock", () => {
+  it("guarantees that saving product consumable rules does NOT mutate physical inventory stock", async () => {
     const beforeBalances = locationStockRepository.getAllBalances();
     const boxStockBefore = beforeBalances.find((b) => b.sku === "SKU-BOX-S")?.availableQty;
     expect(boxStockBefore).toBe(100);
 
     // Create 3 packaging rules
-    consumableRulesService.createRule({
+    await consumableRulesService.createRule({
       productId: "prod-test",
       productSku: "SKU-TEST-01",
       consumableSku: "SKU-BOX-S",
       quantity: 10,
     });
 
-    consumableRulesService.createRule({
+    await consumableRulesService.createRule({
       productId: "prod-test",
       productSku: "SKU-TEST-01",
       consumableSku: "SKU-POLY-M",

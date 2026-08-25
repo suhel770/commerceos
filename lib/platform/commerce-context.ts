@@ -50,6 +50,7 @@ export interface CommerceContext {
   workspaceId: string;
   actor: CommerceActor;
   requestId: string;
+  correlationId?: string;
 }
 
 const ownerPermissions: readonly ProductPermission[] = [

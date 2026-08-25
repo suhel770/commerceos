@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { Product, ProductStatus } from "@/lib/types/product";
 import { inventoryRepository } from "@/lib/inventory/repository";
 import { isConsumableCatalogItem } from "@/lib/catalog/item-classification";
+import { locationStockRepository } from "@/lib/storage/engine/receiving.engine";
 
 export interface ProductListOptions {
   organizationId?: string;
@@ -73,6 +74,28 @@ class ProductRepository {
       inventoryBalances = await inventoryRepository.listBalances();
     } catch {
       inventoryBalances = [];
+    }
+
+    // Also include any receiving-engine location stock (populated in tests and
+    // when the DB is not yet hydrated with purchase stock data).
+    const locationBalances = locationStockRepository.getAllBalances().map((b) => ({
+      productId: b.productId,
+      sku: b.sku,
+      productName: b.productName,
+      intent: b.intent,
+      available: b.availableQty,
+      reserved: 0,
+      incoming: 0,
+      damaged: 0,
+      inTransit: 0,
+    }));
+
+    // Merge: prefer inventoryRepository data but supplement with locationStock
+    const seenSkus = new Set(inventoryBalances.map((b: any) => String(b.sku).toLowerCase()));
+    for (const lb of locationBalances) {
+      if (!seenSkus.has(lb.sku.toLowerCase())) {
+        inventoryBalances.push(lb);
+      }
     }
 
     const combinedBalances = [...inventoryBalances];

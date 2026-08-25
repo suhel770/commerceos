@@ -191,3 +191,21 @@ export type ChannelAllocationRule = Prisma.ChannelAllocationRuleModel
  * 
  */
 export type ConsumableRule = Prisma.ConsumableRuleModel
+/**
+ * Model OutboxEvent
+ * Transactional outbox record — written atomically with the business mutation.
+ * Consumed by OutboxProcessor to drive secondary/async work.
+ */
+export type OutboxEvent = Prisma.OutboxEventModel
+/**
+ * Model BackgroundJob
+ * Persistent background job — created by Outbox handlers for async secondary work.
+ * idempotencyKey prevents duplicate job creation.
+ */
+export type BackgroundJob = Prisma.BackgroundJobModel
+/**
+ * Model AuditLog
+ * Immutable, tenant-scoped audit trail record.
+ * Never stores passwords, API secrets, or access tokens.
+ */
+export type AuditLog = Prisma.AuditLogModel

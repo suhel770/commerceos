@@ -11,9 +11,12 @@ import {
 } from "lucide-react";
 
 import { useExperience } from "@/providers/ExperienceProvider";
+import { useAuth } from "@/providers/AuthContext";
+import { useRouter } from "next/navigation";
 
 function TopNavbarUserBadge() {
   const { level } = useExperience();
+  const { user, logout } = useAuth();
   const levelLabel =
     level === "solo"
       ? "Solo Seller · Active"
@@ -27,14 +30,18 @@ function TopNavbarUserBadge() {
         ? "text-amber-700"
         : "text-rose-700";
 
+  const displayName = user?.name || "Guest";
+
   return (
     <button
       type="button"
+      onClick={logout}
+      title="Click to log out"
       className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 px-2.5 py-1.5 transition hover:bg-slate-100"
     >
       <UserCircle2 size={30} className="text-blue-600" />
       <div className="text-left">
-        <p className="text-sm font-semibold text-slate-900">Amir</p>
+        <p className="text-sm font-semibold text-slate-900">{displayName}</p>
         <p className={`text-[11px] font-bold ${levelColor}`}>{levelLabel}</p>
       </div>
     </button>

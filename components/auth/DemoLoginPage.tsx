@@ -8,55 +8,48 @@ const DEMO_USERS = [
   {
     email: "owner@demo.local",
     password: "demo123",
-    name: "Owner",
-    role: "owner",
     label: "Owner — full access",
   },
   {
     email: "ops@demo.local",
     password: "demo123",
-    name: "Ops User",
-    role: "ops",
     label: "Ops — orders & inventory",
   },
   {
     email: "viewer@demo.local",
     password: "demo123",
-    name: "Viewer",
-    role: "viewer",
     label: "Viewer — read only",
   },
 ] as const;
-
-const SESSION_KEY = "commerceos.demo-session.v1";
 
 export default function DemoLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("owner@demo.local");
   const [password, setPassword] = useState("demo123");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const signIn = (nextEmail: string, nextPassword: string) => {
-    const user = DEMO_USERS.find(
-      (row) =>
-        row.email === nextEmail.trim().toLowerCase() &&
-        row.password === nextPassword,
-    );
-    if (!user) {
-      setError("Invalid demo credentials. Try owner@demo.local / demo123");
-      return;
-    }
-    window.localStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        signedInAt: new Date().toISOString(),
-      }),
-    );
+  const signIn = async (nextEmail: string, nextPassword: string) => {
+    setLoading(true);
     setError(null);
-    router.push("/");
+    try {
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: nextEmail, password: nextPassword }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setError(json.message || "Invalid demo credentials. Try owner@demo.local / demo123");
+        return;
+      }
+      router.push("/");
+    } catch {
+      setError("Failed to connect to server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onSubmit = (event: FormEvent) => {
@@ -89,13 +82,13 @@ export default function DemoLoginPage() {
             Sign in to run your ecommerce ops
           </h1>
           <p className="mt-4 max-w-md text-base leading-7 text-slate-300">
-            Demo login sample — pick a role, enter the workspace, and keep
-            building products, purchase, orders, and inventory.
+            Demo login — pick a role, enter the workspace, and keep building
+            products, purchase, orders, and inventory.
           </p>
           <ul className="mt-8 space-y-2 text-sm text-slate-400">
-            <li>• Local only — no real auth provider yet</li>
+            <li>• Local demo auth — secure cookie-based session</li>
             <li>• Password for all demo users: demo123</li>
-            <li>• Session stored in this browser</li>
+            <li>• Session expires in 24 hours</li>
           </ul>
         </div>
 
@@ -120,6 +113,7 @@ export default function DemoLoginPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   className="h-11 w-full rounded-xl border border-slate-200 bg-white pr-3 pl-10 text-sm outline-none ring-blue-600/20 focus:ring-4"
                   autoComplete="username"
+                  disabled={loading}
                 />
               </div>
             </label>
@@ -136,6 +130,7 @@ export default function DemoLoginPage() {
                   onChange={(event) => setPassword(event.target.value)}
                   className="h-11 w-full rounded-xl border border-slate-200 bg-white pr-3 pl-10 text-sm outline-none ring-blue-600/20 focus:ring-4"
                   autoComplete="current-password"
+                  disabled={loading}
                 />
               </div>
             </label>
@@ -148,9 +143,10 @@ export default function DemoLoginPage() {
 
             <button
               type="submit"
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-700"
+              disabled={loading}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
             >
-              Sign in
+              {loading ? "Signing in…" : "Sign in"}
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>
@@ -165,7 +161,8 @@ export default function DemoLoginPage() {
                   key={user.email}
                   type="button"
                   onClick={() => signIn(user.email, user.password)}
-                  className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2.5 text-left text-sm transition hover:border-blue-200 hover:bg-blue-50/60"
+                  disabled={loading}
+                  className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2.5 text-left text-sm transition hover:border-blue-200 hover:bg-blue-50/60 disabled:opacity-60"
                 >
                   <span>
                     <span className="block font-semibold text-slate-900">

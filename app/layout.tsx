@@ -17,6 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 import { ExperienceProvider } from "@/providers/ExperienceProvider";
 import { LayoutProvider } from "@/providers/LayoutProvider";
+import { AuthProvider } from "@/providers/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -40,9 +41,11 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background text-foreground antialiased">
-        <ExperienceProvider>
-          <LayoutProvider>{children}</LayoutProvider>
-        </ExperienceProvider>
+        <AuthProvider>
+          <ExperienceProvider>
+            <LayoutProvider>{children}</LayoutProvider>
+          </ExperienceProvider>
+        </AuthProvider>
       </body>
     </html>
   );
