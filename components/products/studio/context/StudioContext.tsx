@@ -23,7 +23,10 @@ import type {
 import StudioEngine from "@/lib/studio/StudioEngine";
 import { httpMasterProductGateway } from "@/lib/gateways/http-master-product.gateway";
 
-import type { StudioWorkspaceId } from "../config/studio.config";
+import {
+  DEFAULT_STUDIO_WORKSPACE_ORDER,
+  type StudioWorkspaceId,
+} from "../config/studio.config";
 
 export type StudioFieldInputType =
   | "text"
@@ -107,6 +110,21 @@ interface StudioContextType {
   setActiveWorkspace: (
     workspace: StudioWorkspaceId,
   ) => void;
+
+  workspaceOrder: StudioWorkspaceId[];
+
+  setWorkspaceOrder: (
+    order: StudioWorkspaceId[],
+  ) => void;
+
+  reorderWorkspaces: (
+    sourceId: StudioWorkspaceId,
+    targetId: StudioWorkspaceId,
+  ) => void;
+
+  resetWorkspaceOrder: () => void;
+
+  isCustomOrder: boolean;
 
   /**
    * Studio State
@@ -234,6 +252,85 @@ export function StudioProvider({
     useState<StudioWorkspaceId>(
       "overview",
     );
+
+  const [
+    workspaceOrder,
+    setWorkspaceOrderState,
+  ] = useState<StudioWorkspaceId[]>(DEFAULT_STUDIO_WORKSPACE_ORDER);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("commerceos_studio_workspace_order");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const validSaved = parsed.filter((id: any) =>
+            DEFAULT_STUDIO_WORKSPACE_ORDER.includes(id),
+          );
+          const missing = DEFAULT_STUDIO_WORKSPACE_ORDER.filter(
+            (id) => !validSaved.includes(id),
+          );
+          setWorkspaceOrderState([...validSaved, ...missing]);
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  const setWorkspaceOrder = useCallback((newOrder: StudioWorkspaceId[]) => {
+    setWorkspaceOrderState(newOrder);
+    try {
+      localStorage.setItem(
+        "commerceos_studio_workspace_order",
+        JSON.stringify(newOrder),
+      );
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const reorderWorkspaces = useCallback(
+    (sourceId: StudioWorkspaceId, targetId: StudioWorkspaceId) => {
+      if (sourceId === targetId) return;
+      setWorkspaceOrderState((current) => {
+        const sourceIndex = current.indexOf(sourceId);
+        const targetIndex = current.indexOf(targetId);
+        if (sourceIndex === -1 || targetIndex === -1) return current;
+
+        const updated = [...current];
+        const [moved] = updated.splice(sourceIndex, 1);
+        updated.splice(targetIndex, 0, moved);
+
+        try {
+          localStorage.setItem(
+            "commerceos_studio_workspace_order",
+            JSON.stringify(updated),
+          );
+        } catch {
+          // Ignore
+        }
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const resetWorkspaceOrder = useCallback(() => {
+    setWorkspaceOrderState(DEFAULT_STUDIO_WORKSPACE_ORDER);
+    try {
+      localStorage.removeItem("commerceos_studio_workspace_order");
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const isCustomOrder = useMemo(() => {
+    if (workspaceOrder.length !== DEFAULT_STUDIO_WORKSPACE_ORDER.length) return true;
+    return workspaceOrder.some(
+      (id, idx) => id !== DEFAULT_STUDIO_WORKSPACE_ORDER[idx],
+    );
+  }, [workspaceOrder]);
 
   /**
    * ------------------------------------------------------------------
@@ -647,8 +744,12 @@ export function StudioProvider({
          * Workspace
          */
         activeWorkspace,
-
         setActiveWorkspace,
+        workspaceOrder,
+        setWorkspaceOrder,
+        reorderWorkspaces,
+        resetWorkspaceOrder,
+        isCustomOrder,
 
         /**
          * State
@@ -683,6 +784,11 @@ export function StudioProvider({
         engine,
         listing,
         activeWorkspace,
+        workspaceOrder,
+        setWorkspaceOrder,
+        reorderWorkspaces,
+        resetWorkspaceOrder,
+        isCustomOrder,
         dirty,
         saving,
         saveError,

@@ -184,33 +184,10 @@ export default function StorageLocationWorkspaceView({
         .catch(() => {});
     } catch {}
 
+    // Use the intent field directly — set at receiving time from PurchaseBillLine.intent
     const isConsumable = (b: StockBalance) => {
       const intentStr = String((b as any).intent || "").toLowerCase();
-      if (intentStr === "consumable" || intentStr === "packaging") return true;
-
-      const n = (b.productName || "").toLowerCase();
-      const s = (b.sku || "").toLowerCase();
-      return (
-        n.includes("sticker") ||
-        n.includes("box") ||
-        n.includes("tape") ||
-        n.includes("poly") ||
-        n.includes("packaging") ||
-        n.includes("label") ||
-        n.includes("sheet") ||
-        n.includes("pouch") ||
-        n.includes("envelope") ||
-        n.includes("roll") ||
-        n.includes("wrap") ||
-        n.includes("bubble") ||
-        n.includes("carton") ||
-        s.includes("sticker") ||
-        s.includes("box") ||
-        s.includes("custom-brand") ||
-        s.includes("pkg") ||
-        s.includes("poly") ||
-        s.includes("label")
-      );
+      return intentStr === "consumable" || intentStr === "packaging";
     };
 
     const consumableBalances = locationBalances.filter(isConsumable);

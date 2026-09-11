@@ -77,11 +77,11 @@ export function ReorderableKpiSection<T extends string = string>({
       {(title || (showResetButton && isReordered)) && (
         <div className={headerClassName}>
           {title ? (
-            <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
               {IconComponent && <IconComponent className="h-3.5 w-3.5 text-slate-400" />}
               <span>{title}</span>
               {showHelperText && (
-                <span className="text-[10px] font-normal text-slate-400">
+                <span className="text-xs font-normal text-slate-400">
                   {subtitle || "(Drag & drop to rearrange metrics)"}
                 </span>
               )}
@@ -94,7 +94,7 @@ export function ReorderableKpiSection<T extends string = string>({
             <button
               type="button"
               onClick={resetOrder}
-              className="text-[10px] font-extrabold text-violet-600 hover:text-violet-800 transition-colors cursor-pointer"
+              className="text-xs font-bold text-violet-600 hover:text-violet-800 transition-colors cursor-pointer"
             >
               Reset Order
             </button>

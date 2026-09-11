@@ -58,6 +58,31 @@ export type MasterListing = Prisma.MasterListingModel
  */
 export type MasterAttribute = Prisma.MasterAttributeModel
 /**
+ * Model MarketplaceRegistry
+ * 
+ */
+export type MarketplaceRegistry = Prisma.MarketplaceRegistryModel
+/**
+ * Model MarketplaceSchema
+ * 
+ */
+export type MarketplaceSchema = Prisma.MarketplaceSchemaModel
+/**
+ * Model MarketplaceCategoryMapping
+ * 
+ */
+export type MarketplaceCategoryMapping = Prisma.MarketplaceCategoryMappingModel
+/**
+ * Model UniversalAttributeRegistry
+ * 
+ */
+export type UniversalAttributeRegistry = Prisma.UniversalAttributeRegistryModel
+/**
+ * Model MarketplaceAttributeDefinition
+ * 
+ */
+export type MarketplaceAttributeDefinition = Prisma.MarketplaceAttributeDefinitionModel
+/**
  * Model MarketplaceConnection
  * 
  */

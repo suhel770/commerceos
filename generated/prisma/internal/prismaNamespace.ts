@@ -405,6 +405,11 @@ export const ModelName = {
   Product: 'Product',
   MasterListing: 'MasterListing',
   MasterAttribute: 'MasterAttribute',
+  MarketplaceRegistry: 'MarketplaceRegistry',
+  MarketplaceSchema: 'MarketplaceSchema',
+  MarketplaceCategoryMapping: 'MarketplaceCategoryMapping',
+  UniversalAttributeRegistry: 'UniversalAttributeRegistry',
+  MarketplaceAttributeDefinition: 'MarketplaceAttributeDefinition',
   MarketplaceConnection: 'MarketplaceConnection',
   MarketplaceListing: 'MarketplaceListing',
   MarketplaceAttributeMapping: 'MarketplaceAttributeMapping',
@@ -445,7 +450,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "workspace" | "user" | "organizationMember" | "workspaceMember" | "product" | "masterListing" | "masterAttribute" | "marketplaceConnection" | "marketplaceListing" | "marketplaceAttributeMapping" | "warehouse" | "inventory" | "order" | "orderItem" | "vendor" | "purchaseBill" | "purchaseBillLine" | "purchasePayment" | "purchaseOrder" | "purchaseOrderLine" | "storageLocation" | "storageStock" | "storageReceipt" | "storageReceiptLine" | "storageOperationLog" | "inventoryMovement" | "inventoryReservation" | "channelAllocationRule" | "consumableRule" | "outboxEvent" | "backgroundJob" | "auditLog"
+    modelProps: "organization" | "workspace" | "user" | "organizationMember" | "workspaceMember" | "product" | "masterListing" | "masterAttribute" | "marketplaceRegistry" | "marketplaceSchema" | "marketplaceCategoryMapping" | "universalAttributeRegistry" | "marketplaceAttributeDefinition" | "marketplaceConnection" | "marketplaceListing" | "marketplaceAttributeMapping" | "warehouse" | "inventory" | "order" | "orderItem" | "vendor" | "purchaseBill" | "purchaseBillLine" | "purchasePayment" | "purchaseOrder" | "purchaseOrderLine" | "storageLocation" | "storageStock" | "storageReceipt" | "storageReceiptLine" | "storageOperationLog" | "inventoryMovement" | "inventoryReservation" | "channelAllocationRule" | "consumableRule" | "outboxEvent" | "backgroundJob" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1038,6 +1043,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.MasterAttributeCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.MasterAttributeCountAggregateOutputType> | number
+        }
+      }
+    }
+    MarketplaceRegistry: {
+      payload: Prisma.$MarketplaceRegistryPayload<ExtArgs>
+      fields: Prisma.MarketplaceRegistryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MarketplaceRegistryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MarketplaceRegistryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>
+        }
+        findFirst: {
+          args: Prisma.MarketplaceRegistryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MarketplaceRegistryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>
+        }
+        findMany: {
+          args: Prisma.MarketplaceRegistryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>[]
+        }
+        create: {
+          args: Prisma.MarketplaceRegistryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>
+        }
+        createMany: {
+          args: Prisma.MarketplaceRegistryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MarketplaceRegistryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>[]
+        }
+        delete: {
+          args: Prisma.MarketplaceRegistryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>
+        }
+        update: {
+          args: Prisma.MarketplaceRegistryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>
+        }
+        deleteMany: {
+          args: Prisma.MarketplaceRegistryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MarketplaceRegistryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MarketplaceRegistryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>[]
+        }
+        upsert: {
+          args: Prisma.MarketplaceRegistryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceRegistryPayload>
+        }
+        aggregate: {
+          args: Prisma.MarketplaceRegistryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketplaceRegistry>
+        }
+        groupBy: {
+          args: Prisma.MarketplaceRegistryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceRegistryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MarketplaceRegistryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceRegistryCountAggregateOutputType> | number
+        }
+      }
+    }
+    MarketplaceSchema: {
+      payload: Prisma.$MarketplaceSchemaPayload<ExtArgs>
+      fields: Prisma.MarketplaceSchemaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MarketplaceSchemaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MarketplaceSchemaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>
+        }
+        findFirst: {
+          args: Prisma.MarketplaceSchemaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MarketplaceSchemaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>
+        }
+        findMany: {
+          args: Prisma.MarketplaceSchemaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>[]
+        }
+        create: {
+          args: Prisma.MarketplaceSchemaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>
+        }
+        createMany: {
+          args: Prisma.MarketplaceSchemaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MarketplaceSchemaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>[]
+        }
+        delete: {
+          args: Prisma.MarketplaceSchemaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>
+        }
+        update: {
+          args: Prisma.MarketplaceSchemaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>
+        }
+        deleteMany: {
+          args: Prisma.MarketplaceSchemaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MarketplaceSchemaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MarketplaceSchemaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>[]
+        }
+        upsert: {
+          args: Prisma.MarketplaceSchemaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceSchemaPayload>
+        }
+        aggregate: {
+          args: Prisma.MarketplaceSchemaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketplaceSchema>
+        }
+        groupBy: {
+          args: Prisma.MarketplaceSchemaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceSchemaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MarketplaceSchemaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceSchemaCountAggregateOutputType> | number
+        }
+      }
+    }
+    MarketplaceCategoryMapping: {
+      payload: Prisma.$MarketplaceCategoryMappingPayload<ExtArgs>
+      fields: Prisma.MarketplaceCategoryMappingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MarketplaceCategoryMappingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MarketplaceCategoryMappingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>
+        }
+        findFirst: {
+          args: Prisma.MarketplaceCategoryMappingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MarketplaceCategoryMappingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>
+        }
+        findMany: {
+          args: Prisma.MarketplaceCategoryMappingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>[]
+        }
+        create: {
+          args: Prisma.MarketplaceCategoryMappingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>
+        }
+        createMany: {
+          args: Prisma.MarketplaceCategoryMappingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MarketplaceCategoryMappingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>[]
+        }
+        delete: {
+          args: Prisma.MarketplaceCategoryMappingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>
+        }
+        update: {
+          args: Prisma.MarketplaceCategoryMappingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>
+        }
+        deleteMany: {
+          args: Prisma.MarketplaceCategoryMappingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MarketplaceCategoryMappingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MarketplaceCategoryMappingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>[]
+        }
+        upsert: {
+          args: Prisma.MarketplaceCategoryMappingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceCategoryMappingPayload>
+        }
+        aggregate: {
+          args: Prisma.MarketplaceCategoryMappingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketplaceCategoryMapping>
+        }
+        groupBy: {
+          args: Prisma.MarketplaceCategoryMappingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceCategoryMappingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MarketplaceCategoryMappingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceCategoryMappingCountAggregateOutputType> | number
+        }
+      }
+    }
+    UniversalAttributeRegistry: {
+      payload: Prisma.$UniversalAttributeRegistryPayload<ExtArgs>
+      fields: Prisma.UniversalAttributeRegistryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UniversalAttributeRegistryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UniversalAttributeRegistryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>
+        }
+        findFirst: {
+          args: Prisma.UniversalAttributeRegistryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UniversalAttributeRegistryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>
+        }
+        findMany: {
+          args: Prisma.UniversalAttributeRegistryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>[]
+        }
+        create: {
+          args: Prisma.UniversalAttributeRegistryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>
+        }
+        createMany: {
+          args: Prisma.UniversalAttributeRegistryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UniversalAttributeRegistryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>[]
+        }
+        delete: {
+          args: Prisma.UniversalAttributeRegistryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>
+        }
+        update: {
+          args: Prisma.UniversalAttributeRegistryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>
+        }
+        deleteMany: {
+          args: Prisma.UniversalAttributeRegistryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UniversalAttributeRegistryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UniversalAttributeRegistryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>[]
+        }
+        upsert: {
+          args: Prisma.UniversalAttributeRegistryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UniversalAttributeRegistryPayload>
+        }
+        aggregate: {
+          args: Prisma.UniversalAttributeRegistryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUniversalAttributeRegistry>
+        }
+        groupBy: {
+          args: Prisma.UniversalAttributeRegistryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UniversalAttributeRegistryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UniversalAttributeRegistryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UniversalAttributeRegistryCountAggregateOutputType> | number
+        }
+      }
+    }
+    MarketplaceAttributeDefinition: {
+      payload: Prisma.$MarketplaceAttributeDefinitionPayload<ExtArgs>
+      fields: Prisma.MarketplaceAttributeDefinitionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MarketplaceAttributeDefinitionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MarketplaceAttributeDefinitionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>
+        }
+        findFirst: {
+          args: Prisma.MarketplaceAttributeDefinitionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MarketplaceAttributeDefinitionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>
+        }
+        findMany: {
+          args: Prisma.MarketplaceAttributeDefinitionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>[]
+        }
+        create: {
+          args: Prisma.MarketplaceAttributeDefinitionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>
+        }
+        createMany: {
+          args: Prisma.MarketplaceAttributeDefinitionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MarketplaceAttributeDefinitionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>[]
+        }
+        delete: {
+          args: Prisma.MarketplaceAttributeDefinitionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>
+        }
+        update: {
+          args: Prisma.MarketplaceAttributeDefinitionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>
+        }
+        deleteMany: {
+          args: Prisma.MarketplaceAttributeDefinitionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MarketplaceAttributeDefinitionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MarketplaceAttributeDefinitionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>[]
+        }
+        upsert: {
+          args: Prisma.MarketplaceAttributeDefinitionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketplaceAttributeDefinitionPayload>
+        }
+        aggregate: {
+          args: Prisma.MarketplaceAttributeDefinitionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketplaceAttributeDefinition>
+        }
+        groupBy: {
+          args: Prisma.MarketplaceAttributeDefinitionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceAttributeDefinitionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MarketplaceAttributeDefinitionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MarketplaceAttributeDefinitionCountAggregateOutputType> | number
         }
       }
     }
@@ -2992,6 +3367,7 @@ export type WorkspaceMemberScalarFieldEnum = (typeof WorkspaceMemberScalarFieldE
 
 export const ProductScalarFieldEnum = {
   id: 'id',
+  productId: 'productId',
   workspaceId: 'workspaceId',
   sku: 'sku',
   slug: 'slug',
@@ -3008,6 +3384,7 @@ export const ProductScalarFieldEnum = {
   status: 'status',
   images: 'images',
   intent: 'intent',
+  productType: 'productType',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3043,13 +3420,108 @@ export const MasterAttributeScalarFieldEnum = {
 export type MasterAttributeScalarFieldEnum = (typeof MasterAttributeScalarFieldEnum)[keyof typeof MasterAttributeScalarFieldEnum]
 
 
+export const MarketplaceRegistryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  countryCode: 'countryCode',
+  category: 'category',
+  logoUrl: 'logoUrl',
+  documentationUrl: 'documentationUrl',
+  capabilities: 'capabilities',
+  authType: 'authType',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceRegistryScalarFieldEnum = (typeof MarketplaceRegistryScalarFieldEnum)[keyof typeof MarketplaceRegistryScalarFieldEnum]
+
+
+export const MarketplaceSchemaScalarFieldEnum = {
+  id: 'id',
+  marketplace: 'marketplace',
+  verticalCode: 'verticalCode',
+  verticalName: 'verticalName',
+  countryCode: 'countryCode',
+  schemaVersion: 'schemaVersion',
+  effectiveDate: 'effectiveDate',
+  active: 'active',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceSchemaScalarFieldEnum = (typeof MarketplaceSchemaScalarFieldEnum)[keyof typeof MarketplaceSchemaScalarFieldEnum]
+
+
+export const MarketplaceCategoryMappingScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  commerceCategory: 'commerceCategory',
+  marketplace: 'marketplace',
+  marketplaceCategoryId: 'marketplaceCategoryId',
+  marketplaceCategoryName: 'marketplaceCategoryName',
+  marketplaceVertical: 'marketplaceVertical',
+  schemaId: 'schemaId',
+  status: 'status',
+  confidenceScore: 'confidenceScore',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceCategoryMappingScalarFieldEnum = (typeof MarketplaceCategoryMappingScalarFieldEnum)[keyof typeof MarketplaceCategoryMappingScalarFieldEnum]
+
+
+export const UniversalAttributeRegistryScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  label: 'label',
+  dataType: 'dataType',
+  unit: 'unit',
+  allowedValues: 'allowedValues',
+  group: 'group',
+  description: 'description',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UniversalAttributeRegistryScalarFieldEnum = (typeof UniversalAttributeRegistryScalarFieldEnum)[keyof typeof UniversalAttributeRegistryScalarFieldEnum]
+
+
+export const MarketplaceAttributeDefinitionScalarFieldEnum = {
+  id: 'id',
+  schemaId: 'schemaId',
+  attributeKey: 'attributeKey',
+  label: 'label',
+  dataType: 'dataType',
+  unit: 'unit',
+  allowedValues: 'allowedValues',
+  isRequired: 'isRequired',
+  requirementLevel: 'requirementLevel',
+  universalAttributeKey: 'universalAttributeKey',
+  conditionalRulesJson: 'conditionalRulesJson',
+  transformationRulesJson: 'transformationRulesJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceAttributeDefinitionScalarFieldEnum = (typeof MarketplaceAttributeDefinitionScalarFieldEnum)[keyof typeof MarketplaceAttributeDefinitionScalarFieldEnum]
+
+
 export const MarketplaceConnectionScalarFieldEnum = {
   id: 'id',
   workspaceId: 'workspaceId',
   marketplace: 'marketplace',
+  accountName: 'accountName',
   enabled: 'enabled',
   sellerId: 'sellerId',
+  region: 'region',
+  healthStatus: 'healthStatus',
+  lastHealthCheckAt: 'lastHealthCheckAt',
   encryptedCredentials: 'encryptedCredentials',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3064,12 +3536,17 @@ export const MarketplaceListingScalarFieldEnum = {
   marketplaceConnectionId: 'marketplaceConnectionId',
   marketplaceSku: 'marketplaceSku',
   externalListingId: 'externalListingId',
+  externalProductId: 'externalProductId',
   title: 'title',
   sellingPrice: 'sellingPrice',
   publishStatus: 'publishStatus',
   listingStatus: 'listingStatus',
   stockSync: 'stockSync',
   buyBoxPercentage: 'buyBoxPercentage',
+  listingUrl: 'listingUrl',
+  syncErrors: 'syncErrors',
+  rawPayload: 'rawPayload',
+  lastAttemptedSyncAt: 'lastAttemptedSyncAt',
   lastSyncedAt: 'lastSyncedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -3791,16 +4268,16 @@ export type ListEnumMarketplaceNameFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
- * Reference to a field of type 'MarketplacePublishStatus'
+ * Reference to a field of type 'Json'
  */
-export type EnumMarketplacePublishStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePublishStatus'>
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
 /**
- * Reference to a field of type 'MarketplacePublishStatus[]'
+ * Reference to a field of type 'QueryMode'
  */
-export type ListEnumMarketplacePublishStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePublishStatus[]'>
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -3833,6 +4310,20 @@ export type ListEnumAttributeRequirementFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'MarketplacePublishStatus'
+ */
+export type EnumMarketplacePublishStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePublishStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'MarketplacePublishStatus[]'
+ */
+export type ListEnumMarketplacePublishStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketplacePublishStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'OrderStatus'
  */
 export type EnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderStatus'>
@@ -3857,20 +4348,6 @@ export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'PaymentStatus[]'
  */
 export type ListEnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Json'
- */
-export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-/**
- * Reference to a field of type 'QueryMode'
- */
-export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 /**
@@ -4032,6 +4509,11 @@ export type GlobalOmitConfig = {
   product?: Prisma.ProductOmit
   masterListing?: Prisma.MasterListingOmit
   masterAttribute?: Prisma.MasterAttributeOmit
+  marketplaceRegistry?: Prisma.MarketplaceRegistryOmit
+  marketplaceSchema?: Prisma.MarketplaceSchemaOmit
+  marketplaceCategoryMapping?: Prisma.MarketplaceCategoryMappingOmit
+  universalAttributeRegistry?: Prisma.UniversalAttributeRegistryOmit
+  marketplaceAttributeDefinition?: Prisma.MarketplaceAttributeDefinitionOmit
   marketplaceConnection?: Prisma.MarketplaceConnectionOmit
   marketplaceListing?: Prisma.MarketplaceListingOmit
   marketplaceAttributeMapping?: Prisma.MarketplaceAttributeMappingOmit

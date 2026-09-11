@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, Barcode, Printer, Copy, Check, Package, MapPin, Tag, ShieldCheck, Box, Layers, ChevronDown, Receipt, History, RotateCcw, PackageCheck, AlertCircle } from "lucide-react";
 import type { StockBalance } from "@/lib/inventory/types";
 import ReverseReceiptModal from "../modals/ReverseReceiptModal";
@@ -219,7 +220,7 @@ function CustomPrintQtySelect({
 export default function SkuInspectorDrawer({
   isOpen,
   onClose,
-  skuItem,
+  skuItem: propSkuItem,
   locationName = "Storage Facility",
 }: SkuInspectorDrawerProps) {
   const [copied, setCopied] = useState(false);
@@ -229,15 +230,22 @@ export default function SkuInspectorDrawer({
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [isReceiveReplacementModalOpen, setIsReceiveReplacementModalOpen] = useState(false);
   const [activeExchange, setActiveExchange] = useState<VendorExchangeRecord | null>(null);
+  const [localSkuItem, setLocalSkuItem] = useState<StockBalance | null>(null);
 
   useEffect(() => {
-    if (skuItem) {
-      setLabelQty(Math.max(1, skuItem.available || 1));
-      const exchanges = vendorExchangeEngine.listExchanges({ sku: skuItem.sku });
+    if (propSkuItem) {
+      setLocalSkuItem(propSkuItem);
+    }
+  }, [propSkuItem]);
+
+  useEffect(() => {
+    if (propSkuItem) {
+      setLabelQty(Math.max(1, propSkuItem.available || 1));
+      const exchanges = vendorExchangeEngine.listExchanges({ sku: propSkuItem.sku });
       const pending = exchanges.find((e: VendorExchangeRecord) => e.status === "awaiting_replacement" || e.status === "exchange_requested");
       setActiveExchange(pending || null);
     }
-  }, [skuItem, isOpen]);
+  }, [propSkuItem, isOpen]);
 
   // ESC key listener
   useEffect(() => {
@@ -252,7 +260,9 @@ export default function SkuInspectorDrawer({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !skuItem) return null;
+  const skuItem = localSkuItem;
+
+  if (!skuItem) return null;
 
   const handleCopySku = () => {
     navigator.clipboard.writeText(skuItem.sku);
@@ -289,15 +299,27 @@ export default function SkuInspectorDrawer({
   }).format(unitPrice).replace("\u20B9", "\u20B9\u2009");
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden font-sans">
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden font-sans">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs cursor-default"
+          />
 
-      <div className="fixed inset-y-0 right-0 flex max-w-full pl-6">
-        <div className="w-screen max-w-lg bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-250 border-l border-slate-200">
+          <div className="fixed inset-y-0 right-0 flex max-w-full pl-6">
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 280, damping: 30 }}
+              className="w-screen max-w-lg bg-white shadow-2xl flex flex-col border-l border-slate-200"
+            >
           
           {/* Header with Full Product Title & Primary Thumbnail */}
           <div className="flex items-start justify-between p-5 border-b border-slate-100 bg-slate-50/50 shrink-0 gap-3">
@@ -673,8 +695,10 @@ export default function SkuInspectorDrawer({
               );
             })()}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
+    )}
+  </AnimatePresence>
   );
 }

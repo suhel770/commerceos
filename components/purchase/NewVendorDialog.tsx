@@ -108,13 +108,26 @@ export default function NewVendorDialog({
       return;
     }
 
+    const sanitizedEmail = form.email.trim();
+    const cleanEmail = ["na", "n/a", "none", "-", "nil", "null"].includes(sanitizedEmail.toLowerCase())
+      ? undefined
+      : sanitizedEmail || undefined;
+
+    const cleanPhoneDigits = form.phone.replace(/\D/g, "").slice(0, 10);
+    if (cleanPhoneDigits && cleanPhoneDigits.length !== 10) {
+      setError("Mobile number must be exactly 10 digits.");
+      return;
+    }
+
     const input: CreateVendorInput = {
       name: form.name.trim(),
       registrationType: form.registrationType,
-      gstin: form.gstin.trim() || undefined,
-      pan: form.pan.trim() || extractPanFromGstin(form.gstin.trim()) || undefined,
-      phone: form.phone.trim() || undefined,
-      email: form.email.trim() || undefined,
+      gstin: form.gstin.trim() ? form.gstin.replace(/\s+/g, "").toUpperCase() : undefined,
+      pan: form.pan.trim()
+        ? form.pan.replace(/\s+/g, "").toUpperCase()
+        : extractPanFromGstin(form.gstin.trim()) || undefined,
+      phone: cleanPhoneDigits ? `+91${cleanPhoneDigits}` : undefined,
+      email: cleanEmail,
       address: form.address.trim() || undefined,
       city: form.city.trim() || undefined,
       state: form.state.trim() || undefined,
@@ -123,7 +136,7 @@ export default function NewVendorDialog({
       bankName: form.bankName.trim() || undefined,
       bankAccountName: form.bankAccountName.trim() || undefined,
       bankAccountNumber: form.bankAccountNumber.trim() || undefined,
-      bankIfsc: form.bankIfsc.trim() || undefined,
+      bankIfsc: form.bankIfsc.trim() ? form.bankIfsc.replace(/\s+/g, "").toUpperCase() : undefined,
       paymentTermsDays: Number(form.paymentTermsDays) || 30,
       leadTimeDays: Number(form.leadTimeDays) || 7,
       notes: form.notes.trim() || undefined,
@@ -131,10 +144,14 @@ export default function NewVendorDialog({
       allowedPurchaseIntents: form.allowedPurchaseIntents,
     };
 
-    const vendor = await onCreate(input);
-    if (vendor) {
-      setForm(EMPTY);
-      onClose();
+    try {
+      const vendor = await onCreate(input);
+      if (vendor) {
+        setForm(EMPTY);
+        onClose();
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to create vendor.");
     }
   };
 
@@ -249,14 +266,26 @@ export default function NewVendorDialog({
 
             <div>
               <div className="mb-1 flex h-5 items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700">Phone</label>
+                <label className="text-xs font-semibold text-slate-700">Mobile number</label>
               </div>
-              <input
-                value={form.phone}
-                onChange={(event) => setField("phone", event.target.value)}
-                placeholder="+91 9876543210"
-                className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:border-violet-500 focus:outline-none"
-              />
+              <div className="flex h-10 w-full items-center rounded-xl border border-slate-200 bg-white transition focus-within:border-violet-500 focus-within:ring-1 focus-within:ring-violet-500 overflow-hidden">
+                <span className="flex h-full items-center justify-center border-r border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-600 select-none">
+                  +91
+                </span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={10}
+                  value={form.phone}
+                  onChange={(event) => {
+                    const onlyDigits = event.target.value.replace(/\D/g, "").slice(0, 10);
+                    setField("phone", onlyDigits);
+                  }}
+                  placeholder="9876543210"
+                  className="h-full w-full bg-transparent px-3 text-sm tracking-wider font-mono focus:outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400"
+                />
+              </div>
             </div>
 
             <div>

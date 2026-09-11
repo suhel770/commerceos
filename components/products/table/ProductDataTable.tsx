@@ -12,11 +12,15 @@ import BulkActionBar from "./BulkActionBar";
 interface ProductDataTableProps {
   products: Product[];
   loading?: boolean;
+  onViewClick: (product: Product) => void;
+  onBulkAction: (action: string, selectedIds: string[]) => void;
 }
 
 export default function ProductDataTable({
   products,
   loading = false,
+  onViewClick,
+  onBulkAction,
 }: ProductDataTableProps) {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
@@ -90,6 +94,10 @@ export default function ProductDataTable({
         <BulkActionBar
           selectedCount={selectedProducts.length}
           onClear={() => setSelectedProducts([])}
+          onBulkAction={(action) => {
+            onBulkAction(action, selectedProducts);
+            setSelectedProducts([]);
+          }}
         />
       )}
 
@@ -107,6 +115,7 @@ export default function ProductDataTable({
                 product={product}
                 selected={selectedProducts.includes(product.id)}
                 onToggle={() => toggleProduct(product.id)}
+                onViewClick={() => onViewClick(product)}
               />
             ))}
           </tbody>

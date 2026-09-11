@@ -28,8 +28,12 @@ export type MarketplaceConnectionMinAggregateOutputType = {
   id: string | null
   workspaceId: string | null
   marketplace: $Enums.MarketplaceName | null
+  accountName: string | null
   enabled: boolean | null
   sellerId: string | null
+  region: string | null
+  healthStatus: string | null
+  lastHealthCheckAt: Date | null
   encryptedCredentials: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -39,8 +43,12 @@ export type MarketplaceConnectionMaxAggregateOutputType = {
   id: string | null
   workspaceId: string | null
   marketplace: $Enums.MarketplaceName | null
+  accountName: string | null
   enabled: boolean | null
   sellerId: string | null
+  region: string | null
+  healthStatus: string | null
+  lastHealthCheckAt: Date | null
   encryptedCredentials: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -50,9 +58,14 @@ export type MarketplaceConnectionCountAggregateOutputType = {
   id: number
   workspaceId: number
   marketplace: number
+  accountName: number
   enabled: number
   sellerId: number
+  region: number
+  healthStatus: number
+  lastHealthCheckAt: number
   encryptedCredentials: number
+  metadata: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -63,8 +76,12 @@ export type MarketplaceConnectionMinAggregateInputType = {
   id?: true
   workspaceId?: true
   marketplace?: true
+  accountName?: true
   enabled?: true
   sellerId?: true
+  region?: true
+  healthStatus?: true
+  lastHealthCheckAt?: true
   encryptedCredentials?: true
   createdAt?: true
   updatedAt?: true
@@ -74,8 +91,12 @@ export type MarketplaceConnectionMaxAggregateInputType = {
   id?: true
   workspaceId?: true
   marketplace?: true
+  accountName?: true
   enabled?: true
   sellerId?: true
+  region?: true
+  healthStatus?: true
+  lastHealthCheckAt?: true
   encryptedCredentials?: true
   createdAt?: true
   updatedAt?: true
@@ -85,9 +106,14 @@ export type MarketplaceConnectionCountAggregateInputType = {
   id?: true
   workspaceId?: true
   marketplace?: true
+  accountName?: true
   enabled?: true
   sellerId?: true
+  region?: true
+  healthStatus?: true
+  lastHealthCheckAt?: true
   encryptedCredentials?: true
+  metadata?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -169,9 +195,14 @@ export type MarketplaceConnectionGroupByOutputType = {
   id: string
   workspaceId: string
   marketplace: $Enums.MarketplaceName
+  accountName: string | null
   enabled: boolean
   sellerId: string | null
+  region: string
+  healthStatus: string
+  lastHealthCheckAt: Date | null
   encryptedCredentials: string | null
+  metadata: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   _count: MarketplaceConnectionCountAggregateOutputType | null
@@ -201,9 +232,14 @@ export type MarketplaceConnectionWhereInput = {
   id?: Prisma.StringFilter<"MarketplaceConnection"> | string
   workspaceId?: Prisma.StringFilter<"MarketplaceConnection"> | string
   marketplace?: Prisma.EnumMarketplaceNameFilter<"MarketplaceConnection"> | $Enums.MarketplaceName
+  accountName?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
   enabled?: Prisma.BoolFilter<"MarketplaceConnection"> | boolean
   sellerId?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
+  region?: Prisma.StringFilter<"MarketplaceConnection"> | string
+  healthStatus?: Prisma.StringFilter<"MarketplaceConnection"> | string
+  lastHealthCheckAt?: Prisma.DateTimeNullableFilter<"MarketplaceConnection"> | Date | string | null
   encryptedCredentials?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
+  metadata?: Prisma.JsonNullableFilter<"MarketplaceConnection">
   createdAt?: Prisma.DateTimeFilter<"MarketplaceConnection"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketplaceConnection"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
@@ -214,9 +250,14 @@ export type MarketplaceConnectionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   marketplace?: Prisma.SortOrder
+  accountName?: Prisma.SortOrderInput | Prisma.SortOrder
   enabled?: Prisma.SortOrder
   sellerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  region?: Prisma.SortOrder
+  healthStatus?: Prisma.SortOrder
+  lastHealthCheckAt?: Prisma.SortOrderInput | Prisma.SortOrder
   encryptedCredentials?: Prisma.SortOrderInput | Prisma.SortOrder
+  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
@@ -226,28 +267,38 @@ export type MarketplaceConnectionOrderByWithRelationInput = {
 export type MarketplaceConnectionWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   workspaceId_id?: Prisma.MarketplaceConnectionWorkspaceIdIdCompoundUniqueInput
-  workspaceId_marketplace?: Prisma.MarketplaceConnectionWorkspaceIdMarketplaceCompoundUniqueInput
+  workspaceId_marketplace_sellerId?: Prisma.MarketplaceConnectionWorkspaceIdMarketplaceSellerIdCompoundUniqueInput
   AND?: Prisma.MarketplaceConnectionWhereInput | Prisma.MarketplaceConnectionWhereInput[]
   OR?: Prisma.MarketplaceConnectionWhereInput[]
   NOT?: Prisma.MarketplaceConnectionWhereInput | Prisma.MarketplaceConnectionWhereInput[]
   workspaceId?: Prisma.StringFilter<"MarketplaceConnection"> | string
   marketplace?: Prisma.EnumMarketplaceNameFilter<"MarketplaceConnection"> | $Enums.MarketplaceName
+  accountName?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
   enabled?: Prisma.BoolFilter<"MarketplaceConnection"> | boolean
   sellerId?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
+  region?: Prisma.StringFilter<"MarketplaceConnection"> | string
+  healthStatus?: Prisma.StringFilter<"MarketplaceConnection"> | string
+  lastHealthCheckAt?: Prisma.DateTimeNullableFilter<"MarketplaceConnection"> | Date | string | null
   encryptedCredentials?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
+  metadata?: Prisma.JsonNullableFilter<"MarketplaceConnection">
   createdAt?: Prisma.DateTimeFilter<"MarketplaceConnection"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketplaceConnection"> | Date | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
   marketplaceListings?: Prisma.MarketplaceListingListRelationFilter
-}, "id" | "workspaceId_id" | "workspaceId_marketplace">
+}, "id" | "workspaceId_id" | "workspaceId_marketplace_sellerId">
 
 export type MarketplaceConnectionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   marketplace?: Prisma.SortOrder
+  accountName?: Prisma.SortOrderInput | Prisma.SortOrder
   enabled?: Prisma.SortOrder
   sellerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  region?: Prisma.SortOrder
+  healthStatus?: Prisma.SortOrder
+  lastHealthCheckAt?: Prisma.SortOrderInput | Prisma.SortOrder
   encryptedCredentials?: Prisma.SortOrderInput | Prisma.SortOrder
+  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MarketplaceConnectionCountOrderByAggregateInput
@@ -262,9 +313,14 @@ export type MarketplaceConnectionScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"MarketplaceConnection"> | string
   workspaceId?: Prisma.StringWithAggregatesFilter<"MarketplaceConnection"> | string
   marketplace?: Prisma.EnumMarketplaceNameWithAggregatesFilter<"MarketplaceConnection"> | $Enums.MarketplaceName
+  accountName?: Prisma.StringNullableWithAggregatesFilter<"MarketplaceConnection"> | string | null
   enabled?: Prisma.BoolWithAggregatesFilter<"MarketplaceConnection"> | boolean
   sellerId?: Prisma.StringNullableWithAggregatesFilter<"MarketplaceConnection"> | string | null
+  region?: Prisma.StringWithAggregatesFilter<"MarketplaceConnection"> | string
+  healthStatus?: Prisma.StringWithAggregatesFilter<"MarketplaceConnection"> | string
+  lastHealthCheckAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MarketplaceConnection"> | Date | string | null
   encryptedCredentials?: Prisma.StringNullableWithAggregatesFilter<"MarketplaceConnection"> | string | null
+  metadata?: Prisma.JsonNullableWithAggregatesFilter<"MarketplaceConnection">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MarketplaceConnection"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MarketplaceConnection"> | Date | string
 }
@@ -272,9 +328,14 @@ export type MarketplaceConnectionScalarWhereWithAggregatesInput = {
 export type MarketplaceConnectionCreateInput = {
   id?: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.WorkspaceCreateNestedOneWithoutMarketplaceConnectionsInput
@@ -285,9 +346,14 @@ export type MarketplaceConnectionUncheckedCreateInput = {
   id?: string
   workspaceId: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   marketplaceListings?: Prisma.MarketplaceListingUncheckedCreateNestedManyWithoutConnectionInput
@@ -296,9 +362,14 @@ export type MarketplaceConnectionUncheckedCreateInput = {
 export type MarketplaceConnectionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutMarketplaceConnectionsNestedInput
@@ -309,9 +380,14 @@ export type MarketplaceConnectionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   marketplaceListings?: Prisma.MarketplaceListingUncheckedUpdateManyWithoutConnectionNestedInput
@@ -321,9 +397,14 @@ export type MarketplaceConnectionCreateManyInput = {
   id?: string
   workspaceId: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -331,9 +412,14 @@ export type MarketplaceConnectionCreateManyInput = {
 export type MarketplaceConnectionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -342,9 +428,14 @@ export type MarketplaceConnectionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -364,18 +455,24 @@ export type MarketplaceConnectionWorkspaceIdIdCompoundUniqueInput = {
   id: string
 }
 
-export type MarketplaceConnectionWorkspaceIdMarketplaceCompoundUniqueInput = {
+export type MarketplaceConnectionWorkspaceIdMarketplaceSellerIdCompoundUniqueInput = {
   workspaceId: string
   marketplace: $Enums.MarketplaceName
+  sellerId: string
 }
 
 export type MarketplaceConnectionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   marketplace?: Prisma.SortOrder
+  accountName?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
+  region?: Prisma.SortOrder
+  healthStatus?: Prisma.SortOrder
+  lastHealthCheckAt?: Prisma.SortOrder
   encryptedCredentials?: Prisma.SortOrder
+  metadata?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -384,8 +481,12 @@ export type MarketplaceConnectionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   marketplace?: Prisma.SortOrder
+  accountName?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
+  region?: Prisma.SortOrder
+  healthStatus?: Prisma.SortOrder
+  lastHealthCheckAt?: Prisma.SortOrder
   encryptedCredentials?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -395,8 +496,12 @@ export type MarketplaceConnectionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   marketplace?: Prisma.SortOrder
+  accountName?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
+  region?: Prisma.SortOrder
+  healthStatus?: Prisma.SortOrder
+  lastHealthCheckAt?: Prisma.SortOrder
   encryptedCredentials?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -449,8 +554,8 @@ export type MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput 
   deleteMany?: Prisma.MarketplaceConnectionScalarWhereInput | Prisma.MarketplaceConnectionScalarWhereInput[]
 }
 
-export type EnumMarketplaceNameFieldUpdateOperationsInput = {
-  set?: $Enums.MarketplaceName
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type MarketplaceConnectionCreateNestedOneWithoutMarketplaceListingsInput = {
@@ -470,9 +575,14 @@ export type MarketplaceConnectionUpdateOneRequiredWithoutMarketplaceListingsNest
 export type MarketplaceConnectionCreateWithoutWorkspaceInput = {
   id?: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   marketplaceListings?: Prisma.MarketplaceListingCreateNestedManyWithoutConnectionInput
@@ -481,9 +591,14 @@ export type MarketplaceConnectionCreateWithoutWorkspaceInput = {
 export type MarketplaceConnectionUncheckedCreateWithoutWorkspaceInput = {
   id?: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   marketplaceListings?: Prisma.MarketplaceListingUncheckedCreateNestedManyWithoutConnectionInput
@@ -522,9 +637,14 @@ export type MarketplaceConnectionScalarWhereInput = {
   id?: Prisma.StringFilter<"MarketplaceConnection"> | string
   workspaceId?: Prisma.StringFilter<"MarketplaceConnection"> | string
   marketplace?: Prisma.EnumMarketplaceNameFilter<"MarketplaceConnection"> | $Enums.MarketplaceName
+  accountName?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
   enabled?: Prisma.BoolFilter<"MarketplaceConnection"> | boolean
   sellerId?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
+  region?: Prisma.StringFilter<"MarketplaceConnection"> | string
+  healthStatus?: Prisma.StringFilter<"MarketplaceConnection"> | string
+  lastHealthCheckAt?: Prisma.DateTimeNullableFilter<"MarketplaceConnection"> | Date | string | null
   encryptedCredentials?: Prisma.StringNullableFilter<"MarketplaceConnection"> | string | null
+  metadata?: Prisma.JsonNullableFilter<"MarketplaceConnection">
   createdAt?: Prisma.DateTimeFilter<"MarketplaceConnection"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketplaceConnection"> | Date | string
 }
@@ -532,9 +652,14 @@ export type MarketplaceConnectionScalarWhereInput = {
 export type MarketplaceConnectionCreateWithoutMarketplaceListingsInput = {
   id?: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   workspace: Prisma.WorkspaceCreateNestedOneWithoutMarketplaceConnectionsInput
@@ -544,9 +669,14 @@ export type MarketplaceConnectionUncheckedCreateWithoutMarketplaceListingsInput 
   id?: string
   workspaceId: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -570,9 +700,14 @@ export type MarketplaceConnectionUpdateToOneWithWhereWithoutMarketplaceListingsI
 export type MarketplaceConnectionUpdateWithoutMarketplaceListingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutMarketplaceConnectionsNestedInput
@@ -582,9 +717,14 @@ export type MarketplaceConnectionUncheckedUpdateWithoutMarketplaceListingsInput 
   id?: Prisma.StringFieldUpdateOperationsInput | string
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -592,9 +732,14 @@ export type MarketplaceConnectionUncheckedUpdateWithoutMarketplaceListingsInput 
 export type MarketplaceConnectionCreateManyWorkspaceInput = {
   id?: string
   marketplace: $Enums.MarketplaceName
+  accountName?: string | null
   enabled?: boolean
   sellerId?: string | null
+  region?: string
+  healthStatus?: string
+  lastHealthCheckAt?: Date | string | null
   encryptedCredentials?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -602,9 +747,14 @@ export type MarketplaceConnectionCreateManyWorkspaceInput = {
 export type MarketplaceConnectionUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   marketplaceListings?: Prisma.MarketplaceListingUpdateManyWithoutConnectionNestedInput
@@ -613,9 +763,14 @@ export type MarketplaceConnectionUpdateWithoutWorkspaceInput = {
 export type MarketplaceConnectionUncheckedUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   marketplaceListings?: Prisma.MarketplaceListingUncheckedUpdateManyWithoutConnectionNestedInput
@@ -624,9 +779,14 @@ export type MarketplaceConnectionUncheckedUpdateWithoutWorkspaceInput = {
 export type MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplace?: Prisma.EnumMarketplaceNameFieldUpdateOperationsInput | $Enums.MarketplaceName
+  accountName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  healthStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  lastHealthCheckAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   encryptedCredentials?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -666,9 +826,14 @@ export type MarketplaceConnectionSelect<ExtArgs extends runtime.Types.Extensions
   id?: boolean
   workspaceId?: boolean
   marketplace?: boolean
+  accountName?: boolean
   enabled?: boolean
   sellerId?: boolean
+  region?: boolean
+  healthStatus?: boolean
+  lastHealthCheckAt?: boolean
   encryptedCredentials?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -680,9 +845,14 @@ export type MarketplaceConnectionSelectCreateManyAndReturn<ExtArgs extends runti
   id?: boolean
   workspaceId?: boolean
   marketplace?: boolean
+  accountName?: boolean
   enabled?: boolean
   sellerId?: boolean
+  region?: boolean
+  healthStatus?: boolean
+  lastHealthCheckAt?: boolean
   encryptedCredentials?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -692,9 +862,14 @@ export type MarketplaceConnectionSelectUpdateManyAndReturn<ExtArgs extends runti
   id?: boolean
   workspaceId?: boolean
   marketplace?: boolean
+  accountName?: boolean
   enabled?: boolean
   sellerId?: boolean
+  region?: boolean
+  healthStatus?: boolean
+  lastHealthCheckAt?: boolean
   encryptedCredentials?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
@@ -704,14 +879,19 @@ export type MarketplaceConnectionSelectScalar = {
   id?: boolean
   workspaceId?: boolean
   marketplace?: boolean
+  accountName?: boolean
   enabled?: boolean
   sellerId?: boolean
+  region?: boolean
+  healthStatus?: boolean
+  lastHealthCheckAt?: boolean
   encryptedCredentials?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MarketplaceConnectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "marketplace" | "enabled" | "sellerId" | "encryptedCredentials" | "createdAt" | "updatedAt", ExtArgs["result"]["marketplaceConnection"]>
+export type MarketplaceConnectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "marketplace" | "accountName" | "enabled" | "sellerId" | "region" | "healthStatus" | "lastHealthCheckAt" | "encryptedCredentials" | "metadata" | "createdAt" | "updatedAt", ExtArgs["result"]["marketplaceConnection"]>
 export type MarketplaceConnectionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   marketplaceListings?: boolean | Prisma.MarketplaceConnection$marketplaceListingsArgs<ExtArgs>
@@ -734,9 +914,14 @@ export type $MarketplaceConnectionPayload<ExtArgs extends runtime.Types.Extensio
     id: string
     workspaceId: string
     marketplace: $Enums.MarketplaceName
+    accountName: string | null
     enabled: boolean
     sellerId: string | null
+    region: string
+    healthStatus: string
+    lastHealthCheckAt: Date | null
     encryptedCredentials: string | null
+    metadata: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["marketplaceConnection"]>
@@ -1167,9 +1352,14 @@ export interface MarketplaceConnectionFieldRefs {
   readonly id: Prisma.FieldRef<"MarketplaceConnection", 'String'>
   readonly workspaceId: Prisma.FieldRef<"MarketplaceConnection", 'String'>
   readonly marketplace: Prisma.FieldRef<"MarketplaceConnection", 'MarketplaceName'>
+  readonly accountName: Prisma.FieldRef<"MarketplaceConnection", 'String'>
   readonly enabled: Prisma.FieldRef<"MarketplaceConnection", 'Boolean'>
   readonly sellerId: Prisma.FieldRef<"MarketplaceConnection", 'String'>
+  readonly region: Prisma.FieldRef<"MarketplaceConnection", 'String'>
+  readonly healthStatus: Prisma.FieldRef<"MarketplaceConnection", 'String'>
+  readonly lastHealthCheckAt: Prisma.FieldRef<"MarketplaceConnection", 'DateTime'>
   readonly encryptedCredentials: Prisma.FieldRef<"MarketplaceConnection", 'String'>
+  readonly metadata: Prisma.FieldRef<"MarketplaceConnection", 'Json'>
   readonly createdAt: Prisma.FieldRef<"MarketplaceConnection", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MarketplaceConnection", 'DateTime'>
 }

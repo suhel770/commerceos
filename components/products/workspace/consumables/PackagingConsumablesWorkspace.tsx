@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Package,
   Plus,
@@ -19,6 +19,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import type { Product } from "@/lib/types/product";
+import CommerceSelect from "@/components/ui/CommerceSelect";
 import type {
   ConsumableUsageRule,
   ConsumptionMode,
@@ -76,6 +77,46 @@ export default function PackagingConsumablesWorkspace({
   });
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+
+  const consumableSelectOptions = useMemo(() => {
+    return availableConsumables.map((c) => {
+      const stockVal = c.availableStock ?? 0;
+      const stockText = stockVal === 0 ? "Out of Stock" : `ATS ${stockVal}`;
+      return {
+        value: c.sku,
+        label: c.productName,
+        description: `SKU: ${c.sku} · Unit: ${c.unit} · ${stockText}`,
+        group: "Packaging Materials",
+      };
+    });
+  }, [availableConsumables]);
+
+  const unitSelectOptions = [
+    { value: "pcs", label: "pcs", description: "Pieces" },
+    { value: "boxes", label: "boxes", description: "Standard Boxes" },
+    { value: "rolls", label: "rolls", description: "Packaging Rolls" },
+    { value: "meters", label: "meters", description: "Bubble Wrap Meters" },
+    { value: "units", label: "units", description: "Custom Units" },
+  ];
+
+  const modeSelectOptions = [
+    { value: "PER_UNIT", label: "Per Unit", description: "Multiplied by ordered item quantity" },
+    { value: "PER_ORDER", label: "Per Order", description: "Fixed once per customer order" },
+    { value: "PER_SHIPMENT", label: "Per Shipment", description: "Fixed per physical parcel shipment" },
+    { value: "FIXED_PER_PACK", label: "Fixed Per Pack", description: "Per multi-pack bundle" },
+  ];
+
+  const variantSelectOptions = useMemo(() => {
+    const rawVariants = (product as any).variants || [];
+    return [
+      { value: "", label: "Master Product", description: "Default for all variants" },
+      ...rawVariants.map((v: any) => ({
+        value: v.sku,
+        label: `Variant Override: ${v.name || v.sku}`,
+        description: `SKU: ${v.sku}`,
+      })),
+    ];
+  }, [product]);
 
   // Interactive Simulator State
   const [simQty, setSimQty] = useState<number>(3);
@@ -135,6 +176,20 @@ export default function PackagingConsumablesWorkspace({
   useEffect(() => {
     runSimulation();
   }, [runSimulation]);
+
+  useEffect(() => {
+    if (!showModal) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (document.querySelector('[role="listbox"]')) {
+          return;
+        }
+        setShowModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [showModal]);
 
   // Open Modal for Add
   const handleOpenAdd = () => {
@@ -581,27 +636,23 @@ export default function PackagingConsumablesWorkspace({
 
               {/* Consumable Material Selector */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Consumable Material (from Inventory)</label>
-                <select
+                <CommerceSelect
                   disabled={!!editingRule}
+                  label="Consumable Material (from Inventory)"
+                  placeholder="Select consumable..."
+                  options={consumableSelectOptions}
                   value={formData.consumableSku}
-                  onChange={(e) => {
-                    const sel = availableConsumables.find((c) => c.sku === e.target.value);
+                  onChange={(val) => {
+                    const sel = availableConsumables.find((c) => c.sku === val);
                     setFormData((prev) => ({
                       ...prev,
-                      consumableSku: e.target.value,
-                      consumableName: sel?.productName || e.target.value,
+                      consumableSku: val,
+                      consumableName: sel?.productName || val,
                       unit: sel?.unit || "pcs",
                     }));
                   }}
-                  className="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white focus:outline-blue-600 font-medium"
-                >
-                  {availableConsumables.map((c) => (
-                    <option key={c.sku} value={c.sku}>
-                      {c.productName} ({c.sku})
-                    </option>
-                  ))}
-                </select>
+                  searchable={true}
+                />
                 <p className="text-[11px] text-slate-400">Only authorized consumable inventory items can be selected.</p>
               </div>
 
@@ -616,40 +667,33 @@ export default function PackagingConsumablesWorkspace({
                     required
                     value={formData.quantity}
                     onChange={(e) => setFormData((prev) => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
-                    className="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl focus:outline-blue-600 font-bold"
+                    className="w-full px-3.5 py-2.5 text-sm border border-slate-350 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none font-bold transition duration-150"
                     placeholder="e.g. 1.0 or 0.15"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Unit of Measure</label>
-                  <select
+                <div className="space-y-1.5 flex flex-col justify-end">
+                  <CommerceSelect
+                    label="Unit of Measure"
+                    placeholder="Select unit..."
+                    options={unitSelectOptions}
                     value={formData.unit}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, unit: e.target.value }))}
-                    className="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white focus:outline-blue-600"
-                  >
-                    <option value="pcs">pcs (Pieces)</option>
-                    <option value="boxes">boxes</option>
-                    <option value="rolls">rolls</option>
-                    <option value="meters">meters</option>
-                    <option value="units">units</option>
-                  </select>
+                    onChange={(val) => setFormData((prev) => ({ ...prev, unit: val }))}
+                    searchable={false}
+                  />
                 </div>
               </div>
 
               {/* Consumption Mode */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Consumption Calculation Mode</label>
-                <select
+                <CommerceSelect
+                  label="Consumption Calculation Mode"
+                  placeholder="Select mode..."
+                  options={modeSelectOptions}
                   value={formData.consumptionMode}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, consumptionMode: e.target.value as ConsumptionMode }))}
-                  className="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white focus:outline-blue-600 font-medium"
-                >
-                  <option value="PER_UNIT">PER_UNIT (Multiplied by ordered items, e.g. 1 Box per pair)</option>
-                  <option value="PER_ORDER">PER_ORDER (Fixed once per customer order)</option>
-                  <option value="PER_SHIPMENT">PER_SHIPMENT (Fixed per physical parcel shipment)</option>
-                  <option value="FIXED_PER_PACK">FIXED_PER_PACK (Per multi-pack bundle)</option>
-                </select>
+                  onChange={(val) => setFormData((prev) => ({ ...prev, consumptionMode: val as ConsumptionMode }))}
+                  searchable={false}
+                />
                 <p className="text-[11px] text-slate-400">
                   {MODE_LABELS[formData.consumptionMode]?.desc}
                 </p>
@@ -657,15 +701,14 @@ export default function PackagingConsumablesWorkspace({
 
               {/* Scope / Variant Override */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Target Variant Scope</label>
-                <select
+                <CommerceSelect
+                  label="Target Variant Scope"
+                  placeholder="Select target scope..."
+                  options={variantSelectOptions}
                   value={formData.variantSku}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, variantSku: e.target.value }))}
-                  className="w-full px-3.5 py-2 text-xs border border-slate-300 rounded-xl bg-white focus:outline-blue-600"
-                >
-                  <option value="">Master Product (Default for all variants)</option>
-                  <option value="SKU-NOVA-SAND-PNK-XL">Variant Override: XL Size (SKU-NOVA-SAND-PNK-XL)</option>
-                </select>
+                  onChange={(val) => setFormData((prev) => ({ ...prev, variantSku: val }))}
+                  searchable={false}
+                />
                 <p className="text-[11px] text-slate-400">Variant rules override master rules when packaging dimensions differ.</p>
               </div>
 

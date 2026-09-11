@@ -198,8 +198,12 @@ export class OrderService {
       priority: "normal",
       tags: ["Prepaid"],
       customer: {
-        name: "Walk-in Customer",
-        city: "Bengaluru",
+        name: input.customer?.name ?? "Walk-in Customer",
+        city: input.customer?.city ?? "Bengaluru",
+        state: input.customer?.state,
+        pincode: input.customer?.pincode,
+        email: input.customer?.email,
+        phone: input.customer?.phone,
       },
       lines,
       totals: {

@@ -1,41 +1,32 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
   Rocket,
   Sparkles,
+  Code2,
+  ShieldCheck,
+  Globe,
+  Info,
+  Layers,
+  ShieldAlert,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  buildMarketplaceStatusCards,
-  operationalStatusLabel,
-} from "@/lib/listing-engine/status/marketplace-status";
-import {
-  computeChannelReadiness,
-  computePublishingReadinessScore,
-} from "@/lib/listing-engine/readiness/compute-readiness";
 import { useStudio } from "../../../context/StudioContext";
 import { Panel } from "./workspace-ui";
-
-function statusTone(status: string) {
-  switch (status) {
-    case "active":
-      return "bg-emerald-100 text-emerald-700";
-    case "partial_active":
-      return "bg-amber-100 text-amber-700";
-    case "out_of_stock":
-    case "error":
-      return "bg-rose-100 text-rose-700";
-    case "paused":
-      return "bg-sky-100 text-sky-700";
-    case "draft":
-      return "bg-slate-100 text-slate-600";
-    default:
-      return "bg-slate-100 text-slate-600";
-  }
-}
+import { MarketplaceName } from "@/lib/types/master-listing";
+import { getMarketplaceAdapter } from "@/lib/marketplace/adapters/generic.adapter";
+import { getMarketplaceRegistry } from "@/lib/marketplace/registry/marketplace-registry";
+import {
+  computeDetailedChannelReadiness,
+  validateListingPipeline,
+  type DetailedChannelReadiness,
+} from "@/lib/listing-engine/readiness/compute-readiness";
 
 export function PublishingWorkspace() {
   const {
@@ -44,243 +35,233 @@ export function PublishingWorkspace() {
     publishing,
     validate,
     publish,
+    setActiveWorkspace,
   } = useStudio();
 
-  if (!listing) return null;
+  const [inspectPayloadChannel, setInspectPayloadChannel] = useState<MarketplaceName | null>(null);
+  const [copiedPayload, setCopiedPayload] = useState(false);
 
-  const masterScore = computePublishingReadinessScore(listing);
-  const channels = computeChannelReadiness(listing);
-  const statusCards = buildMarketplaceStatusCards(listing);
-  const optionalSuggestions = listing.aiInsights.filter(
-    (insight) => !insight.applied,
-  );
+  const pipeline = useMemo(() => {
+    if (!listing) return null;
+    return validateListingPipeline(listing);
+  }, [listing]);
+
+  if (!listing || !pipeline) return null;
+
+  const eligibleChannels = pipeline.channelReadiness.filter((c) => c.state === "READY");
+  const blockedChannels = pipeline.channelReadiness.filter((c) => c.state !== "READY" && c.isConnected);
+  const unneededChannels = pipeline.channelReadiness.filter((c) => !c.isConnected);
+
+  const inspectedAdapter = inspectPayloadChannel ? getMarketplaceAdapter(inspectPayloadChannel) : null;
+  const inspectedPayload = inspectedAdapter ? inspectedAdapter.transform(listing) : null;
+
+  const handleCopyPayload = () => {
+    if (!inspectedPayload) return;
+    navigator.clipboard.writeText(JSON.stringify(inspectedPayload, null, 2));
+    setCopiedPayload(true);
+    setTimeout(() => setCopiedPayload(false), 1500);
+  };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Panel
-        title="Validate & One-Click Publish"
-        description="Rule engines prepare marketplace payloads. AI is optional and never required to publish."
+        title="Multi-Channel Publish Center & Staging"
+        description="Pre-publish validation gate verifies real catalog readiness. Staging transforms and pre-validates listing payloads across all connected sales channels."
       >
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Publishing Readiness
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                Unified score from master validation and marketplace engines.
-              </p>
-            </div>
-            <p className="text-2xl font-bold text-emerald-600">
-              {masterScore}%
+        {/* Notice Banner */}
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50/80 p-4 text-xs text-sky-950">
+          <Info className="h-4.5 w-4.5 shrink-0 text-sky-600 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-bold">
+              CommerceOS Pre-Publish Validation & Staging Engine
+            </p>
+            <p className="text-sky-800 leading-relaxed font-medium">
+              Staging simulates and packages ready payloads for distribution. Live OAuth & external marketplace API dispatch will be unlocked in the final API integration phase.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Button
-            variant="outline"
-            disabled={validating}
-            onClick={() => validate()}
-          >
-            {validating ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-            )}
-            Validate Master Listing
-          </Button>
+        {/* Action Header */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-2xs">
+          <div>
+            <h4 className="text-sm font-bold text-slate-900">
+              Multi-Channel Publish Gate
+            </h4>
+            <p className="mt-1 text-xs text-slate-500 font-medium">
+              {eligibleChannels.length} of {pipeline.channelReadiness.filter(c => c.isConnected).length} connected channels are 100% eligible for publishing.
+            </p>
+          </div>
 
-          <Button
-            disabled={publishing || !listing.permissions.canPublish}
-            onClick={() => publish()}
-          >
-            {publishing ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Rocket className="mr-2 h-4 w-4" />
-            )}
-            One Click Publish
-          </Button>
-        </div>
-      </Panel>
-
-      <Panel
-        title="Marketplace Readiness"
-        description="Per-channel scores from Amazon, Flipkart, and other marketplace engines."
-      >
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {channels.map((channel) => (
-            <div
-              key={channel.marketplace}
-              className="rounded-xl border border-slate-200 p-4"
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={validating}
+              onClick={() => validate()}
+              className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
             >
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold capitalize text-slate-900">
-                  {channel.marketplace}
-                </p>
-                <p className="text-lg font-bold text-slate-900">
-                  {channel.score}%
-                </p>
-              </div>
-              <p className="mt-1 text-xs capitalize text-slate-500">
-                {channel.enabled
-                  ? channel.publishStatus.replaceAll("_", " ")
-                  : "disabled"}
-              </p>
-              {channel.blockers.length > 0 ? (
-                <p className="mt-2 text-xs font-medium text-rose-600">
-                  {channel.blockers.length} suggestion
-                  {channel.blockers.length === 1 ? "" : "s"} / blockers
-                </p>
+              {validating ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               ) : (
-                <p className="mt-2 text-xs font-medium text-emerald-600">
-                  Ready to publish
-                </p>
+                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
               )}
-            </div>
-          ))}
-        </div>
-      </Panel>
+              Re-Validate Dataset
+            </Button>
 
-      <Panel
-        title="AI Suggestion Center"
-        description="Optional credit-gated help. Manual validation and publish remain complete without AI."
-      >
-        {optionalSuggestions.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-            No AI suggestions queued. Core rule engines are sufficient to publish.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {optionalSuggestions.map((insight) => (
-              <article
-                key={insight.id}
-                className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3"
-              >
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-violet-700">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {insight.type}
-                  {insight.creditRequired ? " · credits" : ""}
-                </div>
-                <p className="mt-1 text-sm font-semibold text-slate-900">
-                  {insight.title}
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  {insight.description}
-                </p>
-              </article>
-            ))}
-          </div>
-        )}
-      </Panel>
-
-      <Panel
-        title="Marketplace Status Tracking"
-        description="Live channel status, platform IDs, stock, visibility, and health after publish."
-      >
-        <div className="grid gap-3 lg:grid-cols-2">
-          {statusCards.map((card) => (
-            <article
-              key={card.marketplace}
-              className="rounded-xl border border-slate-200 p-4"
+            <Button
+              size="sm"
+              disabled={publishing || eligibleChannels.length === 0}
+              onClick={() => publish()}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-semibold capitalize text-slate-900">
-                  {card.marketplace}
-                </p>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusTone(card.operationalStatus)}`}
-                >
-                  {operationalStatusLabel(card.operationalStatus)}
-                </span>
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-600">
-                <div>
-                  <p className="uppercase tracking-wide text-slate-400">
-                    Platform ID
-                  </p>
-                  <p className="mt-1 font-medium text-slate-800">
-                    {card.platformId ?? "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="uppercase tracking-wide text-slate-400">
-                    Stock
-                  </p>
-                  <p className="mt-1 font-medium text-slate-800">
-                    {card.stock}
-                  </p>
-                </div>
-                <div>
-                  <p className="uppercase tracking-wide text-slate-400">
-                    Visibility
-                  </p>
-                  <p className="mt-1 font-medium capitalize text-slate-800">
-                    {card.visibility}
-                  </p>
-                </div>
-                <div>
-                  <p className="uppercase tracking-wide text-slate-400">
-                    Last sync
-                  </p>
-                  <p className="mt-1 font-medium text-slate-800">
-                    {card.lastSyncAt
-                      ? new Date(card.lastSyncAt).toLocaleString()
-                      : "—"}
-                  </p>
-                </div>
-              </div>
-
-              <p
-                className={`mt-3 text-xs font-semibold ${
-                  card.health === "healthy"
-                    ? "text-emerald-600"
-                    : "text-rose-600"
-                }`}
-              >
-                {card.health === "healthy"
-                  ? "Healthy"
-                  : "Action Required"}
-              </p>
-            </article>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel
-        title="Validation Results"
-        description="Blocking and advisory issues returned by CommerceOS rule engines."
-      >
-        {listing.validationIssues.length === 0 ? (
-          <div className="flex items-center gap-3 rounded-xl bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
-            <CheckCircle2 className="h-5 w-5" />
-            No validation issues detected.
+              {publishing ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Rocket className="mr-1.5 h-3.5 w-3.5 text-white" />
+              )}
+              Stage & Prepare Eligible ({eligibleChannels.length})
+            </Button>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {listing.validationIssues.map((issue) => (
+        </div>
+
+        {/* 1. Eligible Channels for Staging */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+            Eligible Channels for Staged Publishing ({eligibleChannels.length})
+          </h4>
+          {eligibleChannels.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center text-xs text-slate-500">
+              No channels are currently 100% eligible. Resolve missing requirements in the Exceptions Center.
+            </div>
+          ) : (
+            eligibleChannels.map((channel) => (
               <article
-                key={issue.id}
-                className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4"
+                key={channel.marketplace}
+                className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/30 p-4 shadow-2xs"
               >
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white font-black uppercase text-xs">
+                    {channel.marketplace.slice(0, 2)}
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-bold text-slate-900">{channel.name}</h5>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                      <CheckCircle2 className="h-3 w-3" /> Ready for Staged Publishing
+                    </span>
+                  </div>
+                </div>
 
-                <div>
-                  <p className="font-semibold text-amber-900">
-                    {issue.title}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInspectPayloadChannel(channel.marketplace)}
+                    className="h-8 text-xs bg-white border-slate-200 hover:bg-slate-50 cursor-pointer"
+                  >
+                    <Code2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+                    View Prepared Data
+                  </Button>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
 
-                  <p className="mt-1 text-sm text-amber-800">
-                    {issue.description}
-                  </p>
+        {/* 2. Blocked Channels */}
+        {blockedChannels.length > 0 && (
+          <div className="mt-6 space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-rose-800">
+              Connected Channels Requiring Attention ({blockedChannels.length})
+            </h4>
+            {blockedChannels.map((channel) => (
+              <article
+                key={channel.marketplace}
+                className="flex flex-col justify-between gap-3 rounded-2xl border border-rose-200 bg-white p-4 shadow-2xs sm:flex-row sm:items-center"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700 font-bold uppercase text-xs">
+                    {channel.marketplace.slice(0, 2)}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h5 className="text-sm font-bold text-slate-900">{channel.name}</h5>
+                      <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black text-rose-800 uppercase">
+                        {channel.state.replace("_", " ")}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-rose-700 font-medium">
+                      Blockers: {channel.blockers.join("; ")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setActiveWorkspace("exceptions")}
+                    className="h-8 text-xs border-rose-200 text-rose-700 hover:bg-rose-50 cursor-pointer"
+                  >
+                    Resolve Blockers
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInspectPayloadChannel(channel.marketplace)}
+                    className="h-8 text-xs cursor-pointer"
+                  >
+                    <Code2 className="mr-1.5 h-3.5 w-3.5" />
+                    Inspect Payload
+                  </Button>
                 </div>
               </article>
             ))}
           </div>
         )}
       </Panel>
+
+      {/* Prepared Data Inspection Modal */}
+      {inspectPayloadChannel && inspectedPayload && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
+          <div className="max-h-[85vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Prepared Listing Data: {inspectPayloadChannel.toUpperCase()}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  Transformed from canonical master product by CommerceOS Adapter for staging.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyPayload}
+                  className="h-8 text-xs gap-1 cursor-pointer"
+                >
+                  {copiedPayload ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  <span>{copiedPayload ? "Copied" : "Copy JSON"}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setInspectPayloadChannel(null)}
+                  className="h-8 text-xs cursor-pointer"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+
+            <div className="max-h-[60vh] overflow-y-auto p-6 bg-slate-950">
+              <pre className="font-mono text-xs text-emerald-400 overflow-x-auto leading-relaxed">
+                {JSON.stringify(inspectedPayload, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

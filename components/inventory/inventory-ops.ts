@@ -1,6 +1,5 @@
 import type { InventoryHealthRow, InventoryPlanRow } from "@/lib/inventory/planning/types";
 import type { StockBalance, StockMovement } from "@/lib/inventory/types";
-import { products } from "@/lib/mocks/products";
 
 export type InventoryStockStatus =
   | "in_stock"
@@ -63,19 +62,11 @@ export function formatDateTime(iso?: string) {
 }
 
 export function productImageSrc(productId: string) {
-  const product = products.find((row) => row.id === productId);
-  const image = product?.image?.trim();
-  return image || "/products/lw-dino.png";
+  return "";
 }
 
 export function unitPrice(productId: string) {
-  const product = products.find((row) => row.id === productId);
-  return (
-    product?.listings?.[0]?.sellingPrice ??
-    product?.pricing?.sellingPrice ??
-    product?.pricing?.mrp ??
-    0
-  );
+  return 0;
 }
 
 export function rowTotal(row: StockBalance) {

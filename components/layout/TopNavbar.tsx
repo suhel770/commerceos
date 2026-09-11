@@ -37,12 +37,12 @@ function TopNavbarUserBadge() {
       type="button"
       onClick={logout}
       title="Click to log out"
-      className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 px-2.5 py-1.5 transition hover:bg-slate-100"
+      className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 px-2.5 py-1.5 transition hover:bg-slate-100 cursor-pointer"
     >
       <UserCircle2 size={30} className="text-blue-600" />
       <div className="text-left">
         <p className="text-sm font-semibold text-slate-900">{displayName}</p>
-        <p className={`text-[11px] font-bold ${levelColor}`}>{levelLabel}</p>
+        <p className={`text-xs font-bold ${levelColor}`}>{levelLabel}</p>
       </div>
     </button>
   );
@@ -125,7 +125,7 @@ export default function TopNavbar({
           <div className="flex shrink-0 items-center gap-3 min-w-0">
             <button
               onClick={onToggleSidebar}
-              className="rounded-lg border border-slate-200 p-2 transition hover:bg-slate-100 shrink-0"
+              className="rounded-lg border border-slate-200 p-2 transition hover:bg-slate-100 shrink-0 cursor-pointer"
               aria-label="Toggle Sidebar"
             >
               <Menu size={18} />
@@ -135,7 +135,7 @@ export default function TopNavbar({
               <h1 className="text-lg font-bold leading-none text-slate-900 truncate">
                 {title}
               </h1>
-              <p className="mt-1 text-[11px] text-slate-500 truncate hidden md:block">
+              <p className="mt-1 text-xs text-slate-500 truncate hidden md:block">
                 {subtitle}
               </p>
             </div>
@@ -161,6 +161,7 @@ export default function TopNavbar({
                 hover:border-slate-300
                 hover:bg-white
                 min-w-0
+                cursor-pointer
               "
             >
               <Search
@@ -168,14 +169,14 @@ export default function TopNavbar({
                 className="text-slate-400 shrink-0"
               />
 
-              <span className="ml-2 flex-1 text-left text-xs text-slate-500 truncate whitespace-nowrap min-w-0">
+              <span className="ml-2 flex-1 text-left text-sm text-slate-500 truncate whitespace-nowrap min-w-0">
                 Search products, listings, orders, customers…
               </span>
 
-              <div className="flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500 shadow-2xs">
+              <div className="flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium text-slate-500 shadow-2xs">
                 {isMac ? (
                   <>
-                    <Command size={11} />
+                    <Command size={12} />
                     <span>K</span>
                   </>
                 ) : (

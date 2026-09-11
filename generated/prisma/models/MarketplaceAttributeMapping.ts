@@ -410,10 +410,6 @@ export type MarketplaceAttributeMappingUncheckedUpdateManyWithoutMasterListingNe
   deleteMany?: Prisma.MarketplaceAttributeMappingScalarWhereInput | Prisma.MarketplaceAttributeMappingScalarWhereInput[]
 }
 
-export type EnumAttributeRequirementFieldUpdateOperationsInput = {
-  set?: $Enums.AttributeRequirement
-}
-
 export type MarketplaceAttributeMappingCreateWithoutMasterListingInput = {
   id?: string
   marketplace: $Enums.MarketplaceName

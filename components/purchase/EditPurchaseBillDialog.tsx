@@ -6,10 +6,15 @@ import { Plus, Trash2, X } from "lucide-react";
 import CommerceDatePicker from "@/components/ui/CommerceDatePicker";
 import CommerceSelect from "@/components/ui/CommerceSelect";
 import {
+  ALL_BUSINESS_INTENTS,
+  BUSINESS_INTENT_LABELS,
+  GST_RATE_SLABS,
   PAYMENT_METHOD_LABELS,
   PURCHASE_TYPE_LABELS,
   formatPurchaseMoney,
   normalizeGstRate,
+  type BusinessIntent,
+  type FreightAllocationMode,
   type PaymentMethod,
   type PurchaseBill,
   type PurchaseUom,
@@ -18,12 +23,18 @@ import {
 
 type EditLineDraft = {
   key: string;
+  id?: string;
   description: string;
   quantity: string;
   unitPrice: string;
   hsn: string;
   gstRate: string;
   uom: PurchaseUom;
+  sku?: string;
+  productId?: string;
+  intent: BusinessIntent;
+  physicalStorageReceivingRequired?: boolean;
+  freightMode?: FreightAllocationMode;
 };
 
 type EditPurchaseBillDialogProps = {
@@ -41,6 +52,16 @@ type EditPurchaseBillDialogProps = {
 const PAYMENT_OPTIONS = Object.entries(PAYMENT_METHOD_LABELS).map(
   ([value, label]) => ({ value, label }),
 );
+
+const INTENT_OPTIONS = ALL_BUSINESS_INTENTS.map((value) => ({
+  value,
+  label: BUSINESS_INTENT_LABELS[value] || value,
+}));
+
+const GST_SLAB_OPTIONS = GST_RATE_SLABS.map((rate) => ({
+  value: String(rate),
+  label: `${rate}%`,
+}));
 
 export default function EditPurchaseBillDialog({
   open,
@@ -89,12 +110,18 @@ export default function EditPurchaseBillDialog({
     setLines(
       bill.lines.map((l) => ({
         key: crypto.randomUUID(),
+        id: l.id,
         description: l.description,
         quantity: String(l.quantity),
         unitPrice: String(l.unitPrice),
         hsn: l.hsn ?? "",
         gstRate: String(l.gstRate ?? 18),
         uom: l.uom ?? "pcs",
+        sku: l.sku ?? "",
+        productId: l.productId,
+        intent: l.intent ?? "sellable",
+        physicalStorageReceivingRequired: l.physicalStorageReceivingRequired,
+        freightMode: l.freightMode,
       })),
     );
     setError(null);
@@ -157,9 +184,11 @@ export default function EditPurchaseBillDialog({
       const tax = (val * gst) / 100;
 
       return {
+        id: l.id,
         description: l.description.trim(),
         quantity: qty,
         unitPrice: price,
+        amount: Number(val.toFixed(2)),
         hsn: l.hsn.trim() || undefined,
         gstRate: gst,
         cgstAmount: tax / 2,
@@ -169,7 +198,11 @@ export default function EditPurchaseBillDialog({
         qtyReceived: 0,
         qtyDamaged: 0,
         uom: l.uom,
-        intent: "sellable" as const,
+        sku: l.sku?.trim() || undefined,
+        productId: l.productId,
+        intent: l.intent,
+        physicalStorageReceivingRequired: l.physicalStorageReceivingRequired,
+        freightMode: l.freightMode,
       };
     }).filter((l) => l.description);
 
@@ -197,9 +230,15 @@ export default function EditPurchaseBillDialog({
       taxAmount: totals.totalTax,
     };
 
-    const success = await onUpdate(bill.id, patch);
-    if (success) {
-      onClose();
+    try {
+      const success = await onUpdate(bill.id, patch);
+      if (success) {
+        onClose();
+      } else {
+        setError("Failed to save changes. Please check input details and try again.");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to update purchase bill.");
     }
   };
 
@@ -210,7 +249,7 @@ export default function EditPurchaseBillDialog({
         onClick={onClose}
       />
 
-      <div className="relative flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <header className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">
@@ -351,9 +390,14 @@ export default function EditPurchaseBillDialog({
             {/* Line Items */}
             <div className="rounded-xl border border-slate-200 p-4 bg-slate-50/50">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Purchased Items
-                </h3>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Purchased Items
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Specify item name, rates, GST slab, and business intent / type (Sellable, Consumable, Asset, Expense, etc.)
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() =>
@@ -367,99 +411,153 @@ export default function EditPurchaseBillDialog({
                         hsn: "",
                         gstRate: "18",
                         uom: "pcs",
+                        sku: "",
+                        intent: "sellable",
                       },
                     ])
                   }
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 hover:text-violet-800"
+                  className="inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition"
                 >
                   <Plus size={14} /> Add Item
                 </button>
               </div>
 
-              <div className="space-y-2">
-                {lines.map((l) => (
-                  <div
-                    key={l.key}
-                    className="grid grid-cols-12 gap-2 rounded-lg border border-slate-200 bg-white p-2 text-xs"
-                  >
-                    <input
-                      placeholder="Item name"
-                      value={l.description}
-                      onChange={(e) =>
-                        setLines((prev) =>
-                          prev.map((row) =>
-                            row.key === l.key
-                              ? { ...row, description: e.target.value }
-                              : row,
-                          ),
-                        )
-                      }
-                      className="col-span-4 h-9 rounded-md border border-slate-200 px-2 font-medium text-slate-800"
-                    />
-
-                    <input
-                      placeholder="HSN"
-                      value={l.hsn}
-                      onChange={(e) =>
-                        setLines((prev) =>
-                          prev.map((row) =>
-                            row.key === l.key
-                              ? { ...row, hsn: e.target.value }
-                              : row,
-                          ),
-                        )
-                      }
-                      className="col-span-2 h-9 rounded-md border border-slate-200 px-2"
-                    />
-
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={l.quantity}
-                      onChange={(e) =>
-                        setLines((prev) =>
-                          prev.map((row) =>
-                            row.key === l.key
-                              ? { ...row, quantity: e.target.value }
-                              : row,
-                          ),
-                        )
-                      }
-                      className="col-span-2 h-9 rounded-md border border-slate-200 px-2 text-right font-mono"
-                    />
-
-                    <input
-                      type="number"
-                      placeholder="Rate ₹"
-                      value={l.unitPrice}
-                      onChange={(e) =>
-                        setLines((prev) =>
-                          prev.map((row) =>
-                            row.key === l.key
-                              ? { ...row, unitPrice: e.target.value }
-                              : row,
-                          ),
-                        )
-                      }
-                      className="col-span-2 h-9 rounded-md border border-slate-200 px-2 text-right font-mono"
-                    />
-
-                    <div className="col-span-2 flex items-center justify-end gap-1">
-                      <button
-                        type="button"
-                        disabled={lines.length === 1}
-                        onClick={() =>
-                          setLines((prev) =>
-                            prev.filter((row) => row.key !== l.key),
-                          )
-                        }
-                        className="rounded-md p-1 text-slate-400 hover:text-rose-600 disabled:opacity-30"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+              <div className="overflow-x-auto pb-1">
+                <div className="min-w-[720px]">
+                  <div className="mb-1.5 grid grid-cols-[minmax(0,1.8fr)_5rem_4.5rem_5.5rem_5rem_10.5rem_2rem] gap-2 px-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span>Item name *</span>
+                    <span>HSN</span>
+                    <span className="text-right">Qty</span>
+                    <span className="text-right">Rate (₹)</span>
+                    <span>GST %</span>
+                    <span className="text-violet-700 font-bold">Item Type / Intent *</span>
+                    <span className="text-center"></span>
                   </div>
-                ))}
+
+                  <div className="space-y-2">
+                    {lines.map((l) => (
+                      <div
+                        key={l.key}
+                        className="grid grid-cols-[minmax(0,1.8fr)_5rem_4.5rem_5.5rem_5rem_10.5rem_2rem] items-center gap-2 rounded-lg border border-slate-200 bg-white p-2 text-xs shadow-sm hover:border-violet-200 transition"
+                      >
+                        <input
+                          placeholder="Item name *"
+                          value={l.description}
+                          onChange={(e) =>
+                            setLines((prev) =>
+                              prev.map((row) =>
+                                row.key === l.key
+                                  ? { ...row, description: e.target.value }
+                                  : row,
+                              ),
+                            )
+                          }
+                          className="h-9 w-full rounded-md border border-slate-200 px-2 font-medium text-slate-800 focus:border-violet-500 focus:outline-none"
+                        />
+
+                        <input
+                          placeholder="HSN"
+                          value={l.hsn}
+                          onChange={(e) =>
+                            setLines((prev) =>
+                              prev.map((row) =>
+                                row.key === l.key
+                                  ? { ...row, hsn: e.target.value }
+                                  : row,
+                              ),
+                            )
+                          }
+                          className="h-9 w-full rounded-md border border-slate-200 px-2 font-mono focus:border-violet-500 focus:outline-none"
+                        />
+
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="Qty"
+                          value={l.quantity}
+                          onChange={(e) =>
+                            setLines((prev) =>
+                              prev.map((row) =>
+                                row.key === l.key
+                                  ? { ...row, quantity: e.target.value }
+                                  : row,
+                              ),
+                            )
+                          }
+                          className="h-9 w-full rounded-md border border-slate-200 px-2 text-right font-mono font-semibold focus:border-violet-500 focus:outline-none"
+                        />
+
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          placeholder="Rate ₹"
+                          value={l.unitPrice}
+                          onChange={(e) =>
+                            setLines((prev) =>
+                              prev.map((row) =>
+                                row.key === l.key
+                                  ? { ...row, unitPrice: e.target.value }
+                                  : row,
+                              ),
+                            )
+                          }
+                          className="h-9 w-full rounded-md border border-slate-200 px-2 text-right font-mono focus:border-violet-500 focus:outline-none"
+                        />
+
+                        <CommerceSelect
+                          value={String(normalizeGstRate(Number(l.gstRate)))}
+                          onChange={(next) =>
+                            setLines((prev) =>
+                              prev.map((row) =>
+                                row.key === l.key
+                                  ? { ...row, gstRate: next }
+                                  : row,
+                              ),
+                            )
+                          }
+                          options={GST_SLAB_OPTIONS}
+                          searchable={false}
+                          size="sm"
+                          placeholder="GST"
+                        />
+
+                        <CommerceSelect
+                          value={l.intent}
+                          onChange={(next) =>
+                            setLines((prev) =>
+                              prev.map((row) =>
+                                row.key === l.key
+                                  ? { ...row, intent: next as BusinessIntent }
+                                  : row,
+                              ),
+                            )
+                          }
+                          options={INTENT_OPTIONS}
+                          searchable={false}
+                          size="sm"
+                          placeholder="Select Type"
+                        />
+
+                        <div className="flex items-center justify-center">
+                          <button
+                            type="button"
+                            disabled={lines.length === 1}
+                            onClick={() =>
+                              setLines((prev) =>
+                                prev.filter((row) => row.key !== l.key),
+                              )
+                            }
+                            title="Remove line item"
+                            className="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-30 transition"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 

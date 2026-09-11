@@ -26,10 +26,10 @@ export default async function EditProductPage({
 
   return (
     <AppShell
-      title={`Edit • ${product.name}`}
-      subtitle="CommerceOS Product Studio"
+      title={product.name}
+      subtitle={`${product.category || "General"} • SKU: ${product.sku}`}
     >
-      <div className="mx-auto w-full max-w-[1700px] p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-[1700px] px-6 py-2 lg:px-8 lg:py-2.5">
         <StudioProvider product={product}>
           <ProductStudio />
         </StudioProvider>

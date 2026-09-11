@@ -26,7 +26,7 @@ import { useCapabilities } from "@/providers/ExperienceProvider";
 import CommerceDatePicker from "@/components/ui/CommerceDatePicker";
 import CommerceSelect from "@/components/ui/CommerceSelect";
 import type { BusinessProfile } from "@/lib/business-profile";
-import { products } from "@/lib/mocks/products";
+import type { Product } from "@/lib/types/product";
 import {
   ALL_BUSINESS_INTENTS,
   ALL_PURCHASE_TYPES,
@@ -242,10 +242,13 @@ export default function NewPurchaseBillDialog({
     [vendors],
   );
 
+  const [masterProducts, setMasterProducts] = useState<Product[]>([]);
+
   const catalog = useMemo(
     () =>
-      products.map((product) => ({
+      masterProducts.map((product) => ({
         id: product.id,
+        productId: product.productId,
         name: product.name,
         sku: product.sku,
         hsn: product.hsn ?? "",
@@ -253,8 +256,9 @@ export default function NewPurchaseBillDialog({
           product.gstRate ?? lookupGstRateByHsn(product.hsn) ?? 18,
         ),
         cost: product.pricing?.costPrice,
+        productType: product.productType || "SELLABLE",
       })),
-    [],
+    [masterProducts],
   );
 
   const [purchaseType, setPurchaseType] = useState<PurchaseType>(initialType);
@@ -422,6 +426,13 @@ export default function NewPurchaseBillDialog({
         const payload = await safeResponseJson(response);
         if (payload.success && Array.isArray(payload.data)) {
           const apiBills = payload.data as PurchaseBill[];
+          if (apiBills.length === 0) {
+            try {
+              localStorage.removeItem("commerceos_vendor_item_memory");
+            } catch {}
+            setVendorItemHistory([]);
+            return;
+          }
           const extracted: VendorItemHistoryRecord[] = [];
           for (const bill of apiBills) {
             for (const line of bill.lines) {
@@ -448,10 +459,10 @@ export default function NewPurchaseBillDialog({
           }
           setVendorItemHistory(Array.from(mergedMap.values()));
         } else {
-          setVendorItemHistory(cached);
+          setVendorItemHistory([]);
         }
       } catch {
-        setVendorItemHistory(cached);
+        setVendorItemHistory([]);
       }
     })();
 
@@ -464,6 +475,18 @@ export default function NewPurchaseBillDialog({
         }
       } catch {
         setBuyerProfile(null);
+      }
+    })();
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/v1/products");
+        const payload = await safeResponseJson(response);
+        if (payload.success && Array.isArray(payload.data)) {
+          setMasterProducts(payload.data as Product[]);
+        }
+      } catch {
+        setMasterProducts([]);
       }
     })();
   }, [open, initialVendorId, initialType, activeVendors]);
@@ -661,7 +684,7 @@ export default function NewPurchaseBillDialog({
 
   const applyProductSuggestion = (
     key: string,
-    product: (typeof catalog)[number],
+    product: Product,
   ) => {
     setLines((prev) => {
       const updated = prev.map((line) =>
@@ -670,15 +693,15 @@ export default function NewPurchaseBillDialog({
               ...line,
               itemName: product.name,
               sku: product.sku,
-              hsn: product.hsn,
-              gstRate: String(product.gstRate),
+              hsn: product.hsn || "",
+              gstRate: String(product.gstRate ?? 18),
               unitPrice:
-                product.cost !== undefined
-                  ? String(product.cost)
+                product.pricing?.costPrice !== undefined && product.pricing.costPrice > 0
+                  ? String(product.pricing.costPrice)
                   : line.unitPrice,
               productId: product.id,
               skuTouched: true,
-              intent: "sellable" as const,
+              intent: (product.productType === "CONSUMABLE" ? "consumable" : "sellable") as BusinessIntent,
             }
           : line,
       );
@@ -1351,13 +1374,15 @@ export default function NewPurchaseBillDialog({
                   })
                   .slice(0, 8);
 
-                // Catalog Suggestions
-                const catalogSuggestions = catalog
+                // Master Products Catalog Suggestions
+                const catalogSuggestions = masterProducts
                   .filter((product) => {
                     const isQueryMatch =
                       !query ||
                       product.name.toLowerCase().includes(query) ||
-                      product.sku.toLowerCase().includes(query);
+                      product.sku.toLowerCase().includes(query) ||
+                      (product.productId && product.productId.toLowerCase().includes(query)) ||
+                      (product.barcode && product.barcode.toLowerCase().includes(query));
                     return isQueryMatch;
                   })
                   .slice(0, 6);
@@ -1408,7 +1433,7 @@ export default function NewPurchaseBillDialog({
                           className="h-9 w-full min-w-0 rounded-md border border-slate-200 bg-white px-2 text-xs"
                         />
                         {activeSuggestKey === line.key && hasSuggestions ? (
-                          <div className="absolute left-0 top-full z-50 mt-1.5 max-h-64 w-[360px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/20 ring-1 ring-black/5">
+                          <div className="absolute left-0 top-full z-50 mt-1.5 max-h-64 w-[380px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/20 ring-1 ring-black/5">
                             {vendorHistorySuggestions.length > 0 && (
                               <div className="mb-1">
                                 <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-700 bg-violet-50/80 rounded-md">
@@ -1451,28 +1476,36 @@ export default function NewPurchaseBillDialog({
 
                             {catalogSuggestions.length > 0 && (
                               <div>
-                                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 rounded-md">
-                                  📦 Master Catalog Products
+                                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100/80 rounded-md">
+                                  📦 Master Products Catalog
                                 </div>
                                 {catalogSuggestions.map((product) => (
                                   <button
                                     key={product.id}
                                     type="button"
-                                    className="block w-full px-2.5 py-2 text-left text-xs hover:bg-slate-50 rounded-lg"
+                                    className="block w-full px-2.5 py-2 text-left text-xs hover:bg-slate-50 rounded-lg transition"
                                     onMouseDown={(event) => {
                                       event.preventDefault();
                                       applyProductSuggestion(line.key, product);
                                     }}
                                   >
-                                    <span className="font-semibold text-slate-800 block truncate">
-                                      {product.name}
-                                    </span>
-                                    <span className="text-[11px] text-slate-500 block truncate">
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-semibold text-slate-900 truncate">
+                                        {product.name}
+                                      </span>
+                                      {product.productId && (
+                                        <span className="font-mono text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded ml-2 shrink-0">
+                                          {product.productId}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[11px] text-slate-500 block truncate mt-0.5">
                                       SKU {product.sku}
                                       {product.hsn
                                         ? ` · HSN ${product.hsn}`
                                         : ""}{" "}
                                       · GST {product.gstRate}%
+                                      {product.pricing?.costPrice ? ` · ₹${product.pricing.costPrice}` : ""}
                                     </span>
                                   </button>
                                 ))}

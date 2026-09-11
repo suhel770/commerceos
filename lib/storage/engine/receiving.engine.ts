@@ -82,11 +82,10 @@ export class LocationStockRepository {
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_STOCK_KEY);
-      if (saved && (saved.includes("StrideKids") || saved.includes("BILL-10") || saved.includes("SK-"))) {
-        localStorage.removeItem(LOCAL_STORAGE_STOCK_KEY);
+      if (saved) {
+        // Purge any stale demo or old bill records
         this.records = [];
-      } else if (saved) {
-        this.records = JSON.parse(saved);
+        localStorage.removeItem(LOCAL_STORAGE_STOCK_KEY);
       }
 
       const savedCons = localStorage.getItem(LOCAL_STORAGE_CONSUMPTION_KEY);
@@ -97,6 +96,15 @@ export class LocationStockRepository {
       // Ignore quota errors
     }
     this.isLoaded = true;
+  }
+
+  clearAllStock() {
+    this.records = [];
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_STOCK_KEY);
+      } catch {}
+    }
   }
 
   private saveToStorage() {
@@ -396,8 +404,28 @@ export class ReceivingEngine {
 
     // STRICT ARCHITECTURE RULE: Payment status (paid / unpaid / partial) MUST NEVER block or exclude a bill from Storage Receiving!
     // As long as the bill has unreceived physical stock (qcRecord.receivedQty < quantity), it MUST be eligible in Storage Receiving.
+    // NOTE: Only consider receipts with status "completed" — superseded receipts (from bill edits) are intentionally excluded.
+    const storageReceipts = (bill as any).storageReceipts as any[] | undefined;
+
     return receivableLines.some((line) => {
-      const received = line.qcRecord?.receivedQty ?? 0;
+      let received = line.qcRecord?.receivedQty ?? 0;
+      if (storageReceipts && storageReceipts.length > 0) {
+        const lineSku = line.sku ? String(line.sku).trim().toLowerCase() : "";
+        const lineDesc = line.description ? String(line.description).trim().toLowerCase() : "";
+
+        const receiptUnits = storageReceipts
+          // ── KEY FIX: Only count "completed" receipts, not "superseded" ones ──
+          .filter((r) => r.status === "completed")
+          .flatMap((r) => r.lines ?? [])
+          .filter((l) => {
+            const lSku = l.sku ? String(l.sku).trim().toLowerCase() : "";
+            const lDesc = l.description ? String(l.description).trim().toLowerCase() : "";
+            return (lineSku && lSku && lineSku === lSku) || (lineDesc && lDesc && lineDesc === lDesc);
+          })
+          .reduce((sum, l) => sum + (Number(l.receivedQty) || 0), 0);
+
+        received = Math.max(received, receiptUnits);
+      }
       return line.quantity > received;
     });
   }

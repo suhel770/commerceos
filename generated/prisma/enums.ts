@@ -46,7 +46,17 @@ export const MarketplaceName = {
   SHOPIFY: 'SHOPIFY',
   WOOCOMMERCE: 'WOOCOMMERCE',
   AJIO: 'AJIO',
-  MYNTRA: 'MYNTRA'
+  MYNTRA: 'MYNTRA',
+  NYKAA: 'NYKAA',
+  TATACLIQ: 'TATACLIQ',
+  SNAPDEAL: 'SNAPDEAL',
+  JIOMART: 'JIOMART',
+  SHOPSY: 'SHOPSY',
+  EBAY: 'EBAY',
+  ETSY: 'ETSY',
+  WALMART: 'WALMART',
+  ONDC: 'ONDC',
+  GENERIC: 'GENERIC'
 } as const
 
 export type MarketplaceName = (typeof MarketplaceName)[keyof typeof MarketplaceName]

@@ -181,11 +181,8 @@ export default function StorageHomePageView() {
             matchedStocks.filter((s) => (Number(s.availableQty) || 0) > 0).map((s) => s.sku)
           ).size;
 
-          const localUnits = locationStockRepository.getTotalUnitsForLocation(loc.id) || 0;
-          const localProducts = locationStockRepository.getDistinctProductCountForLocation(loc.id) || 0;
-
-          const totalAvailableUnits = Math.max(dbUnits, localUnits);
-          const totalProductsCount = Math.max(dbProducts, localProducts);
+          const totalAvailableUnits = dbUnits;
+          const totalProductsCount = dbProducts;
 
           return {
             ...loc,

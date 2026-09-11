@@ -1,17 +1,10 @@
 import type { StudioWorkspaceId } from "@/components/products/studio/config/studio.config";
-
 import { computePublishingReadinessScore } from "@/lib/listing-engine/readiness/compute-readiness";
-import type {
-  MasterListing,
-} from "@/lib/types/master-listing";
+import type { MasterListing } from "@/lib/types/master-listing";
 import { ValidationSeverity } from "@/lib/types/master-listing";
-
 import type { Product } from "@/lib/types/product";
 
-export type WorkspaceStatus =
-  | "ready"
-  | "attention"
-  | "progress";
+export type WorkspaceStatus = "ready" | "attention" | "progress";
 
 export interface WorkspaceMetric {
   label: string;
@@ -25,46 +18,33 @@ export interface WorkspaceSummary {
   ai?: boolean;
 }
 
-export function computePublishingScore(
-  listing: MasterListing,
-): number {
+export function computePublishingScore(listing: MasterListing): number {
   return computePublishingReadinessScore(listing);
 }
 
-function countFilledAttributes(
-  listing: MasterListing,
-): {
+function countFilledAttributes(listing: MasterListing): {
   filled: number;
   total: number;
 } {
-  const total = listing.attributes.length || 1;
+  const total = listing.attributes?.length || 0;
+  if (total === 0) return { filled: 0, total: 0 };
+
   const filled = listing.attributes.filter((attribute) => {
     const value = attribute.value;
-
     if (value === null || value === undefined || value === "") {
       return false;
     }
-
     if (Array.isArray(value)) {
       return value.length > 0;
     }
-
     return true;
   }).length;
 
   return { filled, total };
 }
 
-function countVariants(
-  listing: MasterListing,
-): number {
-  return listing.variants.length;
-}
-
-function formatCurrency(
-  amount: number,
-): string {
-  return `₹${Math.round(amount)}`;
+function formatCurrency(amount: number): string {
+  return `₹${Math.round(amount).toLocaleString("en-IN")}`;
 }
 
 export function computeWorkspaceSummaries(
@@ -73,137 +53,91 @@ export function computeWorkspaceSummaries(
 ): WorkspaceSummary[] {
   const publishingScore = computePublishingScore(listing);
   const attributeStats = countFilledAttributes(listing);
-  const attributeFillPercent = Math.round(
-    (attributeStats.filled / attributeStats.total) * 100,
-  );
+  const attributeFillPercent = attributeStats.total > 0
+    ? Math.round((attributeStats.filled / attributeStats.total) * 100)
+    : 0;
   const missingAttributes = attributeStats.total - attributeStats.filled;
-  const variantCount = countVariants(listing);
-  const imageCount = listing.media.length;
-  const profit =
-    listing.pricing.sellingPrice - listing.pricing.costPrice;
-  const margin = listing.pricing.sellingPrice
-    ? Math.round((profit / listing.pricing.sellingPrice) * 100)
-    : 0;
-  const connectedChannels = listing.marketplaces.filter(
-    (marketplace) => marketplace.enabled,
-  ).length;
-  const healthyChannels = listing.marketplaces.filter(
-    (marketplace) => marketplace.validationScore >= 90,
-  ).length;
-  const channelHealth = connectedChannels
-    ? Math.round((healthyChannels / connectedChannels) * 100)
-    : 0;
-  const aiScore =
-    product?.performance.healthScore ?? 94;
-  const growthFields = [
-    listing.growth.seoTitle,
-    listing.growth.metaDescription,
-    listing.growth.searchTerms.length,
-    listing.growth.bulletPoints.length,
-    listing.growth
-      .merchandisingTags.length,
-  ];
-  const seoScore = Math.round(
-    (growthFields.filter(Boolean)
-      .length /
-      growthFields.length) *
-      100,
-  );
-  const pendingInsights = listing.aiInsights.filter(
-    (insight) => !insight.applied,
-  ).length;
-  const issueCount = listing.validationIssues.filter(
+  
+  const variantCount = listing.variants?.length ?? (product as any)?.variants?.length ?? 0;
+  const imageCount = listing.media?.length ?? product?.gallery?.length ?? (product?.image ? 1 : 0);
+  
+  const sellingPrice = Number(listing.pricing?.sellingPrice || product?.pricing?.sellingPrice || 0);
+  const costPrice = Number(listing.pricing?.costPrice || product?.pricing?.costPrice || 0);
+  const hasPricing = sellingPrice > 0;
+  const profit = hasPricing ? sellingPrice - costPrice : 0;
+  const margin = hasPricing ? Math.round((profit / sellingPrice) * 100) : 0;
+
+  const connectedChannels = listing.marketplaces?.filter((m) => m.enabled)?.length ?? 0;
+  const healthyChannels = listing.marketplaces?.filter((m) => m.validationScore >= 90)?.length ?? 0;
+  const channelHealth = connectedChannels > 0 ? Math.round((healthyChannels / connectedChannels) * 100) : 0;
+
+  const availableStock = listing.inventory?.available ?? product?.inventory?.available ?? 0;
+  const reservedStock = listing.inventory?.reserved ?? product?.inventory?.reserved ?? 0;
+
+  const hasHsn = Boolean(listing.identity?.hsn || product?.hsn);
+  const gstRate = listing.identity?.taxCode || (product?.gstRate !== undefined ? `${product.gstRate}%` : null);
+
+  const issueCount = listing.validationIssues?.filter(
     (issue) =>
       issue.severity === ValidationSeverity.ERROR ||
       issue.severity === ValidationSeverity.WARNING,
-  ).length;
-  const hasHsn = Boolean(listing.identity.hsn);
-  const hasGst = Boolean(listing.identity.taxCode);
+  )?.length ?? 0;
 
   return [
     {
       id: "identity",
-      status: "ready",
+      status: listing.identity?.brand && listing.identity?.sku ? "ready" : "attention",
       metrics: [
-        { label: "Brand", value: listing.identity.brand },
-        { label: "SKU", value: listing.identity.sku },
+        { label: "Brand", value: listing.identity?.brand || "Not set" },
+        { label: "SKU", value: listing.identity?.sku || "Not set" },
       ],
     },
     {
       id: "media",
-      status: imageCount >= 6 ? "ready" : "attention",
+      status: imageCount >= 1 ? "ready" : "attention",
       ai: true,
       metrics: [
         { label: "Images", value: imageCount },
-        { label: "AI Score", value: aiScore },
+        { label: "Videos", value: product?.video ? 1 : 0 },
       ],
     },
     {
       id: "commercials",
-      status: margin >= 30 ? "ready" : "attention",
+      status: hasPricing ? "ready" : "attention",
       metrics: [
-        { label: "Margin", value: `${margin}%` },
-        { label: "Profit", value: formatCurrency(profit) },
+        { label: "Margin", value: hasPricing ? `${margin}%` : "Not set" },
+        { label: "Profit", value: hasPricing ? formatCurrency(profit) : "Not set" },
       ],
     },
     {
       id: "inventory",
-      status:
-        listing.inventory.available >
-        listing.inventory.safetyStock
-          ? "ready"
-          : "attention",
+      status: availableStock > 0 ? "ready" : "attention",
       metrics: [
-        {
-          label: "Available",
-          value:
-            listing.inventory
-              .available,
-        },
-        {
-          label: "Reserved",
-          value:
-            listing.inventory
-              .reserved,
-        },
+        { label: "Available", value: availableStock },
+        { label: "Reserved", value: reservedStock },
       ],
     },
     {
       id: "supply",
-      status:
-        listing.supply
-          .primarySupplier
-          ? "ready"
-          : "attention",
+      status: listing.supply?.primarySupplier ? "ready" : "attention",
       metrics: [
         {
-          label: "Supplier",
-          value:
-            listing.supply
-              .primarySupplier ??
-            "Missing",
+          label: "Lead Time",
+          value: listing.supply?.leadTimeDays !== undefined ? `${listing.supply.leadTimeDays}d` : "Not set",
         },
         {
-          label: "Lead Time",
-          value:
-            listing.supply
-              .leadTimeDays !==
-            undefined
-              ? `${listing.supply.leadTimeDays}d`
-              : "—",
+          label: "MOQ",
+          value: (listing.supply as any)?.minimumOrderQuantity ?? (listing.supply as any)?.moq ?? "Not set",
         },
       ],
     },
     {
       id: "attributes",
-      status:
-        attributeFillPercent >= 85
-          ? "ready"
-          : "attention",
+      status: attributeStats.total > 0 && attributeFillPercent >= 80 ? "ready" : "attention",
       metrics: [
         {
           label: "Filled",
-          value: `${attributeFillPercent}%`,
+          value: attributeStats.total > 0 ? `${attributeFillPercent}%` : "0%",
         },
         {
           label: "Missing",
@@ -218,56 +152,52 @@ export function computeWorkspaceSummaries(
         { label: "Variants", value: variantCount },
         {
           label: "Active",
-          value:
-            listing.variants.filter(
-              (variant) =>
-                variant.active,
-            ).length,
+          value: listing.variants?.filter((v) => v.active)?.length ?? variantCount,
         },
       ],
     },
     {
       id: "growth",
-      status: seoScore >= 85 ? "ready" : "progress",
+      status: listing.growth?.seoTitle ? "ready" : "progress",
       ai: true,
       metrics: [
-        { label: "SEO", value: seoScore },
+        {
+          label: "SEO Score",
+          value: listing.growth?.seoTitle && listing.growth?.metaDescription ? "80/100" : "0/100",
+        },
         {
           label: "Ideas",
-          value: pendingInsights,
+          value: listing.aiInsights?.filter((i) => !i.applied)?.length ?? 0,
         },
       ],
     },
     {
       id: "channels",
-      status: channelHealth >= 90 ? "ready" : "attention",
+      status: connectedChannels > 0 ? "ready" : "attention",
       metrics: [
         { label: "Connected", value: connectedChannels },
-        { label: "Healthy", value: `${channelHealth}%` },
+        { label: "Healthy", value: connectedChannels > 0 ? `${channelHealth}%` : "0%" },
       ],
     },
     {
       id: "compliance",
-      status: hasHsn && hasGst ? "ready" : "attention",
+      status: hasHsn && gstRate ? "ready" : "attention",
       metrics: [
-        { label: "GST", value: hasGst ? "OK" : "—" },
-        { label: "HSN", value: hasHsn ? "Ready" : "—" },
+        { label: "GST", value: gstRate ? (gstRate.includes("%") ? gstRate : `${gstRate}%`) : "Pending" },
+        { label: "HSN", value: hasHsn ? "Configured" : "Pending" },
       ],
     },
     {
       id: "publishing",
-      status:
-        publishingScore >= 90
-          ? "ready"
-          : "attention",
+      status: publishingScore >= 80 ? "ready" : "attention",
       ai: true,
       metrics: [
         {
-          label: "Ready",
+          label: "Readiness",
           value: `${publishingScore}%`,
         },
         {
-          label: "Issues",
+          label: "Errors",
           value: issueCount,
         },
       ],
@@ -278,20 +208,11 @@ export function computeWorkspaceSummaries(
       metrics: [
         {
           label: "Events",
-          value:
-            listing.activity.length,
+          value: listing.activity?.length ?? 0,
         },
         {
           label: "Today",
-          value:
-            listing.activity.filter(
-              (event) =>
-                event.timestamp.startsWith(
-                  new Date()
-                    .toISOString()
-                    .slice(0, 10),
-                ),
-            ).length,
+          value: listing.activity?.filter((e) => e.timestamp?.startsWith(new Date().toISOString().slice(0, 10)))?.length ?? 0,
         },
       ],
     },

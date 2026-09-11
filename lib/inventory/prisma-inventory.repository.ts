@@ -5,6 +5,7 @@
  */
 
 import { db } from "@/lib/db";
+import { products } from "@/lib/mocks/products";
 import type { IInventoryRepository, ReservationFilter, StockBalanceFilter, StockMovementFilter } from "./inventory.repository.interface";
 import type { Reservation, StockBalance, StockMovement } from "./types";
 import { DEFAULT_WAREHOUSE_ID } from "./types";
@@ -24,17 +25,21 @@ export class PrismaInventoryRepository implements IInventoryRepository {
     });
     if (existing) return existing.id;
 
-    const created = await db.warehouse.create({
-      data: {
-        workspaceId,
-        code: "DEFAULT-WH",
-        name: "Main Warehouse",
-        type: "WAREHOUSE",
-        active: true,
-      },
-      select: { id: true },
-    });
-    return created.id;
+    try {
+      const created = await db.warehouse.create({
+        data: {
+          workspaceId,
+          code: "DEFAULT-WH",
+          name: "Main Warehouse",
+          type: "WAREHOUSE",
+          active: true,
+        },
+        select: { id: true },
+      });
+      return created.id;
+    } catch {
+      return DEFAULT_WAREHOUSE_ID;
+    }
   }
 
   /**
@@ -159,6 +164,23 @@ export class PrismaInventoryRepository implements IInventoryRepository {
     try {
       await this.syncStorageStockToInventory(workspaceId, organizationId);
 
+      // Only show inventory items that have a physical StorageStock record
+      // (i.e., items actually received into a storage facility)
+      const storageStocks = await db.storageStock.findMany({
+        where: { workspaceId, organizationId },
+        select: { sku: true },
+      });
+      const receivedSkus = new Set(storageStocks.map((s) => s.sku.toLowerCase().trim()));
+
+      // If no storage facility / no received stock, return single balance if queried specifically or fallback to memory
+      if (receivedSkus.size === 0) {
+        if (filter?.productId) {
+          const single = await this.getBalance(filter.productId, filter?.warehouseId || DEFAULT_WAREHOUSE_ID);
+          if (single) return [single];
+        }
+        return [];
+      }
+
       const where: { workspaceId: string; productId?: string; warehouseId?: string } = {
         workspaceId,
       };
@@ -171,22 +193,32 @@ export class PrismaInventoryRepository implements IInventoryRepository {
         orderBy: { sku: "asc" },
       });
 
-      return rows.map((r) => ({
-        id: r.id,
-        organizationId,
-        workspaceId: r.workspaceId,
-        productId: r.productId,
-        sku: r.sku,
-        productName: r.product?.name || r.sku,
-        warehouseId: r.warehouseId,
-        available: r.available,
-        reserved: r.reserved,
-        incoming: r.incoming,
-        damaged: r.damaged,
-        inTransit: r.inTransit,
-        intent: r.intent,
-        updatedAt: r.updatedAt.toISOString(),
-      }));
+      // Filter to only SKUs with physical storage stock
+      const filtered = rows
+        .filter((r) => receivedSkus.has(r.sku.toLowerCase().trim()))
+        .map((r) => ({
+          id: r.id,
+          organizationId,
+          workspaceId: r.workspaceId,
+          productId: r.productId,
+          sku: r.sku,
+          productName: r.product?.name || r.sku,
+          warehouseId: r.warehouseId,
+          available: r.available,
+          reserved: r.reserved,
+          incoming: r.incoming,
+          damaged: r.damaged,
+          inTransit: r.inTransit,
+          intent: r.intent,
+          updatedAt: r.updatedAt.toISOString(),
+        }));
+
+      if (filtered.length === 0 && filter?.productId) {
+        const single = await this.getBalance(filter.productId, filter?.warehouseId || DEFAULT_WAREHOUSE_ID);
+        if (single) return [single];
+      }
+
+      return filtered;
     } catch (e) {
       return structuredClone(
         this.balances.filter((balance) => {
@@ -200,36 +232,70 @@ export class PrismaInventoryRepository implements IInventoryRepository {
   }
 
   public async getBalance(productId: string, warehouseId: string): Promise<StockBalance | undefined> {
+    const memoryMatch = this.balances.find(
+      (row) =>
+        (row.productId === productId || row.sku.toLowerCase() === productId.toLowerCase()) &&
+        (!warehouseId || row.warehouseId === warehouseId)
+    );
+    if (memoryMatch) return structuredClone(memoryMatch);
+
     try {
       const row = await db.inventory.findFirst({
-        where: { productId, warehouseId },
+        where: {
+          OR: [
+            { productId, warehouseId },
+            { sku: productId, warehouseId },
+          ],
+        },
         include: { product: true },
       });
 
-      if (!row) return undefined;
-
-      return {
-        id: row.id,
-        organizationId: "org-commerceos",
-        workspaceId: row.workspaceId,
-        productId: row.productId,
-        sku: row.sku,
-        productName: row.product?.name || row.sku,
-        warehouseId: row.warehouseId,
-        available: row.available,
-        reserved: row.reserved,
-        incoming: row.incoming,
-        damaged: row.damaged,
-        inTransit: row.inTransit,
-        intent: row.intent,
-        updatedAt: row.updatedAt.toISOString(),
-      };
+      if (row) {
+        return {
+          id: row.id,
+          organizationId: "org-commerceos",
+          workspaceId: row.workspaceId,
+          productId: row.productId,
+          sku: row.sku,
+          productName: row.product?.name || row.sku,
+          warehouseId: row.warehouseId,
+          available: row.available,
+          reserved: row.reserved,
+          incoming: row.incoming,
+          damaged: row.damaged,
+          inTransit: row.inTransit,
+          intent: row.intent,
+          updatedAt: row.updatedAt.toISOString(),
+        };
+      }
     } catch (e) {
-      const balance = this.balances.find(
-        (row) => row.productId === productId && row.warehouseId === warehouseId
-      );
-      return balance ? structuredClone(balance) : undefined;
+      // Database error or offline, continue to fallback
     }
+
+    // Fallback to mock product catalog if available
+    const mockProd = products.find((p) => p.id === productId || p.sku.toLowerCase() === productId.toLowerCase());
+    if (mockProd) {
+      const fallbackBalance: StockBalance = {
+        id: `inv-${mockProd.id}-${warehouseId}`,
+        organizationId: "org-commerceos",
+        workspaceId: "ws-default",
+        productId: mockProd.id,
+        sku: mockProd.sku,
+        productName: mockProd.name,
+        warehouseId,
+        available: mockProd.inventory?.available ?? 0,
+        reserved: mockProd.inventory?.reserved ?? 0,
+        incoming: mockProd.inventory?.incoming ?? 0,
+        damaged: mockProd.inventory?.damaged ?? 0,
+        inTransit: mockProd.inventory?.inTransit ?? 0,
+        intent: "sellable",
+        updatedAt: new Date().toISOString(),
+      };
+      this.balances.push(structuredClone(fallbackBalance));
+      return fallbackBalance;
+    }
+
+    return undefined;
   }
 
   public async saveBalance(balance: StockBalance): Promise<StockBalance> {

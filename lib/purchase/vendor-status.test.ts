@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, afterAll } from "vitest";
+import { db } from "@/lib/db";
 import { purchaseApplication } from "@/lib/application/purchase.application";
 import { validateAndParsePurchaseExcel } from "./excel-importer";
 import type { CommerceContext } from "@/lib/platform/commerce-context";
@@ -6,8 +7,8 @@ import type { CreatePurchaseBillInput, Vendor } from "./types";
 
 describe("CommerceOS Vendor Status, Block/Unblock & Owner Approval Suite", () => {
   const ownerContext: CommerceContext = {
-    organizationId: "org-commerceos",
-    workspaceId: "ws-default",
+    organizationId: "org-test-vendor-status",
+    workspaceId: "ws-test-vendor-status",
     requestId: "req-owner-1",
     actor: {
       id: "usr-owner",
@@ -23,8 +24,8 @@ describe("CommerceOS Vendor Status, Block/Unblock & Owner Approval Suite", () =>
   };
 
   const staffContext: CommerceContext = {
-    organizationId: "org-commerceos",
-    workspaceId: "ws-default",
+    organizationId: "org-test-vendor-status",
+    workspaceId: "ws-test-vendor-status",
     requestId: "req-staff-1",
     actor: {
       id: "usr-staff",
@@ -239,5 +240,27 @@ describe("CommerceOS Vendor Status, Block/Unblock & Owner Approval Suite", () =>
     await expect(
       purchaseApplication.blockVendor(staffContext, vendor.id, "Unauthorized block attempt"),
     ).rejects.toThrow(/Missing required permission/);
+  });
+
+  afterAll(async () => {
+    try {
+      await db.purchaseBillLine.deleteMany({
+        where: { workspaceId: "ws-test-vendor-status" },
+      });
+      await db.purchaseBill.deleteMany({
+        where: { workspaceId: "ws-test-vendor-status" },
+      });
+      await db.vendor.deleteMany({
+        where: { workspaceId: "ws-test-vendor-status" },
+      });
+      await db.workspace.deleteMany({
+        where: { id: "ws-test-vendor-status" },
+      });
+      await db.organization.deleteMany({
+        where: { id: "org-test-vendor-status" },
+      });
+    } catch {
+      // ignore
+    }
   });
 });

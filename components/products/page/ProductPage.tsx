@@ -1,8 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { Product } from "@/lib/types/product";
 import ProductWorkspace from "../workspace/ProductWorkspace";
-
 
 interface ProductPageProps {
   product: Product;
@@ -13,11 +13,11 @@ export default function ProductPage({
 }: ProductPageProps) {
   return (
     <div className="space-y-4">
-
-      <ProductWorkspace
-        product={product}
-      />
-
+      <Suspense fallback={null}>
+        <ProductWorkspace
+          product={product}
+        />
+      </Suspense>
     </div>
   );
 }

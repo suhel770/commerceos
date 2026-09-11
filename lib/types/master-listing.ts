@@ -34,6 +34,16 @@ export enum MarketplaceName {
   WOOCOMMERCE = "woocommerce",
   AJIO = "ajio",
   MYNTRA = "myntra",
+  NYKAA = "nykaa",
+  TATACLIQ = "tatacliq",
+  SNAPDEAL = "snapdeal",
+  JIOMART = "jiomart",
+  SHOPSY = "shopsy",
+  EBAY = "ebay",
+  ETSY = "etsy",
+  WALMART = "walmart",
+  ONDC = "ondc",
+  GENERIC = "generic",
 }
 
 export enum MarketplacePublishStatus {
@@ -423,6 +433,10 @@ export interface MasterListing {
   compliance: ProductCompliance
 
   growth: ProductGrowth
+
+  description?: string
+
+  bulletPoints?: string[]
 
   attributes: MasterAttribute[]
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MarketplaceListing } from "@/lib/types/product";
 
 interface MarketplaceBadgesProps {
@@ -18,9 +19,13 @@ const marketplaceStyles: Record<string, string> = {
 export default function MarketplaceBadges({ listings = [] }: MarketplaceBadgesProps) {
   if (!listings || listings.length === 0) {
     return (
-      <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+      <Link
+        href="/settings"
+        title="Connect Sales Channels in Settings"
+        className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500 hover:border-blue-300 hover:text-blue-600 transition"
+      >
         Not Connected
-      </span>
+      </Link>
     );
   }
 
@@ -31,7 +36,7 @@ export default function MarketplaceBadges({ listings = [] }: MarketplaceBadgesPr
         return (
           <span
             key={listing.id || listing.marketplace}
-            className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${style}`}
+            className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ${style}`}
           >
             {listing.marketplace}
           </span>

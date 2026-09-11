@@ -1,5 +1,5 @@
 import AppShell from "@/components/layout/AppShell";
-import ProductsPage from "@/components/products/ProductsPage";
+import ProductOverviewDashboard from "@/components/products/ProductOverviewDashboard";
 
 export default function ProductsRoutePage() {
   return (
@@ -8,7 +8,7 @@ export default function ProductsRoutePage() {
       subtitle="Master Product Engine across sales channels and warehouses"
     >
       <div className="mx-auto w-full max-w-[1700px] p-8">
-        <ProductsPage />
+        <ProductOverviewDashboard />
       </div>
     </AppShell>
   );

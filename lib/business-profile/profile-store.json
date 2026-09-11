@@ -1,0 +1,19 @@
+{
+  "organizationId": "org-commerceos",
+  "workspaceId": "ws-default",
+  "legalName": "StrideKids Retail Private Limited",
+  "brand": "StrideKids",
+  "tradeName": "StrideKids",
+  "gstin": "27AABCS4821R1ZM",
+  "pan": "AABCS4821R",
+  "buyerStateCode": "27",
+  "buyerState": "Maharashtra",
+  "address": "Unit 12, Bhiwandi Logistics Park, Near Kalyan Bypass",
+  "city": "Bhiwandi",
+  "pincode": "421302",
+  "phone": "+91 98765 41020",
+  "email": "ops@stridekids.in",
+  "ownerName": "Amir",
+  "trackConsumables": true,
+  "updatedAt": "2026-09-11T19:13:46.076Z"
+}

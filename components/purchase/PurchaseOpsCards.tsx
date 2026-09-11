@@ -3,14 +3,12 @@
 import { getAiCreditsRemaining } from "@/lib/ai/credits";
 
 import {
-  AlertTriangle,
-  Clock3,
-  PackageMinus,
-  Receipt,
+  ClipboardList,
+  CreditCard,
+  ShoppingCart,
   Sparkles,
-  Truck,
+  TrendingUp,
   Users,
-  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -78,6 +76,9 @@ export function buildDefaultOpsCards(input: {
   incomingCount: number;
   outstandingVendors: number;
   alertCount: number;
+  totalMonthSpend: number;
+  totalBillsCount: number;
+  avgOrderValue: number;
   onReorder(): void;
   onPending(): void;
   onIncoming(): void;
@@ -85,51 +86,55 @@ export function buildDefaultOpsCards(input: {
   onAlerts(): void;
   onAiAdvisor?(): void;
 }): OpsCard[] {
+  const avgLabel = input.avgOrderValue > 0
+    ? formatPurchaseMoney(input.avgOrderValue)
+    : "No orders yet";
+
   return [
     {
-      key: "reorder",
-      title: "Short on stock",
-      value: String(input.reorderCount),
-      footer: "Reorder required",
-      tone: "rose",
-      icon: PackageMinus,
-      onClick: input.onReorder,
-    },
-    {
-      key: "pending",
-      title: "Pending PO Bills",
-      value: String(input.pendingBillsCount),
-      footer: formatPurchaseMoney(input.pendingAmount),
-      tone: "amber",
-      icon: Receipt,
+      key: "month_spend",
+      title: "Month Spend",
+      value: formatPurchaseMoney(input.totalMonthSpend),
+      footer: `${input.totalBillsCount} bill${input.totalBillsCount !== 1 ? "s" : ""} this month`,
+      tone: input.totalMonthSpend > 0 ? "violet" : "slate",
+      icon: TrendingUp,
       onClick: input.onPending,
     },
     {
-      key: "incoming",
-      title: "Incoming Shipments",
-      value: String(input.incomingCount),
-      footer: "Awaiting GRN / receiving",
+      key: "bills_count",
+      title: "Bills This Month",
+      value: String(input.totalBillsCount),
+      footer: input.pendingBillsCount > 0 ? `${input.pendingBillsCount} unpaid` : "All settled",
+      tone: input.pendingBillsCount > 0 ? "amber" : "emerald",
+      icon: ClipboardList,
+      onClick: input.onPending,
+    },
+    {
+      key: "avg_order",
+      title: "Avg Order Value",
+      value: avgLabel,
+      footer: "Per purchase bill",
       tone: "orange",
-      icon: Truck,
-      onClick: input.onIncoming,
+      icon: ShoppingCart,
+      onClick: input.onPending,
+    },
+    {
+      key: "unpaid_balance",
+      title: "Unpaid Balance",
+      value: formatPurchaseMoney(input.pendingAmount),
+      footer: input.pendingBillsCount > 0 ? `${input.pendingBillsCount} bills due` : "Nothing outstanding",
+      tone: input.pendingAmount > 0 ? "rose" : "emerald",
+      icon: CreditCard,
+      onClick: input.onPending,
     },
     {
       key: "vendors",
-      title: "Active Suppliers",
+      title: "Vendors Engaged",
       value: String(input.outstandingVendors),
-      footer: "Vendor network",
+      footer: "Active in this period",
       tone: "violet",
       icon: Users,
       onClick: input.onVendors,
-    },
-    {
-      key: "alerts",
-      title: "Procurement alerts",
-      value: String(input.alertCount),
-      footer: "Quality & Price alerts",
-      tone: input.alertCount > 0 ? "rose" : "emerald",
-      icon: AlertTriangle,
-      onClick: input.onAlerts,
     },
     {
       key: "ai_advisor",

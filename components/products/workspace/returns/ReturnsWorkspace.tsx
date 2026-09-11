@@ -10,6 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import type { Product } from "@/lib/types/product";
+import CommerceSelect, { CommerceSelectOption } from "@/components/ui/CommerceSelect";
 import {
   MetricTile,
   WorkspacePanel,
@@ -51,21 +52,47 @@ const REASON_LABELS: Record<WrongReturnReason, string> = {
   other: "Other — see description",
 };
 
+const REASON_OPTIONS: CommerceSelectOption[] = [
+  { value: "wrong_item", label: "Customer returned wrong item", description: "Entirely different product in parcel" },
+  { value: "wrong_size_color", label: "Wrong size / color vs order", description: "Incorrect variant sent back" },
+  { value: "damaged_by_carrier", label: "Damaged in transit (carrier)", description: "Transit breakage / box crushed" },
+  { value: "empty_box", label: "Empty / missing product", description: "Package arrived empty or weight missing" },
+  { value: "customer_abuse", label: "Used / abused then returned", description: "Signs of heavy wear or tags removed" },
+  { value: "not_as_ordered", label: "Not what was ordered", description: "Listing mismatch dispute" },
+  { value: "other", label: "Other reason", description: "See detailed description notes" },
+];
+
 const seedClaims: WrongReturnClaim[] = [];
 
 export default function ReturnsWorkspace({
   product,
 }: ReturnsWorkspaceProps) {
-  const marketplaces = useMemo(
-    () => product.listings.map((listing) => listing.marketplace),
-    [product.listings],
-  );
+  const marketplaceOptions: CommerceSelectOption[] = useMemo(() => {
+    const connected = (product.listings || [])
+      .filter((l) => l.marketplace && l.marketplace.toLowerCase() !== "all")
+      .map((listing) => ({
+        value: listing.marketplace,
+        label: listing.marketplace,
+        description: `Active Listing: ${listing.marketplaceSku || listing.listingId || "Live"}`,
+      }));
+
+    if (connected.length === 0) {
+      return [
+        {
+          value: "Direct / Storefront",
+          label: "Direct / Storefront",
+          description: "Primary catalog sales channel",
+        },
+      ];
+    }
+    return connected;
+  }, [product.listings]);
 
   const [claims, setClaims] = useState<WrongReturnClaim[]>(seedClaims);
   const [formOpen, setFormOpen] = useState(true);
   const [submittedFlash, setSubmittedFlash] = useState<string | null>(null);
 
-  const [marketplace, setMarketplace] = useState(marketplaces[0] ?? "Amazon");
+  const [marketplace, setMarketplace] = useState(marketplaceOptions[0]?.value || "Direct / Storefront");
   const [orderId, setOrderId] = useState("");
   const [marketplaceReturnId, setMarketplaceReturnId] = useState("");
   const [reason, setReason] = useState<WrongReturnReason>("wrong_item");
@@ -74,13 +101,13 @@ export default function ReturnsWorkspace({
   const [error, setError] = useState<string | null>(null);
 
   const estimatedReturns = Math.max(
-    1,
+    0,
     Math.round(
       (product.listings.reduce(
         (sum, listing) => sum + listing.orders30Days,
         0,
       ) *
-        product.performance.returnsPercentage) /
+        (product.performance?.returnsPercentage || 0)) /
         100,
     ),
   );
@@ -136,7 +163,7 @@ export default function ReturnsWorkspace({
       <div className="grid gap-3 sm:grid-cols-3">
         <MetricTile
           label="Return Rate"
-          value={`${product.performance.returnsPercentage}%`}
+          value={`${product.performance?.returnsPercentage ?? 0}%`}
           hint="Last 30 days"
           tone="rose"
         />
@@ -185,21 +212,13 @@ export default function ReturnsWorkspace({
         {formOpen ? (
           <form onSubmit={submitClaim} className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Marketplace">
-                <select
+              <Field label="Marketplace / Channel">
+                <CommerceSelect
                   value={marketplace}
-                  onChange={(event) => setMarketplace(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                >
-                  {(marketplaces.length > 0
-                    ? marketplaces
-                    : ["Amazon", "Flipkart", "Meesho", "Shopify"]
-                  ).map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setMarketplace(val)}
+                  options={marketplaceOptions}
+                  searchable={marketplaceOptions.length > 5}
+                />
               </Field>
 
               <Field label="Order ID">
@@ -207,7 +226,7 @@ export default function ReturnsWorkspace({
                   value={orderId}
                   onChange={(event) => setOrderId(event.target.value)}
                   placeholder="e.g. 402-9911223-4455667"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </Field>
 
@@ -218,28 +237,17 @@ export default function ReturnsWorkspace({
                     setMarketplaceReturnId(event.target.value)
                   }
                   placeholder="Optional marketplace return ID"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </Field>
 
               <Field label="Reason code">
-                <select
+                <CommerceSelect
                   value={reason}
-                  onChange={(event) =>
-                    setReason(event.target.value as WrongReturnReason)
-                  }
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                >
-                  {(
-                    Object.entries(REASON_LABELS) as Array<
-                      [WrongReturnReason, string]
-                    >
-                  ).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setReason(val as WrongReturnReason)}
+                  options={REASON_OPTIONS}
+                  searchable={false}
+                />
               </Field>
             </div>
 
@@ -249,7 +257,7 @@ export default function ReturnsWorkspace({
                 onChange={(event) => setDescription(event.target.value)}
                 rows={3}
                 placeholder="Describe the mismatch — what was ordered vs what came back."
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </Field>
 
@@ -259,7 +267,7 @@ export default function ReturnsWorkspace({
                 onChange={(event) => setEvidenceNotes(event.target.value)}
                 rows={2}
                 placeholder="Photo links, unboxing notes, weight, SKU on label, marketplace case URL…"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </Field>
 

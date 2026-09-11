@@ -23,7 +23,6 @@ import {
   Building2,
   Crown,
   Sparkles,
-  Warehouse,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +37,7 @@ type NavChild = {
   href: string;
   icon: LucideIcon;
   exact?: boolean;
+  requiresConsumables?: boolean;
 };
 
 type NavItem = {
@@ -78,8 +78,21 @@ const navigation: NavSection[] = [
         name: "Products",
         href: "/products",
         icon: Package,
+        exact: true,
+        children: [
+          {
+            name: "Product List",
+            href: "/products/list",
+            icon: Package,
+          },
+          {
+            name: "Consumables & Packaging",
+            href: "/products/consumables",
+            icon: Boxes,
+            requiresConsumables: true,
+          },
+        ],
       },
-
       {
         name: "Orders",
         href: "/orders",
@@ -87,7 +100,6 @@ const navigation: NavSection[] = [
       },
     ],
   },
-
   {
     title: "BUY",
     items: [
@@ -174,8 +186,11 @@ function isRouteActive(pathname: string, href: string, exact?: boolean) {
 
 function isParentActive(pathname: string, item: NavItem) {
   if (item.children?.length) {
-    return item.children.some((child) =>
-      isRouteActive(pathname, child.href, child.exact),
+    return (
+      isRouteActive(pathname, item.href, item.exact) ||
+      item.children.some((child) =>
+        isRouteActive(pathname, child.href, child.exact),
+      )
     );
   }
   return isRouteActive(pathname, item.href, item.exact);
@@ -184,10 +199,24 @@ function isParentActive(pathname: string, item: NavItem) {
 export default function Sidebar({ collapsed }: SidebarProps) {
   const pathname = usePathname();
   const capabilities = useCapabilities();
+
+  // Submenu expansion states
+  const productsOpenDefault = pathname.startsWith("/products");
+  const [productsOpen, setProductsOpen] = useState(productsOpenDefault);
   const purchaseOpenDefault = pathname.startsWith("/purchase");
   const [purchaseOpen, setPurchaseOpen] = useState(purchaseOpenDefault);
   const inventoryOpenDefault = pathname.startsWith("/inventory");
   const [inventoryOpen, setInventoryOpen] = useState(inventoryOpenDefault);
+
+  // Consumables Feature Toggle State
+  const [trackConsumables, setTrackConsumables] = useState(true);
+
+  // Auto-expand active submenus on navigation
+  useEffect(() => {
+    if (pathname.startsWith("/products")) {
+      setProductsOpen(true);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (pathname.startsWith("/purchase")) {
@@ -201,24 +230,75 @@ export default function Sidebar({ collapsed }: SidebarProps) {
     }
   }, [pathname]);
 
+  // Consumables feature toggle synchronization
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem("commerceos_track_consumables");
+      if (cached !== null) {
+        setTrackConsumables(cached === "true");
+      }
+    } catch {}
+
+    const handleToggle = (e: Event) => {
+      const customEvent = e as CustomEvent<boolean>;
+      if (typeof customEvent.detail === "boolean") {
+        setTrackConsumables(customEvent.detail);
+      }
+    };
+    window.addEventListener("commerceos_toggle_track_consumables", handleToggle);
+
+    // Fetch from business settings API
+    fetch("/api/v1/settings/business")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.success && json.data) {
+          const enabled = json.data.trackConsumables !== false;
+          setTrackConsumables(enabled);
+          try {
+            localStorage.setItem("commerceos_track_consumables", String(enabled));
+          } catch {}
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      window.removeEventListener("commerceos_toggle_track_consumables", handleToggle);
+    };
+  }, []);
+
   const filteredNavigation = useMemo(() => {
     return navigation
       .map((section) => ({
         ...section,
-        items: section.items.filter((item) => {
-          // Solo Seller (canUseWarehouse === false): Show Storage, hide Warehouse in sidebar
-          if (item.name === "Storage") {
-            return !capabilities.canUseWarehouse;
-          }
-          // Growing & Enterprise Seller (canUseWarehouse === true): Show Warehouse, hide Storage in sidebar
-          if (item.name === "Warehouse") {
-            return capabilities.canUseWarehouse;
-          }
-          return true;
-        }),
+        items: section.items
+          .map((item) => {
+            if (item.children) {
+              return {
+                ...item,
+                children: item.children.filter((child) => {
+                  if (child.requiresConsumables) {
+                    return trackConsumables;
+                  }
+                  return true;
+                }),
+              };
+            }
+            return item;
+          })
+          .filter((item) => {
+            // Solo Seller (canUseWarehouse === false): Show Storage, hide Warehouse in sidebar
+            if (item.name === "Storage") {
+              return !capabilities.canUseWarehouse;
+            }
+            // Growing & Enterprise Seller (canUseWarehouse === true): Show Warehouse, hide Storage in sidebar
+            if (item.name === "Warehouse") {
+              return capabilities.canUseWarehouse;
+            }
+            return true;
+          }),
       }))
       .filter((section) => section.items.length > 0);
-  }, [capabilities]);
+  }, [capabilities, trackConsumables]);
 
   return (
     <aside
@@ -242,7 +322,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         </Link>
 
         {!collapsed && (
-          <p className="mt-0.5 text-[11px] leading-tight text-slate-500">
+          <p className="mt-0.5 text-xs leading-tight text-slate-500">
             Business Operating System
           </p>
         )}
@@ -250,10 +330,10 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
       <div className={`pt-2.5 ${collapsed ? "px-1.5" : "px-2.5"}`}>
         <button
-          className={`flex rounded-lg bg-blue-600 text-xs font-semibold text-white transition hover:bg-blue-700 ${
+          className={`flex rounded-lg bg-blue-600 text-[13px] font-semibold text-white transition hover:bg-blue-700 cursor-pointer ${
             collapsed
               ? "mx-auto h-8 w-8 items-center justify-center"
-              : "h-8 w-full items-center justify-center gap-1.5"
+              : "h-8.5 w-full items-center justify-center gap-1.5"
           }`}
         >
           <Plus size={14} />
@@ -270,7 +350,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
           {filteredNavigation.map((section) => (
             <div key={section.title}>
               {!collapsed && (
-                <p className="mb-1 px-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                <p className="mb-1 px-1.5 text-xs font-bold uppercase tracking-wider text-slate-400">
                   {section.title}
                 </p>
               )}
@@ -280,13 +360,16 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   const Icon = item.icon;
                   const parentActive = isParentActive(pathname, item);
                   const hasChildren = Boolean(item.children?.length);
+                  const isProducts = item.name === "Products";
                   const isPurchase = item.name === "Purchase";
                   const isInventory = item.name === "Inventory";
-                  const open = isPurchase
-                    ? purchaseOpen
-                    : isInventory
-                      ? inventoryOpen
-                      : parentActive;
+                  const open = isProducts
+                    ? productsOpen
+                    : isPurchase
+                      ? purchaseOpen
+                      : isInventory
+                        ? inventoryOpen
+                        : parentActive;
 
                   if (hasChildren && !collapsed) {
                     const selfActive = isRouteActive(
@@ -294,13 +377,19 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                       item.href,
                       item.exact,
                     );
+                    const anyChildActive = Boolean(
+                      item.children?.some((child) =>
+                        isRouteActive(pathname, child.href, child.exact),
+                      ),
+                    );
+
                     return (
                       <div key={item.name} className="space-y-0.5">
                         <div
                           className={`group flex w-full items-center rounded-lg transition-all duration-200 ${
                             selfActive
                               ? "bg-blue-600 text-white shadow-sm"
-                              : parentActive
+                              : anyChildActive
                                 ? "bg-blue-50 text-blue-700"
                                 : "text-slate-600 hover:bg-slate-100"
                           }`}
@@ -309,34 +398,43 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                             href={item.href}
                             className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5"
                           >
-                            <Icon size={15} />
-                            <span className="truncate text-[13px] font-medium">
+                            <Icon size={16} />
+                            <span className="truncate text-sm font-medium">
                               {item.name}
                             </span>
                           </Link>
                           <button
                             type="button"
+                            aria-expanded={open}
                             aria-label={
                               open
                                 ? `Collapse ${item.name}`
                                 : `Expand ${item.name}`
                             }
-                            onClick={() => {
-                              if (isPurchase) {
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (isProducts) {
+                                setProductsOpen((value) => !value);
+                              } else if (isPurchase) {
                                 setPurchaseOpen((value) => !value);
                               } else if (isInventory) {
                                 setInventoryOpen((value) => !value);
                               }
                             }}
-                            className={`mr-0.5 rounded-md p-1 transition ${
+                            className={`mr-0.5 rounded-md p-1 transition cursor-pointer ${
                               selfActive
-                                ? "hover:bg-blue-500"
-                                : "hover:bg-slate-200/70"
+                                ? "hover:bg-blue-500 text-white"
+                                : anyChildActive
+                                  ? "hover:bg-blue-100 text-blue-700"
+                                  : "hover:bg-slate-200/70 text-slate-500"
                             }`}
                           >
                             <ChevronDown
                               size={14}
-                              className={`transition ${open ? "rotate-180" : ""}`}
+                              className={`transition-transform duration-200 ${
+                                open ? "rotate-0" : "-rotate-90"
+                              }`}
                             />
                           </button>
                         </div>
@@ -354,14 +452,14 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                                 <Link
                                   key={child.href}
                                   href={child.href}
-                                  className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[12px] font-medium transition ${
+                                  className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px] font-medium transition ${
                                     childActive
-                                      ? "bg-blue-600 text-white shadow-sm"
+                                      ? "bg-blue-600 text-white shadow-sm font-semibold"
                                       : "text-slate-600 hover:bg-slate-100"
                                   }`}
                                 >
-                                  <ChildIcon size={13} />
-                                  {child.name}
+                                  <ChildIcon size={14} />
+                                  <span>{child.name}</span>
                                 </Link>
                               );
                             })}
@@ -399,9 +497,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                           collapsed ? "" : "gap-2"
                         }`}
                       >
-                        <Icon size={15} />
+                        <Icon size={16} />
                         {!collapsed && (
-                          <span className="truncate text-[13px] font-medium">
+                          <span className="truncate text-sm font-medium">
                             {item.name}
                           </span>
                         )}
@@ -442,7 +540,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
             }`}
           >
             <Crown
-              size={12}
+              size={13}
               className={`shrink-0 ${
                 capabilities.canUseEnterpriseAI
                   ? "text-rose-600"
@@ -452,7 +550,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
               }`}
             />
             {!collapsed && (
-              <span className="truncate text-[11px] font-bold text-slate-900">
+              <span className="truncate text-xs font-bold text-slate-900">
                 {capabilities.canUseEnterpriseAI
                   ? "Enterprise Mode"
                   : capabilities.canUseWarehouse
@@ -464,11 +562,11 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
           {!collapsed && (
             <div className="mt-1.5 flex items-center justify-between">
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
-                <BadgeCheck size={11} />
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-xs font-semibold text-emerald-700">
+                <BadgeCheck size={12} />
                 Active
               </span>
-              <span className="text-[9px] font-mono text-slate-400">
+              <span className="text-[11px] font-mono text-slate-400">
                 {capabilities.activeCapabilityCount} Caps
               </span>
             </div>

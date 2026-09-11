@@ -36,6 +36,7 @@ export default function TransferStockWorkspaceModal({
   const [targetLocId, setTargetLocId] = useState<string>("");
   const [transferQty, setTransferQty] = useState<number>(1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [availableDestinationLocations, setAvailableDestinationLocations] = useState<Array<{ id: string; name: string; code: string }>>([]);
 
@@ -93,8 +94,6 @@ export default function TransferStockWorkspaceModal({
   const hasMultipleLocations = availableDestinationLocations.length > 0;
   const targetLoc = availableDestinationLocations.find((l) => l.id === targetLocId) || availableDestinationLocations[0];
   const maxAvailable = selectedItem ? selectedItem.available || 0 : 0;
-
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleExecuteTransfer = async () => {
     if (!selectedItem || !targetLoc || transferQty <= 0 || transferQty > maxAvailable) return;

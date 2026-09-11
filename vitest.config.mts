@@ -18,6 +18,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    setupFiles: ["dotenv/config"],
     coverage: {
       reporter: [
         "text",

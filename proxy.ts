@@ -10,6 +10,7 @@ const PUBLIC_API_PATHS = [
   "/api/v1/auth/logout",
   "/api/v1/auth/session",
   "/api/health/db",
+  "/api/v1/db-inspector",
 ];
 
 // ---------------------------------------------------------------------------
@@ -170,10 +171,11 @@ export async function proxy(request: NextRequest) {
   // For page routes: redirect to login if no valid session
   const token = request.cookies.get("commerceos-session")?.value;
   const isLoginPage = pathname === "/login";
+  const isDbInspectorPage = pathname.startsWith("/db-inspector");
 
   const pageVerified = await verifySessionEdge(token ?? "");
   if (!token || !pageVerified) {
-    if (!isLoginPage) {
+    if (!isLoginPage && !isDbInspectorPage) {
       const loginUrl = new URL("/login", request.url);
       return NextResponse.redirect(loginUrl);
     }

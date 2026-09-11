@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { safeResponseJson } from "@/lib/api/client";
 
 import type { Product } from "@/lib/types/product";
 
@@ -21,7 +22,7 @@ interface ProductWorkspaceProps {
 }
 
 /** Bible Product Overview order first; cross-module tabs follow. */
-const tabs: Array<[ProductWorkspaceTab, string]> = [
+const allTabs: Array<[ProductWorkspaceTab, string]> = [
   ["overview", "Overview"],
   ["listings", "Listings"],
   ["performance", "Performance"],
@@ -39,6 +40,46 @@ export default function ProductWorkspace({
   const [activeWorkspace, setActiveWorkspace] =
     useState<ProductWorkspaceTab>("overview");
   const [returnsFormKey, setReturnsFormKey] = useState(0);
+  const [trackConsumables, setTrackConsumables] = useState(true);
+
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem("commerceos_track_consumables");
+      if (cached !== null) {
+        setTrackConsumables(cached === "true");
+      }
+    } catch {}
+
+    const handleToggle = (e: Event) => {
+      const customEvent = e as CustomEvent<boolean>;
+      if (typeof customEvent.detail === "boolean") {
+        setTrackConsumables(customEvent.detail);
+      }
+    };
+    window.addEventListener("commerceos_toggle_track_consumables", handleToggle);
+
+    fetch("/api/v1/settings/business")
+      .then((res) => safeResponseJson(res))
+      .then((json) => {
+        if (json?.success && json.data) {
+          setTrackConsumables(json.data.trackConsumables !== false);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      window.removeEventListener("commerceos_toggle_track_consumables", handleToggle);
+    };
+  }, []);
+
+  const visibleTabs = useMemo(() => {
+    return allTabs.filter(([key]) => {
+      if (key === "consumables") {
+        return trackConsumables;
+      }
+      return true;
+    });
+  }, [trackConsumables]);
 
   const navigate = (tab: ProductWorkspaceTab) => {
     setActiveWorkspace(tab);
@@ -48,24 +89,24 @@ export default function ProductWorkspace({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5">
 
       <HeroWorkspace
         product={product}
         onNavigate={navigate}
       />
 
-      <div className="sticky top-0 z-30 -mx-1 bg-slate-100/95 px-1 py-1.5 backdrop-blur-xl">
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="sticky top-0 z-30 -mx-1 bg-slate-100/95 px-1 py-1 backdrop-blur-xl">
+        <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white shadow-2xs">
           <div className="flex min-w-max" role="tablist" aria-label="Product workspaces">
-            {tabs.map(([key, label]) => (
+            {visibleTabs.map(([key, label]) => (
               <button
                 key={key}
                 type="button"
                 role="tab"
                 aria-selected={activeWorkspace === key}
                 onClick={() => navigate(key)}
-                className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+                className={`border-b-2 px-3.5 py-2 text-xs font-semibold transition cursor-pointer ${
                   activeWorkspace === key
                     ? "border-blue-600 text-blue-600"
                     : "border-transparent text-slate-500 hover:text-slate-900"
@@ -119,6 +160,33 @@ export default function ProductWorkspace({
       {activeWorkspace === "ai" && (
         <AIStudioWorkspace product={product} />
       )}
+
+      {/* Premium Workspace Bottom Line & Audit Strip */}
+      <div className="mt-6 border-t border-slate-200/80 pt-3 pb-6 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 font-medium text-slate-700">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="font-semibold text-slate-800">Master Catalog Synchronized</span>
+          </div>
+
+          <span className="text-slate-300 hidden sm:inline">•</span>
+
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-md">
+              {product.productId || "PRD-000101"}
+            </span>
+            <span className="font-mono text-[11px] text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+              {product.sku}
+            </span>
+          </div>
+
+          <span className="text-slate-300 hidden sm:inline">•</span>
+          <span className="text-[11px] text-slate-400">Single Source of Truth (SOT) • Immutable Ledger</span>
+        </div>
+      </div>
 
     </div>
   );

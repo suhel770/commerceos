@@ -8,7 +8,8 @@ import { getAllProducts } from "@/lib/services/product.service";
 import type { ProductFilters } from "@/lib/types/product-filter";
 
 export function useProducts(
-  filters?: ProductFilters
+  filters?: ProductFilters,
+  refreshTrigger?: number
 ) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +30,7 @@ export function useProducts(
     }
 
     loadProducts();
-  }, [filters]);
+  }, [filters, refreshTrigger]);
 
   return {
     products,

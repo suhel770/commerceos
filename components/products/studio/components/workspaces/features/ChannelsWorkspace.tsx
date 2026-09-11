@@ -2,186 +2,208 @@
 
 import { useState } from "react";
 import {
-  Plus,
+  Globe,
+  Settings2,
+  CheckCircle2,
+  AlertTriangle,
+  ExternalLink,
+  ShieldCheck,
+  Zap,
+  Tag,
+  Sparkles,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  MarketplaceName,
-  MarketplacePublishStatus,
-  type MasterListing,
-} from "@/lib/types/master-listing";
 import { useStudio } from "../../../context/StudioContext";
-import { Panel, Field } from "./workspace-ui";
+import { Panel } from "./workspace-ui";
+import { MarketplaceName } from "@/lib/types/master-listing";
+import { getMarketplaceRegistry } from "@/lib/marketplace/registry/marketplace-registry";
 
 export function ChannelsWorkspace() {
-  const {
-    listing,
-    updateListing,
-  } = useStudio();
-  const [newMarketplace, setNewMarketplace] =
-    useState<MarketplaceName>(
-      MarketplaceName.AMAZON,
-    );
+  const { listing, updateListing, product } = useStudio();
+  const [selectedChannel, setSelectedChannel] = useState<MarketplaceName>(MarketplaceName.AMAZON);
 
   if (!listing) return null;
-  const availableMarketplaces =
-    Object.values(
-      MarketplaceName,
-    ).filter(
-      (marketplace) =>
-        !listing.marketplaces.some(
-          (connection) =>
-            connection.marketplace ===
-            marketplace,
-        ),
+
+  const channels = [
+    MarketplaceName.AMAZON,
+    MarketplaceName.FLIPKART,
+    MarketplaceName.MEESHO,
+    MarketplaceName.MYNTRA,
+    MarketplaceName.SHOPIFY,
+  ];
+
+  const currentConnection = listing.marketplaces.find((m) => m.marketplace === selectedChannel);
+  const isEnabled = Boolean(currentConnection?.enabled);
+  const registry = getMarketplaceRegistry(selectedChannel);
+
+  const toggleChannel = (marketplace: MarketplaceName, enabled: boolean) => {
+    const updated = listing.marketplaces.map((m) =>
+      m.marketplace === marketplace ? { ...m, enabled } : m
     );
 
-  const updateMarketplace = (
-    marketplace: MasterListing["marketplaces"][number]["marketplace"],
-    updates: Partial<MasterListing["marketplaces"][number]>,
-  ) => {
+    // If channel wasn't in array, add it
+    if (!updated.some((m) => m.marketplace === marketplace)) {
+      updated.push({
+        marketplace,
+        enabled,
+        publishStatus: "DRAFT" as any,
+        validationScore: 80,
+        issues: [],
+      });
+    }
+
+    updateListing({ marketplaces: updated });
+  };
+
+  // Custom channel overrides stored in listing.overrides / commercials
+  const channelOverrides = (listing as any).channelOverrides?.[selectedChannel] || {};
+
+  const handleUpdateOverride = (key: string, value: string) => {
+    const prevOverrides = (listing as any).channelOverrides || {};
+    const updatedChannelOverrides = {
+      ...prevOverrides,
+      [selectedChannel]: {
+        ...prevOverrides[selectedChannel],
+        [key]: value,
+      },
+    };
+
     updateListing({
-      marketplaces: listing.marketplaces.map((connection) =>
-        connection.marketplace === marketplace
-          ? { ...connection, ...updates }
-          : connection,
-      ),
-    });
+      ...listing,
+      channelOverrides: updatedChannelOverrides,
+    } as any);
   };
 
   return (
     <Panel
-      title="Connected Marketplaces"
-      description="Choose where this master listing should synchronize and publish."
+      title="Connected Sales Channels & Channel Overrides"
+      description="Configure active channels and customize marketplace-specific title and pricing overrides without modifying your canonical master product."
     >
-      {availableMarketplaces.length >
-        0 && (
-        <div className="mb-5 flex flex-wrap justify-end gap-2">
-          <select
-            aria-label="Marketplace to connect"
-            value={
-              availableMarketplaces.includes(
-                newMarketplace,
-              )
-                ? newMarketplace
-                : availableMarketplaces[0]
-            }
-            onChange={(event) =>
-              setNewMarketplace(
-                event.target
-                  .value as MarketplaceName,
-              )
-            }
-            className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm"
-          >
-            {availableMarketplaces.map(
-              (marketplace) => (
-                <option
-                  key={marketplace}
-                  value={marketplace}
-                >
-                  {marketplace}
-                </option>
-              ),
-            )}
-          </select>
+      {/* Channel Switcher */}
+      <div className="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-4">
+        {channels.map((channel) => {
+          const reg = getMarketplaceRegistry(channel);
+          const isSelected = selectedChannel === channel;
+          const isConn = listing.marketplaces.some((m) => m.marketplace === channel && m.enabled);
 
-          <Button
-            onClick={() => {
-              const marketplace =
-                availableMarketplaces.includes(
-                  newMarketplace,
-                )
-                  ? newMarketplace
-                  : availableMarketplaces[0];
-
-              updateListing({
-                marketplaces: [
-                  ...listing.marketplaces,
-                  {
-                    marketplace,
-                    enabled: true,
-                    publishStatus:
-                      MarketplacePublishStatus.NOT_PUBLISHED,
-                    validationScore:
-                      0,
-                    issues: [],
-                  },
-                ],
-              });
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Connect Channel
-          </Button>
-        </div>
-      )}
-
-      <div className="space-y-3">
-        {listing.marketplaces.map((connection, index) => (
-          <article
-            key={`${connection.marketplace}-${connection.listingId ?? index}`}
-            className="grid gap-4 rounded-xl border border-slate-200 p-4 lg:grid-cols-[180px_1fr_1fr_140px]"
-          >
-            <div className="flex items-center gap-3">
-              <Switch
-                checked={connection.enabled}
-                onCheckedChange={(enabled) =>
-                  updateMarketplace(connection.marketplace, { enabled })
-                }
+          return (
+            <button
+              key={channel}
+              type="button"
+              onClick={() => setSelectedChannel(channel)}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                isSelected
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span>{reg.name}</span>
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isConn ? "bg-emerald-500" : "bg-slate-300"
+                }`}
               />
+            </button>
+          );
+        })}
+      </div>
 
-              <span className="font-semibold capitalize text-slate-900">
-                {connection.marketplace}
+      {/* Selected Channel Management Box */}
+      <div className="space-y-6">
+        {/* Connection Toggle Card */}
+        <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:flex-row sm:items-center shadow-2xs">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-black text-slate-900">{registry.name} Connection</h3>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                  isEnabled
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-slate-200 text-slate-700"
+                }`}
+              >
+                {isEnabled ? "ACTIVE FOR PUBLISHING" : "DISABLED"}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-slate-600 font-medium">
+              Enable or disable staging and inventory synchronization for this marketplace.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={isEnabled}
+              onCheckedChange={(checked) => toggleChannel(selectedChannel, checked)}
+            />
+          </div>
+        </div>
+
+        {/* Channel-Specific Overrides Section */}
+        <div className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-2xs space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-indigo-600" />
+                <h4 className="text-sm font-black text-slate-900">
+                  {registry.name} Channel Overrides
+                </h4>
+                <span className="rounded-md bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-bold text-indigo-700 uppercase">
+                  Channel Override
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-slate-500 font-medium">
+                Customize titles or prices specifically for {registry.name}.
+              </p>
+            </div>
+          </div>
+
+          {/* Warning Banner */}
+          <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
+            <Info className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+            <span>
+              <strong>Note:</strong> Changing fields here does <strong>not</strong> change your master product. Channel overrides are isolated strictly to {registry.name}.
+            </span>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Custom Channel Title
+              </label>
+              <Input
+                placeholder={listing.identity.productName || "Leave empty to use master title"}
+                value={channelOverrides.title ?? ""}
+                onChange={(e) => handleUpdateOverride("title", e.target.value)}
+                className="text-xs font-medium"
+              />
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Master Title: &quot;{listing.identity.productName}&quot;
               </span>
             </div>
 
-            <Field label="Marketplace listing ID">
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Custom Channel Selling Price (₹)
+              </label>
               <Input
-                value={connection.listingId ?? ""}
-                onChange={(event) =>
-                  updateMarketplace(connection.marketplace, {
-                    listingId: event.target.value,
-                  })
-                }
+                type="number"
+                min="0"
+                placeholder={String(listing.pricing?.sellingPrice || "0")}
+                value={channelOverrides.sellingPrice ?? ""}
+                onChange={(e) => handleUpdateOverride("sellingPrice", e.target.value)}
+                className="text-xs font-bold"
               />
-            </Field>
-
-            <Field label="External SKU / ID">
-              <Input
-                value={connection.externalId ?? ""}
-                onChange={(event) =>
-                  updateMarketplace(connection.marketplace, {
-                    externalId: event.target.value,
-                  })
-                }
-              />
-            </Field>
-
-            <Field label="Status">
-              <select
-                value={connection.publishStatus}
-                onChange={(event) =>
-                  updateMarketplace(connection.marketplace, {
-                    publishStatus:
-                      event.target.value as MarketplacePublishStatus,
-                  })
-                }
-                className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-              >
-                {Object.values(MarketplacePublishStatus).map((status) => (
-                  <option key={status} value={status}>
-                    {status.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </article>
-        ))}
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                Master Selling Price: ₹{listing.pricing?.sellingPrice || 0}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </Panel>
   );
 }
-

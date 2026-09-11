@@ -43,7 +43,7 @@ interface PendingReceiptsHeroSectionProps {
 }
 
 type PageSizeOption = 10 | 25 | 50 | "All";
-type SortField = "billDate" | "billNumber" | "vendorName" | "inventory" | "consumable" | "pendingQty";
+type SortField = "billDate" | "billNumber" | "vendorName" | "sellable" | "consumable" | "asset" | "pendingQty";
 type SortDirection = "asc" | "desc";
 
 export default function PendingReceiptsHeroSection({
@@ -100,20 +100,15 @@ export default function PendingReceiptsHeroSection({
       } else if (sortField === "billDate") {
         valA = a.billDate;
         valB = b.billDate;
-      } else if (sortField === "inventory") {
-        valA = linesA.filter(
-          (l) => l.intent === "sellable" || a.purchaseType === "inventory_product"
-        ).length;
-        valB = linesB.filter(
-          (l) => l.intent === "sellable" || b.purchaseType === "inventory_product"
-        ).length;
+      } else if (sortField === "sellable") {
+        valA = (a.lines ?? []).filter((l) => l.intent === "sellable").length;
+        valB = (b.lines ?? []).filter((l) => l.intent === "sellable").length;
       } else if (sortField === "consumable") {
-        valA = linesA.filter(
-          (l) => l.intent === "consumable" || a.purchaseType === "packaging_material"
-        ).length;
-        valB = linesB.filter(
-          (l) => l.intent === "consumable" || b.purchaseType === "packaging_material"
-        ).length;
+        valA = (a.lines ?? []).filter((l) => l.intent === "consumable").length;
+        valB = (b.lines ?? []).filter((l) => l.intent === "consumable").length;
+      } else if (sortField === "asset") {
+        valA = (a.lines ?? []).filter((l) => l.intent === "asset").length;
+        valB = (b.lines ?? []).filter((l) => l.intent === "asset").length;
       } else if (sortField === "pendingQty") {
         valA = linesA.reduce((sum, line) => {
           const received = line.qcRecord?.receivedQty ?? 0;
@@ -334,7 +329,7 @@ export default function PendingReceiptsHeroSection({
         <table className="w-full text-left text-xs font-sans table-fixed">
           <thead className="bg-slate-50 text-xs font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-200">
             <tr className="whitespace-nowrap">
-              <th className="w-[5%] px-3 py-3 text-center">
+              <th className="w-[4%] px-2.5 py-3 text-center">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -345,7 +340,7 @@ export default function PendingReceiptsHeroSection({
 
               <th
                 onClick={() => handleSort("billNumber")}
-                className="w-[33%] px-3 py-3 cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
+                className="w-[27%] px-3 py-3 cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
               >
                 <div className="flex items-center gap-1">
                   <span>Purchase Bill & Supplier</span>
@@ -355,7 +350,7 @@ export default function PendingReceiptsHeroSection({
 
               <th
                 onClick={() => handleSort("billDate")}
-                className="w-[12%] px-2.5 py-3 text-center cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
+                className="w-[10%] px-2 py-3 text-center cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
               >
                 <div className="flex items-center justify-center gap-1">
                   <span>Date</span>
@@ -364,22 +359,32 @@ export default function PendingReceiptsHeroSection({
               </th>
 
               <th
-                onClick={() => handleSort("inventory")}
-                className="w-[11%] px-2.5 py-3 text-center cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
+                onClick={() => handleSort("sellable")}
+                className="w-[11%] px-2 py-3 text-center cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
               >
                 <div className="flex items-center justify-center gap-1">
-                  <span>Inventory</span>
-                  {renderSortIcon("inventory")}
+                  <span>Sellable</span>
+                  {renderSortIcon("sellable")}
                 </div>
               </th>
 
               <th
                 onClick={() => handleSort("consumable")}
-                className="w-[11%] px-2.5 py-3 text-center cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
+                className="w-[11%] px-2 py-3 text-center cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
               >
                 <div className="flex items-center justify-center gap-1">
                   <span>Consumable</span>
                   {renderSortIcon("consumable")}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort("asset")}
+                className="w-[10%] px-2 py-3 text-center cursor-pointer hover:bg-slate-100/70 transition-colors select-none group"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>Asset</span>
+                  {renderSortIcon("asset")}
                 </div>
               </th>
 
@@ -393,7 +398,7 @@ export default function PendingReceiptsHeroSection({
                 </div>
               </th>
 
-              <th className="w-[16%] px-3 py-3 text-right pr-4">Action</th>
+              <th className="w-[15%] px-3 py-3 text-right pr-4">Action</th>
             </tr>
           </thead>
         </table>
@@ -405,12 +410,16 @@ export default function PendingReceiptsHeroSection({
               {paginatedBills.map((bill) => {
                 const receivableLines = receivingEngine.filterReceivableLines(bill);
 
-                const inventoryCount = receivableLines.filter(
-                  (l) => l.intent === "sellable" || bill.purchaseType === "inventory_product"
+                const sellableCount = (bill.lines ?? []).filter(
+                  (l) => l.intent === "sellable"
                 ).length;
 
-                const consumableCount = receivableLines.filter(
-                  (l) => l.intent === "consumable" || bill.purchaseType === "packaging_material"
+                const consumableCount = (bill.lines ?? []).filter(
+                  (l) => l.intent === "consumable"
+                ).length;
+
+                const assetCount = (bill.lines ?? []).filter(
+                  (l) => l.intent === "asset"
                 ).length;
 
                 const totalPendingQty = receivableLines.reduce((sum, line) => {
@@ -423,7 +432,7 @@ export default function PendingReceiptsHeroSection({
                 return (
                   <tr key={bill.id} className={`cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors group ${isSelected ? "bg-violet-50/30" : ""}`}>
                     {/* Select Checkbox */}
-                    <td className="w-[5%] px-3 py-3 text-center">
+                    <td className="w-[4%] px-2.5 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -433,7 +442,7 @@ export default function PendingReceiptsHeroSection({
                     </td>
 
                     {/* Bill & Supplier — styled like purchase table */}
-                    <td className="w-[33%] px-2.5 py-3">
+                    <td className="w-[27%] px-2.5 py-3">
                       <button
                         type="button"
                         onClick={() => onInspectBill?.(bill)}
@@ -452,19 +461,31 @@ export default function PendingReceiptsHeroSection({
                     </td>
 
                     {/* Date — DD-Mon format like purchase table */}
-                    <td className="w-[12%] px-2.5 py-3 text-center text-slate-700 font-semibold text-sm truncate">
+                    <td className="w-[10%] px-2 py-3 text-center text-slate-700 font-semibold text-sm truncate">
                       {formatDdMmm(bill.billDate)}
                     </td>
 
-                    {/* Inventory Items */}
-                    <td className="w-[11%] px-2.5 py-3 text-center">
-                      <span className="font-extrabold text-slate-900">{inventoryCount}</span>
+                    {/* Sellable Items */}
+                    <td className="w-[11%] px-2 py-3 text-center">
+                      <span className={sellableCount > 0 ? "font-extrabold text-slate-900" : "font-semibold text-slate-400"}>
+                        {sellableCount}
+                      </span>
                       <span className="text-xs font-semibold text-slate-400 ml-1">items</span>
                     </td>
 
                     {/* Consumable Items */}
-                    <td className="w-[11%] px-2.5 py-3 text-center">
-                      <span className="font-extrabold text-slate-900">{consumableCount}</span>
+                    <td className="w-[11%] px-2 py-3 text-center">
+                      <span className={consumableCount > 0 ? "font-extrabold text-slate-900" : "font-semibold text-slate-400"}>
+                        {consumableCount}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400 ml-1">items</span>
+                    </td>
+
+                    {/* Asset Items */}
+                    <td className="w-[10%] px-2 py-3 text-center">
+                      <span className={assetCount > 0 ? "font-extrabold text-slate-900" : "font-semibold text-slate-400"}>
+                        {assetCount}
+                      </span>
                       <span className="text-xs font-semibold text-slate-400 ml-1">items</span>
                     </td>
 
@@ -476,7 +497,7 @@ export default function PendingReceiptsHeroSection({
                     </td>
 
                     {/* Action */}
-                    <td className="w-[16%] px-3 py-3 text-right pr-4">
+                    <td className="w-[15%] px-3 py-3 text-right pr-4">
                       <button
                         type="button"
                         onClick={() => onReceiveGoods(bill)}

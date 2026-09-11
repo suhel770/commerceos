@@ -57,6 +57,7 @@ import { inventoryAdvisorEngine, type InventoryRecommendation } from "@/lib/inve
 interface InventoryKpisSectionProps {
   totalPhysical: number;
   totalAts: number;
+  totalConsumable: number;
   totalReserved: number;
   totalDamaged: number;
   totalInTransit: number;
@@ -71,6 +72,7 @@ interface InventoryKpisSectionProps {
 const DEFAULT_INVENTORY_KPI_ORDER = [
   "physical_stock",
   "available_ats",
+  "consumable_stock",
   "reserved_stock",
   "damaged_qc",
   "in_transit",
@@ -80,6 +82,7 @@ const DEFAULT_INVENTORY_KPI_ORDER = [
 function InventoryKpisSection({
   totalPhysical,
   totalAts,
+  totalConsumable,
   totalReserved,
   totalDamaged,
   totalInTransit,
@@ -139,6 +142,29 @@ function InventoryKpisSection({
             <div className="mt-3 pt-2.5 border-t border-emerald-200/60 flex items-center justify-between text-[11px] font-extrabold text-emerald-800">
               <span>Ready for orders</span>
               <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+          </div>
+        );
+
+      case "consumable_stock":
+        return (
+          <div
+            onClick={() => onNavigateStock("consumable")}
+            className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4 cursor-pointer group transition-all hover:border-amber-400 hover:shadow-xs active:scale-[0.99] h-full"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 block">Consumable Stock</span>
+                <span className="text-2xl font-black text-amber-950 block mt-1 leading-none">{totalConsumable.toLocaleString("en-IN")}</span>
+                <span className="text-amber-700 text-[11px] font-semibold mt-1 block">Packaging & operational supplies</span>
+              </div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
+                <Boxes className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-amber-200/60 flex items-center justify-between text-[11px] font-extrabold text-amber-800">
+              <span>Not for sale — ops use</span>
+              <span className="flex h-2 w-2 rounded-full bg-amber-400" />
             </div>
           </div>
         );
@@ -269,7 +295,7 @@ function InventoryKpisSection({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
         {order.map((key, index) => {
           const dragProps = getCardDragProps(index);
           return (
@@ -350,45 +376,6 @@ export default function InventoryOverviewView() {
           : [];
       setBills(freshBills);
     } catch {}
-
-    // Merge live received Storage stock records from locationStockRepository
-    if (typeof window !== "undefined") {
-      try {
-        const storageRecords = locationStockRepository.getAllBalances();
-        if (storageRecords.length > 0) {
-          for (const sr of storageRecords) {
-            const skuTrimmed = (sr.sku || "").toLowerCase().trim();
-            const matchIdx = fresh.findIndex((b) => (b.sku || "").toLowerCase().trim() === skuTrimmed);
-            if (matchIdx >= 0) {
-              const current = fresh[matchIdx];
-              if (current) {
-                fresh[matchIdx] = {
-                  ...current,
-                  available: Math.max(current.available, sr.availableQty),
-                  productName: current.productName || sr.productName || sr.sku,
-                };
-              }
-            } else {
-              fresh.push({
-                id: sr.id || `stk-${sr.sku}`,
-                organizationId: "org-commerceos",
-                workspaceId: "ws-default",
-                warehouseId: sr.storageLocationId || DEFAULT_WAREHOUSE_ID,
-                productId: sr.productId || `prod-${sr.sku}`,
-                sku: sr.sku,
-                productName: sr.productName || sr.sku,
-                available: sr.availableQty,
-                reserved: 0,
-                incoming: 0,
-                damaged: 0,
-                inTransit: 0,
-                updatedAt: sr.updatedAt || new Date().toISOString(),
-              });
-            }
-          }
-        }
-      } catch {}
-    }
 
     setBalances(fresh);
     setLastSyncedAt(new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
@@ -643,7 +630,14 @@ export default function InventoryOverviewView() {
           (acc, m) => acc + m.availableQty + m.reservedQty + m.damagedQty,
           0
         );
-        const totalAtsAvailable = skuMetricsList.reduce((acc, m) => acc + m.availableQty, 0);
+        // ATS = only sellable-intent balances (excludes consumable/asset)
+        const totalAtsAvailable = balances
+          .filter((b) => (b.intent ?? "sellable") === "sellable")
+          .reduce((acc, b) => acc + (b.available ?? 0), 0);
+        // Consumable stock — packaging & operational supplies (never for sale)
+        const totalConsumableAvail = balances
+          .filter((b) => b.intent === "consumable")
+          .reduce((acc, b) => acc + (b.available ?? 0), 0);
         const totalReserved = skuMetricsList.reduce((acc, m) => acc + m.reservedQty, 0);
         const totalDamaged = skuMetricsList.reduce((acc, m) => acc + m.damagedQty, 0);
         const totalInTransit = balances.reduce((acc, b) => acc + (b.inTransit ?? 0), 0);
@@ -653,6 +647,7 @@ export default function InventoryOverviewView() {
           <InventoryKpisSection
             totalPhysical={totalPhysicalAccepted}
             totalAts={totalAtsAvailable}
+            totalConsumable={totalConsumableAvail}
             totalReserved={totalReserved}
             totalDamaged={totalDamaged}
             totalInTransit={totalInTransit}

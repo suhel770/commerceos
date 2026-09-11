@@ -5,18 +5,18 @@ CommerceOS uses a clean, enterprise-grade typography scale powered by **Inter** 
 
 | Token | Class / Value | Weight | Usage |
 | :--- | :--- | :--- | :--- |
-| **Display** | `text-3xl font-black tracking-tight` | 900 | Main workspace titles |
-| **H1** | `text-2xl font-extrabold tracking-tight` | 800 | Section titles |
-| **H2** | `text-xl font-bold` | 700 | Subsection headers |
-| **H3** | `text-lg font-bold` | 700 | Card titles & modal headers |
-| **H4** | `text-base font-semibold` | 600 | Grouping headers |
-| **Body Large** | `text-base font-medium` | 500 | Hero descriptions |
-| **Body** | `text-sm font-normal` | 400 | Standard UI text |
-| **Body Small** | `text-xs font-normal` | 400 | Secondary helper text |
-| **Caption** | `text-[10px] font-extrabold uppercase tracking-widest` | 800 | Labels & KPI category subtitles |
-| **Table Header** | `text-[10px] font-black uppercase tracking-widest` | 900 | Data table headers |
-| **Table Cell** | `text-xs font-medium` | 500 | Standard table cells |
-| **AI Heading** | `text-base font-black text-purple-900` | 900 | AI drawer & report titles |
+| **Display** | `text-display` / `text-3xl font-black` | 800 / 900 | Hero metrics & executive numbers |
+| **Page Title (H1)** | `text-page-title` / `text-2xl font-bold` | 700 | Main workspace titles |
+| **Section Title (H2)** | `text-section-title` / `text-xl font-bold` | 700 | Section headers |
+| **Card Title (H3)** | `text-card-title` / `text-base font-semibold` | 600 | Card titles & modal headers |
+| **H4** | `text-sm font-semibold` | 600 | Grouping headers |
+| **Body Large** | `text-body-lg` / `text-base font-normal` | 400 / 500 | Hero descriptions |
+| **Body** | `text-body-base` / `text-sm font-normal` | 400 | Standard UI text |
+| **Body Small** | `text-body-sm` / `text-xs font-normal` | 400 | Secondary helper text & table cells |
+| **Label / KPI Tag** | `text-label` / `text-xs font-bold uppercase` | 700 | Labels & KPI category subtitles |
+| **Table Header** | `text-xs font-bold uppercase tracking-wider` | 700 | Data table headers |
+| **Table Cell** | `text-sm font-normal` | 400 / 500 | Standard table cells |
+| **AI Heading** | `text-base font-bold text-purple-900` | 700 | AI drawer & report titles |
 | **AI Body** | `text-xs font-medium text-purple-800` | 500 | AI insight text |
 
 ---

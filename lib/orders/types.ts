@@ -238,6 +238,8 @@ export interface OrderCustomer {
   phone?: string;
   email?: string;
   city?: string;
+  state?: string;
+  pincode?: string;
 }
 
 export interface OrderDocument {
@@ -337,6 +339,7 @@ export interface CreateOrderInput {
   externalOrderId?: string;
   paymentStatus?: PaymentStatus;
   shippingMode?: ShippingMode;
+  customer?: Partial<OrderCustomer>;
   lines: Array<{
     productId: string;
     sku: string;

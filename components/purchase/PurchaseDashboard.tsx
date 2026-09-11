@@ -741,9 +741,16 @@ export default function PurchaseDashboard() {
         incomingCount: bills.filter(
           (b) => b.status === "ordered" || b.status === "partially_received",
         ).length,
-        outstandingVendors,
+        outstandingVendors: vendors.filter((v) =>
+          filteredBills.some((b) => b.vendorId === v.id && b.status !== "void"),
+        ).length,
         alertCount: alerts.filter((row) => !dismissedAlertIds.has(row.id))
           .length,
+        totalMonthSpend: total,
+        totalBillsCount: filteredBills.filter((b) => b.status !== "void" && b.status !== "draft").length,
+        avgOrderValue: filteredBills.filter((b) => b.status !== "void" && b.status !== "draft").length > 0
+          ? total / filteredBills.filter((b) => b.status !== "void" && b.status !== "draft").length
+          : 0,
         onReorder: () => navigateOps("stock"),
         onPending: () => navigateOps("pending"),
         onIncoming: () => setDialog("receive"),
@@ -762,10 +769,13 @@ export default function PurchaseDashboard() {
       bills,
       capabilities,
       dismissedAlertIds,
+      filteredBills,
       navigateOps,
       pendingAmount,
       pendingBills.length,
       reorderCount,
+      total,
+      vendors,
       outstandingVendors,
     ],
   );
@@ -854,7 +864,7 @@ export default function PurchaseDashboard() {
       setMessage("No purchases to export.");
       return;
     }
-    const excel = buildPurchaseBillsExcel(filteredBills);
+    const excel = buildPurchaseBillsExcel(rows);
     const blob = new Blob([excel.body as any], { type: excel.contentType });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -1017,8 +1027,9 @@ export default function PurchaseDashboard() {
       setMessage("Purchase bill updated successfully.");
       return true;
     } catch (err: any) {
-      setError(err?.message || "Failed to update bill.");
-      return false;
+      const msg = err?.message || "Failed to update bill.";
+      setError(msg);
+      throw new Error(msg);
     } finally {
       setSubmitting(false);
     }

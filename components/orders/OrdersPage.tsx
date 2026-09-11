@@ -11,7 +11,6 @@ import {
   type OrderDocumentType,
   type ShippingMode,
 } from "@/lib/orders";
-import { products } from "@/lib/mocks/products";
 import ProductPagination from "@/components/shared/pagination/ProductPagination";
 import CommerceSelect from "@/components/ui/CommerceSelect";
 import { safeFetchJson, safeResponseJson } from "@/lib/api/client";
@@ -38,6 +37,7 @@ const CHANNELS = ["Manual", "Amazon", "Flipkart", "Myntra", "Meesho", "Shopify"]
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [availableProducts, setAvailableProducts] = useState<Array<{ id: string; name: string; sku: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export default function OrdersPage() {
   const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [productId, setProductId] = useState(products[0]?.id ?? "");
+  const [productId, setProductId] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [channel, setChannel] = useState<string>(CHANNELS[0]);
 
@@ -236,14 +236,14 @@ export default function OrdersPage() {
 
   const productOptions = useMemo(
     () =>
-      products.map((product) => ({
+      availableProducts.map((product) => ({
         id: product.id,
         label: `${product.sku} · ${product.name}`,
         sku: product.sku,
         name: product.name,
-        price: product.listings[0]?.sellingPrice ?? 0,
+        price: 0,
       })),
-    [],
+    [availableProducts],
   );
   const selectedProduct = productOptions.find((row) => row.id === productId);
 
@@ -825,9 +825,9 @@ export default function OrdersPage() {
                 label="Product"
                 value={productId}
                 onChange={setProductId}
-                options={productOptions.map((option) => ({
-                  value: option.id,
-                  label: option.label,
+                options={availableProducts.map((p) => ({
+                  value: p.id,
+                  label: `${p.name} (${p.sku})`,
                 }))}
                 searchable
                 placeholder="Select product"

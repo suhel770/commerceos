@@ -99,18 +99,18 @@ export default function ActionableKpiCard({
       <div>
         {/* 1. TOP ROW: Compact Icon & Title */}
         <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <div className={`p-1.5 rounded-lg border ${style.iconBg} ${style.iconColor} shrink-0`}>
-              <IconComponent className="w-3.5 h-3.5" />
+              <IconComponent className="w-4 h-4" />
             </div>
-            <span className="text-[11px] font-extrabold text-slate-800 leading-tight">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 leading-tight truncate">
               {label}
             </span>
           </div>
 
           {/* Info Icon with Clean Scope Tooltip */}
           <div
-            className="relative"
+            className="relative shrink-0"
             onMouseEnter={(e) => {
               e.stopPropagation();
               setShowInfoTooltip(true);
@@ -120,15 +120,15 @@ export default function ActionableKpiCard({
               setShowInfoTooltip(false);
             }}
           >
-            <Info className="w-3 h-3 text-slate-300 hover:text-slate-600 shrink-0 transition-colors" />
+            <Info className="w-3.5 h-3.5 text-slate-300 hover:text-slate-600 shrink-0 transition-colors" />
 
             {/* Non-Intrusive Info Tooltip */}
             {showInfoTooltip && (
-              <div className="absolute right-0 top-full mt-1.5 w-52 p-2.5 bg-slate-900 text-white rounded-lg shadow-xl z-50 text-[10px] leading-snug pointer-events-none animate-in fade-in">
+              <div className="absolute right-0 top-full mt-1.5 w-56 p-2.5 bg-slate-900 text-white rounded-lg shadow-xl z-50 text-xs leading-snug pointer-events-none animate-in fade-in">
                 <span className="font-bold text-indigo-300 block mb-0.5">{sourceEngine}</span>
                 <p className="text-slate-200">{definition || `Calculated by ${sourceEngine}`}</p>
                 {calculationLogic && (
-                  <p className="text-slate-400 font-mono text-[9px] mt-1 pt-1 border-t border-slate-700">
+                  <p className="text-slate-400 font-mono text-[11px] mt-1 pt-1 border-t border-slate-700">
                     Logic: {calculationLogic}
                   </p>
                 )}
@@ -139,15 +139,15 @@ export default function ActionableKpiCard({
 
         {/* 2. COMPACT METRIC VALUE */}
         <div className="mt-2.5 flex items-baseline gap-1">
-          <span className="text-xl font-extrabold text-slate-900 tracking-tight">
+          <span className="text-2xl font-bold text-slate-900 tracking-tight">
             {value}
           </span>
-          {unit && <span className="text-[11px] font-semibold text-slate-400">{unit}</span>}
+          {unit && <span className="text-xs font-medium text-slate-400">{unit}</span>}
         </div>
 
         {/* 3. TREND / SUBTEXT */}
         {trend && (
-          <p className={`text-[11px] mt-0.5 ${style.trendColor}`}>
+          <p className={`text-xs mt-1 ${style.trendColor}`}>
             {trend}
           </p>
         )}
@@ -161,10 +161,10 @@ export default function ActionableKpiCard({
             e.stopPropagation();
             onPrimaryAction();
           }}
-          className="w-full py-1 px-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-[10px] font-bold transition flex items-center justify-between shadow-2xs group/btn"
+          className="w-full py-1.5 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center justify-between shadow-2xs group/btn cursor-pointer"
         >
           <span className="truncate">{primaryActionLabel}</span>
-          <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover/btn:text-slate-900 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform shrink-0" />
+          <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover/btn:text-slate-900 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform shrink-0" />
         </button>
       </div>
     </div>

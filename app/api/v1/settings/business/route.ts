@@ -34,6 +34,8 @@ export async function PATCH(request: Request) {
       email: typeof body.email === "string" ? body.email : undefined,
       ownerName:
         typeof body.ownerName === "string" ? body.ownerName : undefined,
+      trackConsumables:
+        typeof body.trackConsumables === "boolean" ? body.trackConsumables : undefined,
     });
     return successResponse(context, data);
   } catch (error) {

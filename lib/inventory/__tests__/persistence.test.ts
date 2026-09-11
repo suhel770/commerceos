@@ -65,9 +65,21 @@ describe("CommerceOS — DB Rules Persistence & Authority Tests", () => {
     }
   });
 
-  it("2. Consumable Rules seed automatically and can be read from DB / Memory", async () => {
+  it("2. Consumable Rules can be written and read from DB / Memory", async () => {
     const queryOrg = isDbAvailable ? orgId : "org-commerceos";
     const queryWs = isDbAvailable ? wsId : "ws-default";
+
+    await consumableRulesService.createRule({
+      organizationId: queryOrg,
+      workspaceId: queryWs,
+      productId: "prod-test-01",
+      productSku: "SKU-PERSIST-TEST",
+      consumableSku: "SKU-BOX-S",
+      consumableName: "Courier Box Small",
+      quantity: 1,
+      unit: "pcs",
+      consumptionMode: "PER_UNIT",
+    });
 
     const rules = await consumableUsageRuleRepository.getAllRules({
       organizationId: queryOrg,
@@ -75,14 +87,13 @@ describe("CommerceOS — DB Rules Persistence & Authority Tests", () => {
     });
 
     expect(rules.length).toBeGreaterThan(0);
+    expect(rules[0].consumableSku).toBe("SKU-BOX-S");
 
     if (isDbAvailable) {
       const dbRules = await db.consumableRule.findMany({
-        where: { workspaceId: wsId }
+        where: { workspaceId: queryWs }
       });
       expect(dbRules.length).toBe(rules.length);
-    } else {
-      expect(rules[0].consumableSku).toBe("SKU-BOX-S");
     }
   });
 });

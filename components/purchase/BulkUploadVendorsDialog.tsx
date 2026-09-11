@@ -305,9 +305,13 @@ export default function BulkUploadVendorsDialog({
       return;
     }
 
-    const created = await onBulkCreate(parsedVendors);
-    if (created) {
-      setCompletedCount(created.length || parsedVendors.length);
+    try {
+      const created = await onBulkCreate(parsedVendors);
+      if (created) {
+        setCompletedCount(created.length || parsedVendors.length);
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to bulk import vendors.");
     }
   };
 

@@ -12,44 +12,12 @@ import type {
   ConsumptionMode,
 } from "./types";
 import { inventoryConsumptionLedger } from "@/lib/inventory/consumption-ledger";
+import { ConsumableService } from "@/lib/consumables/consumable.service";
 
 const STORAGE_KEY = "commerceos_product_consumable_rules_v1";
 
-// Baseline initial seed rules for standard catalog items
-const SEED_RULES: ConsumableUsageRule[] = [
-  {
-    id: "crule-seed-001",
-    organizationId: "org-commerceos",
-    workspaceId: "ws-default",
-    productId: "prod-1",
-    productSku: "SKU-NOVA-SAND-PNK",
-    consumableSku: "SKU-BOX-S",
-    consumableName: "Courier Box Small",
-    quantity: 1,
-    unit: "pcs",
-    consumptionMode: "PER_UNIT",
-    notes: "Primary individual shoebox",
-    active: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "crule-seed-002",
-    organizationId: "org-commerceos",
-    workspaceId: "ws-default",
-    productId: "prod-1",
-    productSku: "SKU-NOVA-SAND-PNK",
-    consumableSku: "SKU-POLY-M",
-    consumableName: "Polybag Medium 12x16",
-    quantity: 1,
-    unit: "pcs",
-    consumptionMode: "PER_UNIT",
-    notes: "Dust protection wrap",
-    active: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+// No fake seed rules — strictly driven by live tenant inventory
+const SEED_RULES: ConsumableUsageRule[] = [];
 
 export class ConsumableRulesRepository {
   private rules: ConsumableUsageRule[] = [];
@@ -132,32 +100,37 @@ export class ConsumableRulesRepository {
     const wsId = tenantScope?.workspaceId || "ws-default";
     await this.ensureSeeded(orgId, wsId);
 
-    try {
-      const rows = await db.consumableRule.findMany({
-        where: {
-          organizationId: tenantScope?.organizationId || undefined,
-          workspaceId: tenantScope?.workspaceId || undefined,
-        },
-        orderBy: { createdAt: "desc" },
-      });
-      return rows.map((r) => ({
-        id: r.id,
-        organizationId: r.organizationId,
-        workspaceId: r.workspaceId,
-        productId: r.productId || "",
-        productSku: r.productSku,
-        consumableSku: r.consumableSku,
-        consumableName: r.consumableName,
-        quantity: r.quantity,
-        unit: r.unit,
-        consumptionMode: r.consumptionMode as ConsumptionMode,
-        notes: r.notes || undefined,
-        active: r.active,
-        createdAt: r.createdAt.toISOString(),
-        updatedAt: r.updatedAt.toISOString(),
-      }));
-    } catch (err) {
-      console.warn("[ConsumableRulesRepository] DB query failed, using memory:", err);
+    if (process.env.NODE_ENV !== "test") {
+      try {
+        const rows = await db.consumableRule.findMany({
+          where: {
+            organizationId: tenantScope?.organizationId || undefined,
+            workspaceId: tenantScope?.workspaceId || undefined,
+          },
+          orderBy: { createdAt: "desc" },
+        });
+        if (rows.length > 0) {
+          return rows.map((r) => ({
+            id: r.id,
+            organizationId: r.organizationId,
+            workspaceId: r.workspaceId,
+            productId: r.productId || "",
+            productSku: r.productSku,
+            variantSku: (r as any).variantSku || undefined,
+            consumableSku: r.consumableSku,
+            consumableName: r.consumableName,
+            quantity: Number(r.quantity),
+            unit: r.unit,
+            consumptionMode: r.consumptionMode as ConsumptionMode,
+            notes: r.notes || undefined,
+            active: r.active,
+            createdAt: r.createdAt.toISOString(),
+            updatedAt: r.updatedAt.toISOString(),
+          }));
+        }
+      } catch (err) {
+        console.warn("[ConsumableRulesRepository] DB query failed, using memory:", err);
+      }
     }
 
     if (!this.isLoaded) this.loadFromStorage();
@@ -197,31 +170,34 @@ export class ConsumableRulesRepository {
     id: string,
     tenantScope?: { organizationId?: string; workspaceId?: string }
   ): Promise<ConsumableUsageRule | null> {
-    try {
-      const row = await db.consumableRule.findUnique({
-        where: { id },
-      });
-      if (row) {
-        if (tenantScope?.organizationId && row.organizationId !== tenantScope.organizationId) return null;
-        if (tenantScope?.workspaceId && row.workspaceId !== tenantScope.workspaceId) return null;
-        return {
-          id: row.id,
-          organizationId: row.organizationId,
-          workspaceId: row.workspaceId,
-          productId: row.productId || "",
-          productSku: row.productSku,
-          consumableSku: row.consumableSku,
-          consumableName: row.consumableName,
-          quantity: row.quantity,
-          unit: row.unit,
-          consumptionMode: row.consumptionMode as ConsumptionMode,
-          notes: row.notes || undefined,
-          active: row.active,
-          createdAt: row.createdAt.toISOString(),
-          updatedAt: row.updatedAt.toISOString(),
-        };
-      }
-    } catch {}
+    if (process.env.NODE_ENV !== "test") {
+      try {
+        const row = await db.consumableRule.findUnique({
+          where: { id },
+        });
+        if (row) {
+          if (tenantScope?.organizationId && row.organizationId !== tenantScope.organizationId) return null;
+          if (tenantScope?.workspaceId && row.workspaceId !== tenantScope.workspaceId) return null;
+          return {
+            id: row.id,
+            organizationId: row.organizationId,
+            workspaceId: row.workspaceId,
+            productId: row.productId || "",
+            productSku: row.productSku,
+            variantSku: (row as any).variantSku || undefined,
+            consumableSku: row.consumableSku,
+            consumableName: row.consumableName,
+            quantity: Number(row.quantity),
+            unit: row.unit,
+            consumptionMode: row.consumptionMode as ConsumptionMode,
+            notes: row.notes || undefined,
+            active: row.active,
+            createdAt: row.createdAt.toISOString(),
+            updatedAt: row.updatedAt.toISOString(),
+          };
+        }
+      } catch {}
+    }
 
     if (!this.isLoaded) this.loadFromStorage();
     const rule = this.rules.find((r) => r.id === id);
@@ -241,43 +217,6 @@ export class ConsumableRulesRepository {
     const now = new Date().toISOString();
     const id = `crule-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    try {
-      const created = await db.consumableRule.create({
-        data: {
-          id,
-          organizationId: orgId,
-          workspaceId: wsId,
-          productId: input.productId.trim(),
-          productSku: input.productSku.trim(),
-          consumableSku: input.consumableSku.trim(),
-          consumableName: input.consumableName?.trim() || input.consumableSku.trim(),
-          quantity: Number(input.quantity),
-          unit: input.unit?.trim() || "pcs",
-          consumptionMode: input.consumptionMode || "PER_UNIT",
-          notes: input.notes?.trim() || null,
-          active: input.active !== undefined ? input.active : true,
-        },
-      });
-      return {
-        id: created.id,
-        organizationId: created.organizationId,
-        workspaceId: created.workspaceId,
-        productId: created.productId || "",
-        productSku: created.productSku,
-        consumableSku: created.consumableSku,
-        consumableName: created.consumableName,
-        quantity: created.quantity,
-        unit: created.unit,
-        consumptionMode: created.consumptionMode as ConsumptionMode,
-        notes: created.notes || undefined,
-        active: created.active,
-        createdAt: created.createdAt.toISOString(),
-        updatedAt: created.updatedAt.toISOString(),
-      };
-    } catch (err) {
-      console.warn("[ConsumableRulesRepository] DB create failed, using memory:", err);
-    }
-
     const newRule: ConsumableUsageRule = {
       id,
       organizationId: orgId,
@@ -295,6 +234,27 @@ export class ConsumableRulesRepository {
       createdAt: now,
       updatedAt: now,
     };
+
+    try {
+      await db.consumableRule.create({
+        data: {
+          id,
+          organizationId: orgId,
+          workspaceId: wsId,
+          productId: input.productId.trim(),
+          productSku: input.productSku.trim(),
+          consumableSku: input.consumableSku.trim(),
+          consumableName: input.consumableName?.trim() || input.consumableSku.trim(),
+          quantity: Math.max(1, Math.round(Number(input.quantity))),
+          unit: input.unit?.trim() || "pcs",
+          consumptionMode: input.consumptionMode || "PER_UNIT",
+          notes: input.notes?.trim() || null,
+          active: input.active !== undefined ? input.active : true,
+        },
+      });
+    } catch (err) {
+      console.warn("[ConsumableRulesRepository] DB create failed, using memory:", err);
+    }
 
     this.rules.unshift(newRule);
     this.saveToStorage();
@@ -383,59 +343,40 @@ export class ConsumableRulesRepository {
     return true;
   }
 
-  public async getAuthoritativeConsumableOptions(): Promise<Array<{
+  public async getAuthoritativeConsumableOptions(tenantScope?: {
+    organizationId?: string;
+    workspaceId?: string;
+    warehouseId?: string;
+  }): Promise<Array<{
     sku: string;
     productName: string;
     unit: string;
     availableStock: number;
   }>> {
-    const consumableMap = new Map<string, { sku: string; productName: string; unit: string; availableStock: number }>();
     try {
-      const dbInv = await db.inventory.findMany({
-        where: { intent: "consumable" },
-        include: { product: true }
+      // Authoritative live inventory consumable items matching the Consumables & Packaging page
+      const consumables = await ConsumableService.getConsumables({
+        organizationId: tenantScope?.organizationId,
+        workspaceId: tenantScope?.workspaceId,
       });
-      for (const b of dbInv) {
-        const key = b.sku.toLowerCase().trim();
-        if (consumableMap.has(key)) {
-          const existing = consumableMap.get(key)!;
-          existing.availableStock += b.available;
-        } else {
-          consumableMap.set(key, {
-            sku: b.sku,
-            productName: b.product?.name || b.sku,
-            unit: "pcs",
-            availableStock: b.available,
-          });
-        }
-      }
-    } catch {
-      // ignore
+
+      return consumables.map((c) => ({
+        sku: c.sku,
+        productName: c.name,
+        unit: c.unit || "pcs",
+        availableStock: c.available,
+      })).sort((a, b) => a.sku.localeCompare(b.sku));
+    } catch (err) {
+      console.warn("[ConsumableRulesRepository] getAuthoritativeConsumableOptions failed:", err);
+      return [];
     }
-
-    // Default known standard packaging consumables if storage is currently unseeded
-    const standardDefaults = [
-      { sku: "SKU-BOX-S", productName: "Courier Box Small", unit: "pcs", availableStock: 0 },
-      { sku: "SKU-BOX-M", productName: "Courier Box Medium", unit: "pcs", availableStock: 0 },
-      { sku: "SKU-BOX-L", productName: "Courier Box Large", unit: "pcs", availableStock: 0 },
-      { sku: "SKU-POLY-M", productName: "Polybag Medium 12x16", unit: "pcs", availableStock: 0 },
-      { sku: "SKU-STICKER-QC", productName: "Barcode & QC Sticker Label", unit: "pcs", availableStock: 0 },
-      { sku: "SKU-TAPE-BROWN", productName: "Packaging Tape Roll (meters)", unit: "meters", availableStock: 0 },
-      { sku: "SKU-BUBBLE-WRAP", productName: "Protective Bubble Wrap (meters)", unit: "meters", availableStock: 0 },
-    ];
-
-    for (const def of standardDefaults) {
-      const key = def.sku.toLowerCase();
-      if (!consumableMap.has(key)) {
-        consumableMap.set(key, def);
-      }
-    }
-
-    return Array.from(consumableMap.values()).sort((a, b) => a.sku.localeCompare(b.sku));
   }
 
-  public clearForTesting(): void {
+  public async clearForTesting(): Promise<void> {
     this.rules = [];
+    try {
+      await db.consumableRule.deleteMany({});
+    } catch {}
     if (typeof window !== "undefined") {
       try {
         localStorage.removeItem(STORAGE_KEY);

@@ -1,4 +1,4 @@
-import { products } from "@/lib/mocks/products";
+import { productRepository } from "@/lib/repositories/product.repository";
 import { inventoryRepository } from "@/lib/inventory/repository";
 import { emptyBuckets } from "@/lib/inventory/types";
 import { masterListingRepository } from "@/lib/repositories/masterListing.repository";
@@ -35,7 +35,10 @@ export async function collectPlanningInputs(filter?: {
   const rows: PlanningInputs[] = [];
 
   for (const productId of productIds) {
-    const product = products.find((row) => row.id === productId);
+    let product = await productRepository.findById(productId);
+    if (!product) {
+      product = await productRepository.findBySku(productId);
+    }
     if (!product) continue;
 
     const warehouseRows = byProduct.get(productId) ?? [];
@@ -51,8 +54,7 @@ export async function collectPlanningInputs(filter?: {
       emptyBuckets(),
     );
 
-    // Fall back to product.inventory when balances missing for a product.
-    if (warehouseRows.length === 0) {
+    if (warehouseRows.length === 0 && product.inventory) {
       totals.available = product.inventory.available;
       totals.reserved = product.inventory.reserved;
       totals.incoming = product.inventory.incoming;
@@ -61,12 +63,12 @@ export async function collectPlanningInputs(filter?: {
     }
 
     const listing = await masterListingRepository.getById(productId);
-    const orders30Days = product.listings.reduce(
-      (sum, channel) => sum + channel.orders30Days,
+    const orders30Days = (product.listings ?? []).reduce(
+      (sum, channel) => sum + (channel.orders30Days ?? 0),
       0,
     );
-    const channelAvailable = product.listings.reduce(
-      (sum, channel) => sum + channel.availableStock,
+    const channelAvailable = (product.listings ?? []).reduce(
+      (sum, channel) => sum + (channel.availableStock ?? 0),
       0,
     );
 
@@ -74,8 +76,8 @@ export async function collectPlanningInputs(filter?: {
       productId: product.id,
       sku: product.sku,
       productName: product.name,
-      costPrice: product.pricing.costPrice,
-      ordersToday: product.performance.ordersToday,
+      costPrice: product.pricing?.costPrice ?? 0,
+      ordersToday: product.performance?.ordersToday ?? 0,
       orders30Days,
       channelAvailable,
       available: totals.available,
@@ -83,11 +85,11 @@ export async function collectPlanningInputs(filter?: {
       incoming: totals.incoming,
       damaged: totals.damaged,
       inTransit: totals.inTransit,
-      safetyStock: listing?.inventory.safetyStock ?? DEFAULT_SAFETY,
+      safetyStock: listing?.inventory?.safetyStock ?? DEFAULT_SAFETY,
       leadTimeDays: listing?.supply?.leadTimeDays ?? DEFAULT_LEAD_TIME,
       minimumOrderQuantity:
-        listing?.supply?.minimumOrderQuantity ?? DEFAULT_MOQ,
-      reorderQuantity: listing?.supply?.reorderQuantity ?? DEFAULT_REORDER,
+        (listing?.supply as any)?.minimumOrderQuantity ?? DEFAULT_MOQ,
+      reorderQuantity: (listing?.supply as any)?.reorderQuantity ?? DEFAULT_REORDER,
       supplierName:
         listing?.supply?.primarySupplier ??
         product.manufacturer ??

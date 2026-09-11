@@ -28,7 +28,7 @@ export default async function ProductDetailsPage({
       title={product.name}
       subtitle={`${product.category} • SKU: ${product.sku}`}
     >
-      <div className="mx-auto w-full max-w-[1700px] p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-[1700px] px-6 py-2 lg:px-8 lg:py-2.5">
         <ProductPage product={product} />
       </div>
     </AppShell>

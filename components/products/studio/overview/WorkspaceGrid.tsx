@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import {
   Activity,
-  BadgeInfo,
   BarChart3,
   Boxes,
   ClipboardCheck,
@@ -16,13 +16,8 @@ import {
 } from "lucide-react";
 
 import type { StudioWorkspaceId } from "@/components/products/studio/config/studio.config";
-
 import { useStudio } from "../context/StudioContext";
-
-import {
-  computeWorkspaceSummaries,
-} from "@/lib/studio/workspace-metrics";
-
+import { computeWorkspaceSummaries } from "@/lib/studio/workspace-metrics";
 import WorkspaceCard from "./WorkspaceCard";
 
 interface WorkspaceDefinition {
@@ -34,104 +29,104 @@ interface WorkspaceDefinition {
   iconColor: string;
 }
 
-const workspaceDefinitions: WorkspaceDefinition[] = [
-  {
+const WORKSPACE_DEFINITIONS: Record<string, WorkspaceDefinition> = {
+  identity: {
     id: "identity",
-    title: "Identity",
-    subtitle: "Brand, SKU & identity details.",
-    icon: BadgeInfo,
-    iconBackground: "bg-blue-50",
-    iconColor: "text-blue-600",
-  },
-  {
-    id: "media",
-    title: "Media",
-    subtitle: "Images, assets and video content.",
-    icon: ImageIcon,
-    iconBackground: "bg-violet-50",
-    iconColor: "text-violet-600",
-  },
-  {
-    id: "commercials",
-    title: "Commercials",
-    subtitle: "Pricing, cost and profitability.",
-    icon: IndianRupee,
+    title: "Product Identity",
+    subtitle: "Brand, SKU, category and core product information",
+    icon: ShieldCheck,
     iconBackground: "bg-emerald-50",
     iconColor: "text-emerald-600",
   },
-  {
+  media: {
+    id: "media",
+    title: "Media Studio",
+    subtitle: "Upload images, videos and rich media assets",
+    icon: ImageIcon,
+    iconBackground: "bg-purple-50",
+    iconColor: "text-purple-600",
+  },
+  commercials: {
+    id: "commercials",
+    title: "Commercials",
+    subtitle: "Pricing, margins and profitability configuration",
+    icon: IndianRupee,
+    iconBackground: "bg-amber-50",
+    iconColor: "text-amber-600",
+  },
+  inventory: {
     id: "inventory",
     title: "Inventory",
-    subtitle: "Stock, reservations, warehouses and thresholds.",
+    subtitle: "Stock, reservations and warehouse management",
     icon: Boxes,
-    iconBackground: "bg-cyan-50",
-    iconColor: "text-cyan-600",
+    iconBackground: "bg-blue-50",
+    iconColor: "text-blue-600",
   },
-  {
+  supply: {
     id: "supply",
     title: "Supply",
-    subtitle: "Suppliers, procurement and replenishment.",
+    subtitle: "Supplier, procurement and replenishment details",
     icon: Truck,
     iconBackground: "bg-orange-50",
     iconColor: "text-orange-600",
   },
-  {
+  attributes: {
     id: "attributes",
     title: "Attributes",
-    subtitle: "Marketplace specifications and product detail coverage.",
+    subtitle: "Product attributes and specifications",
     icon: Boxes,
     iconBackground: "bg-amber-50",
     iconColor: "text-amber-600",
   },
-  {
+  variants: {
     id: "variants",
     title: "Variants",
-    subtitle: "Variants and configurations for each SKU.",
+    subtitle: "Size, color and other variants configuration",
     icon: Layers3,
     iconBackground: "bg-emerald-50",
-    iconColor: "text-emerald-700",
+    iconColor: "text-emerald-600",
   },
-  {
+  growth: {
     id: "growth",
     title: "Growth",
-    subtitle: "SEO, discoverability, marketplace ranking and AI optimization.",
+    subtitle: "SEO, discoverability and marketing optimization",
     icon: BarChart3,
-    iconBackground: "bg-pink-50",
-    iconColor: "text-pink-600",
+    iconBackground: "bg-rose-50",
+    iconColor: "text-rose-600",
   },
-  {
+  channels: {
     id: "channels",
     title: "Channels",
-    subtitle: "Amazon, Flipkart, Shopify, Meesho and marketplace mapping.",
+    subtitle: "Connected marketplaces and stores",
     icon: Globe2,
-    iconBackground: "bg-blue-50",
-    iconColor: "text-blue-700",
+    iconBackground: "bg-indigo-50",
+    iconColor: "text-indigo-600",
   },
-  {
+  compliance: {
     id: "compliance",
     title: "Compliance",
-    subtitle: "GST, HSN & marketplace policy compliance.",
+    subtitle: "GST, HSN, policies and regulatory compliance",
     icon: ShieldCheck,
-    iconBackground: "bg-emerald-50",
-    iconColor: "text-emerald-700",
+    iconBackground: "bg-teal-50",
+    iconColor: "text-teal-600",
   },
-  {
+  publishing: {
     id: "publishing",
     title: "Publishing",
-    subtitle: "Readiness, validation and publishing workflow.",
+    subtitle: "Readiness, validation and publishing status",
     icon: ClipboardCheck,
     iconBackground: "bg-indigo-50",
-    iconColor: "text-indigo-700",
+    iconColor: "text-indigo-600",
   },
-  {
+  activity: {
     id: "activity",
     title: "Activity",
-    subtitle: "Audit history, publishing logs, edits and product timeline.",
+    subtitle: "History, logs and recent activities",
     icon: Activity,
     iconBackground: "bg-slate-100",
     iconColor: "text-slate-700",
   },
-];
+};
 
 export default function WorkspaceGrid() {
   const {
@@ -139,34 +134,66 @@ export default function WorkspaceGrid() {
     listing,
     activeWorkspace,
     setActiveWorkspace,
+    workspaceOrder,
+    reorderWorkspaces,
   } = useStudio();
+
+  const [draggedId, setDraggedId] = useState<StudioWorkspaceId | null>(null);
+  const [dragOverId, setDragOverId] = useState<StudioWorkspaceId | null>(null);
 
   if (!listing) {
     return null;
   }
 
-  const summaries = computeWorkspaceSummaries(
-    listing,
-    product,
-  );
+  const summaries = computeWorkspaceSummaries(listing, product);
+
+  const handleDragStart = (id: StudioWorkspaceId, e: React.DragEvent) => {
+    setDraggedId(id);
+    e.dataTransfer.setData("text/plain", id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (id: StudioWorkspaceId, e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverId !== id) {
+      setDragOverId(id);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDragOverId(null);
+  };
+
+  const handleDrop = (targetId: StudioWorkspaceId, e: React.DragEvent) => {
+    e.preventDefault();
+    const sourceId = (e.dataTransfer.getData("text/plain") || draggedId) as StudioWorkspaceId;
+    if (sourceId && targetId && sourceId !== targetId) {
+      reorderWorkspaces(sourceId, targetId);
+    }
+    setDraggedId(null);
+    setDragOverId(null);
+  };
 
   return (
     <section>
-
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {workspaceOrder.map((workspaceId) => {
+          const workspace = WORKSPACE_DEFINITIONS[workspaceId];
+          if (!workspace) return null;
 
-        {workspaceDefinitions.map((workspace) => {
-          const summary = summaries.find(
-            (item) => item.id === workspace.id,
-          );
-
-          if (!summary) {
-            return null;
-          }
+          const summary = summaries.find((item) => item.id === workspace.id);
+          if (!summary) return null;
 
           return (
             <WorkspaceCard
               key={workspace.id}
+              id={workspace.id}
               title={workspace.title}
               subtitle={workspace.subtitle}
               icon={workspace.icon}
@@ -176,13 +203,18 @@ export default function WorkspaceGrid() {
               active={activeWorkspace === workspace.id}
               iconBackground={workspace.iconBackground}
               iconColor={workspace.iconColor}
+              isDragging={draggedId === workspace.id}
+              isOver={dragOverId === workspace.id && draggedId !== workspace.id}
+              onDragStart={(e) => handleDragStart(workspace.id, e)}
+              onDragOver={(e) => handleDragOver(workspace.id, e)}
+              onDragLeave={handleDragLeave}
+              onDragEnd={handleDragEnd}
+              onDrop={(e) => handleDrop(workspace.id, e)}
               onClick={() => setActiveWorkspace(workspace.id)}
             />
           );
         })}
-
       </div>
-
     </section>
   );
 }

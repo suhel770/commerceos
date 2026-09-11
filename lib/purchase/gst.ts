@@ -216,13 +216,148 @@ export function splitGst(input: {
   };
 }
 
-export function suggestSkuFromName(name: string): string {
-  const slug = name
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 18);
-  const suffix = crypto.randomUUID().slice(0, 4).toUpperCase();
-  return slug ? `${slug}-${suffix}` : `SKU-${suffix}`;
+const SKU_STOP_WORDS = new Set([
+  "AND",
+  "THE",
+  "FOR",
+  "WITH",
+  "IN",
+  "OF",
+  "TO",
+  "A",
+  "AN",
+  "BY",
+  "AT",
+  "ON",
+  "FROM",
+  "SET",
+  "PACK",
+  "PK",
+  "PCS",
+  "PC",
+  "NO",
+  "NOS",
+  "ITEM",
+  "ITEMS",
+]);
+
+const COMMON_SKU_WORDS: Record<string, string> = {
+  BLACK: "BLK",
+  WHITE: "WHT",
+  SHIRT: "SHT",
+  SHOES: "SHO",
+  SHOE: "SHO",
+  COTTON: "COT",
+  CORRUGATED: "CRG",
+  BUBBLE: "BUB",
+  PAPER: "PAP",
+  BOTTLE: "BTL",
+  PLASTIC: "PLS",
+  LEATHER: "LTH",
+  YELLOW: "YLW",
+  ORANGE: "ORG",
+  PURPLE: "PRP",
+  SILVER: "SLV",
+  GOLDEN: "GLD",
+  TAPE: "TAP",
+  ROLL: "ROL",
+  ROUND: "RND",
+  SLEEVE: "SLV",
+  COLLAR: "CLR",
+  OFFICE: "OFF",
+  CHAIR: "CHR",
+  BOX: "BOX",
+  PEN: "PEN",
+  BALL: "BAL",
+  RECEIPT: "RCP",
+  THERMAL: "THR",
+  WRAP: "WRP",
+  RUNNING: "RUN",
+  COPIER: "CPR",
+  COFFEE: "COF",
+  MUG: "MUG",
+  CASE: "CAS",
+  WALLET: "WLT",
+  CERAMIC: "CRM",
+};
+
+function compactSkuToken(word: string, targetLen = 3): string {
+  const upper = word.toUpperCase();
+  if (COMMON_SKU_WORDS[upper]) {
+    return COMMON_SKU_WORDS[upper].slice(0, targetLen);
+  }
+  if (upper.length <= targetLen) return upper;
+
+  const first = upper[0];
+  const consonants = upper
+    .slice(1)
+    .replace(/[AEIOU]/g, "")
+    .replace(/(.)\1+/g, "$1");
+  const candidate = (first + consonants).replace(/(.)\1+/g, "$1");
+  if (candidate.length >= targetLen) return candidate.slice(0, targetLen);
+
+  return upper.slice(0, targetLen);
 }
+
+/**
+ * Generates a clean, short, professional retail SKU (6-9 chars)
+ * derived directly from the item name without hyphens, commas, or special symbols.
+ * Example: 'Cotton T Shirt' -> 'COTTSH434', 'Corrugated Box 10x10' -> 'CRGBOX478'
+ */
+export function suggestSkuFromName(name: string): string {
+  if (!name || !name.trim()) {
+    const num = Math.floor(100 + Math.random() * 900);
+    return `SKU${num}`;
+  }
+
+  const tokens = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w && !SKU_STOP_WORDS.has(w));
+
+  if (tokens.length === 0) {
+    const num = Math.floor(100 + Math.random() * 900);
+    return `SKU${num}`;
+  }
+
+  let code = "";
+
+  if (tokens.length === 1) {
+    const t = tokens[0];
+    if (/^\d+$/.test(t)) {
+      code = `ITM${t.slice(0, 3)}`;
+    } else {
+      code = compactSkuToken(t, 4);
+    }
+  } else if (tokens.length === 2) {
+    code = compactSkuToken(tokens[0], 3) + compactSkuToken(tokens[1], 3);
+  } else {
+    // 3 or more words:
+    if (tokens[1].length === 1 && tokens[2]) {
+      // e.g. Cotton T Shirt -> COT + T + SHT
+      code =
+        compactSkuToken(tokens[0], 3) +
+        tokens[1] +
+        compactSkuToken(tokens[2], 2);
+    } else {
+      // e.g. Running Shoes For Men -> RUN + SHO
+      // e.g. Bubble Wrap Roll 50m -> BUB + WRP
+      // e.g. Corrugated Box 10x10 -> CRG + BOX
+      // e.g. Office Chair Ergonomic -> OFF + CHR
+      code = compactSkuToken(tokens[0], 3) + compactSkuToken(tokens[1], 3);
+    }
+  }
+
+  // Ensure uppercase alphanumeric characters only, max 6 letters prefix
+  code = code.replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  if (code.length < 3) {
+    code = (code + "SKU").slice(0, 3);
+  }
+
+  // 3-digit random suffix (e.g. 101 to 999)
+  const num = Math.floor(100 + Math.random() * 900);
+  return `${code}${num}`;
+}
+

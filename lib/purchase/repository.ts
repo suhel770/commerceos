@@ -10,6 +10,7 @@ import {
   normalizeGstRate,
   splitGst,
   stateCodeFromGstin,
+  suggestSkuFromName,
   vendorIsGstRegistered,
 } from "./gst";
 import {
@@ -20,6 +21,9 @@ import {
   isStockPathType,
   resolveIntentFromPurchaseType,
 } from "./routing";
+import { generateNextUniversalProductId } from "@/lib/products/product-id-generator";
+import { getProductSlug } from "@/lib/products/slug";
+import { universalProductSyncService } from "@/lib/products/universal-product-sync.service";
 import { stockLineKey } from "./stock-data";
 import type {
   BusinessIntent,
@@ -103,7 +107,56 @@ function mapPrismaVendorToDomain(raw: any): Vendor {
   };
 }
 
-function mapPrismaLineToDomain(raw: any): PurchaseBillLine {
+function mapPrismaLineToDomain(raw: any, storageReceipts?: any[]): PurchaseBillLine {
+  const universalPrdId = raw.product?.productId || (raw.productId && String(raw.productId).startsWith("PRD-") ? raw.productId : undefined);
+  const intent = (raw.intent as BusinessIntent) ?? "sellable";
+
+  let receivedQty = raw.qcRecord?.receivedQty ?? 0;
+  let acceptedQty = raw.qcRecord?.acceptedQty ?? 0;
+  let rejectedQty = raw.qcRecord?.rejectedQty ?? (raw.qtyDamaged ?? 0);
+
+  // If storage receipts are available, reconcile unrecorded GRN completions
+  // NOTE: Only count "completed" receipts — "superseded" (from bill edits) are intentionally excluded.
+  if (Array.isArray(storageReceipts) && storageReceipts.length > 0) {
+    const rawSku = raw.sku ? String(raw.sku).trim().toLowerCase() : "";
+    const rawDesc = raw.description ? String(raw.description).trim().toLowerCase() : "";
+
+    const receiptUnits = storageReceipts
+      .filter((r) => r.status === "completed")
+      .flatMap((r) => r.lines ?? [])
+      .filter((l) => {
+        const lSku = l.sku ? String(l.sku).trim().toLowerCase() : "";
+        const lDesc = l.description ? String(l.description).trim().toLowerCase() : "";
+        return (rawSku && lSku && rawSku === lSku) || (rawDesc && lDesc && rawDesc === lDesc);
+      })
+      .reduce((sum, l) => sum + (Number(l.receivedQty) || 0), 0);
+
+    if (receiptUnits > receivedQty) {
+      receivedQty = receiptUnits;
+      acceptedQty = Math.max(0, receivedQty - (raw.qtyDamaged ?? 0));
+    }
+  }
+
+  let qcStatus: LineQCStatus;
+  if (raw.qcStatus) {
+    qcStatus = raw.qcStatus as LineQCStatus;
+  } else if (!canRequireQC(intent, { physicalStorageReceivingRequired: raw.physicalStorageReceivingRequired })) {
+    qcStatus = "not_applicable";
+  } else if (receivedQty >= raw.quantity && raw.quantity > 0) {
+    qcStatus = rejectedQty > 0 ? "partially_failed" : "passed";
+  } else {
+    qcStatus = "pending";
+  }
+
+  const qcRecord: LineQCRecord | undefined =
+    raw.qcRecord || (receivedQty > 0
+      ? {
+          receivedQty,
+          acceptedQty,
+          rejectedQty,
+        }
+      : undefined);
+
   return {
     id: raw.id,
     description: raw.description,
@@ -112,31 +165,34 @@ function mapPrismaLineToDomain(raw: any): PurchaseBillLine {
     amount: Number(raw.amount),
     qtyDamaged: raw.qtyDamaged ?? 0,
     uom: (raw.uom as any) ?? "pcs",
-    sku: raw.sku ?? undefined,
-    hsn: raw.hsn ?? undefined,
-    productId: raw.productId ?? undefined,
+    sku: raw.sku ?? raw.product?.sku ?? undefined,
+    hsn: raw.hsn ?? raw.product?.hsn ?? undefined,
+    productId: universalPrdId || raw.productId || undefined,
     gstRate: Number(raw.gstRate),
     cgstAmount: Number(raw.cgstAmount),
     sgstAmount: Number(raw.sgstAmount),
     igstAmount: Number(raw.igstAmount),
     taxAmount: Number(raw.taxAmount),
-    intent: (raw.intent as BusinessIntent) ?? "sellable",
+    intent,
     lineItemType: (raw.lineItemType as PurchaseLineItemType) ?? undefined,
     freightMode: (raw.freightMode as FreightAllocationMode) ?? undefined,
-    qcStatus: (raw.qcStatus as LineQCStatus) ?? undefined,
-    qcRecord: (raw.qcRecord as LineQCRecord) ?? undefined,
+    qcStatus,
+    qcRecord,
   };
 }
 
 function mapPrismaBillToDomain(raw: any): PurchaseBill {
-  const lines: PurchaseBillLine[] = (raw.lines ?? []).map(mapPrismaLineToDomain);
+  const storageReceipts = Array.isArray(raw.storageReceipts) ? raw.storageReceipts : undefined;
+  const lines: PurchaseBillLine[] = (raw.lines ?? []).map((line: any) =>
+    mapPrismaLineToDomain(line, storageReceipts),
+  );
   const attachments: PurchaseAttachment[] = Array.isArray(raw.attachments)
     ? (raw.attachments as PurchaseAttachment[])
     : [];
 
   const purchaseType = (raw.purchaseType as PurchaseType) ?? "inventory_product";
 
-  return {
+  const result: any = {
     id: raw.id,
     organizationId: raw.organizationId,
     workspaceId: raw.workspaceId,
@@ -186,6 +242,10 @@ function mapPrismaBillToDomain(raw: any): PurchaseBill {
     deletedBy: raw.deletedBy ?? undefined,
     deletedByName: raw.deletedByName ?? undefined,
   };
+  if (storageReceipts) {
+    result.storageReceipts = storageReceipts;
+  }
+  return result;
 }
 
 function mapPrismaOrderLineToDomain(raw: any): PurchaseOrderLine {
@@ -619,7 +679,11 @@ export class PrismaPurchaseRepository {
 
         const rawBills = await db.purchaseBill.findMany({
           where,
-          include: { lines: true, payments: true },
+          include: {
+            lines: { include: { product: true } },
+            payments: true,
+            storageReceipts: { include: { lines: true } },
+          },
           orderBy: { billDate: "desc" },
         });
 
@@ -634,6 +698,7 @@ export class PrismaPurchaseRepository {
               bill.purchaseType,
               bill.notes ?? "",
               ...bill.lines.map((line) => line.description),
+              ...bill.lines.map((line) => line.sku ?? ""),
             ]
               .join(" ")
               .toLowerCase();
@@ -683,7 +748,11 @@ export class PrismaPurchaseRepository {
               { billNumber: { equals: id, mode: "insensitive" } },
             ],
           },
-          include: { lines: true, payments: true },
+          include: {
+            lines: { include: { product: true } },
+            payments: true,
+            storageReceipts: { include: { lines: true } },
+          },
         });
 
         return raw ? mapPrismaBillToDomain(raw) : null;
@@ -712,7 +781,7 @@ export class PrismaPurchaseRepository {
     if (!vendor) {
       throw new PurchaseNotFoundError("Vendor not found.");
     }
-    if (vendor.status !== "active") {
+    if (vendor.status !== "active" && !input.approvalId && !input.ownerOverride) {
       throw new PurchaseError("Cannot bill an inactive vendor.");
     }
     if (!input.lines.length) {
@@ -849,6 +918,53 @@ export class PrismaPurchaseRepository {
     const billId = `bill-${crypto.randomUUID().slice(0, 8)}`;
 
     const createdBill = await db.$transaction(async (tx) => {
+      // Auto-resolve or auto-provision master product identities for sellable & consumable lines
+      const reservedPrdIds = new Set<string>();
+      const reservedSkus = new Set<string>();
+
+      for (const line of lines) {
+        if (line.intent === "sellable" || line.intent === "consumable") {
+          let matchedProduct: any = null;
+          if (line.productId) {
+            matchedProduct = await tx.product.findFirst({
+              where: {
+                workspaceId,
+                OR: [
+                  { id: line.productId },
+                  { productId: line.productId },
+                ],
+              },
+            });
+          }
+          if (!matchedProduct && line.sku) {
+            matchedProduct = await tx.product.findFirst({
+              where: { workspaceId, sku: { equals: line.sku, mode: "insensitive" } },
+            });
+          }
+          if (!matchedProduct && line.description) {
+            matchedProduct = await tx.product.findFirst({
+              where: { workspaceId, name: { equals: line.description, mode: "insensitive" } },
+            });
+          }
+
+          if (line.sku && line.description) {
+            const syncRes = await universalProductSyncService.syncSkuMetadata(tx, {
+              workspaceId,
+              organizationId,
+              sku: line.sku,
+              name: line.description,
+              intent: line.intent,
+              costPrice: line.unitPrice || 0,
+              hsn: line.hsn || null,
+              gstRate: line.gstRate || 18,
+            });
+            line.productId = syncRes.productId;
+          } else if (matchedProduct) {
+            line.productId = matchedProduct.id;
+          }
+        }
+      }
+
       const created = await tx.purchaseBill.create({
         data: {
           id: billId,
@@ -1280,7 +1396,11 @@ export class PrismaPurchaseRepository {
 
     const updated = await db.purchaseBill.findUnique({
       where: { id: raw.id },
-      include: { lines: true, payments: true },
+      include: {
+        lines: true,
+        payments: true,
+        storageReceipts: { include: { lines: true } },
+      },
     });
     return mapPrismaBillToDomain(updated);
   }
@@ -1485,17 +1605,268 @@ export class PrismaPurchaseRepository {
       return mapPrismaBillToDomain(created);
     }
 
-    await db.purchaseBill.update({
-      where: { workspaceId_id: { workspaceId, id: bill.id } },
-      data: {
-        purchaseType,
-        category: purchaseType,
-        status: patch.status ?? undefined,
-        paymentStatus: patch.paymentStatus ?? undefined,
-        paymentMethod: patch.paymentMethod ?? undefined,
-        notes: patch.notes !== undefined ? (patch.notes?.trim() || null) : undefined,
-      },
-    });
+    const patchData: any = {
+      purchaseType,
+      category: purchaseType,
+      status: patch.status ?? undefined,
+      paymentStatus: patch.paymentStatus ?? undefined,
+      paymentMethod: patch.paymentMethod ?? undefined,
+      notes: patch.notes !== undefined ? (patch.notes?.trim() || null) : undefined,
+    };
+
+    if (patch.vendorId && patch.vendorId !== bill.vendorId) {
+      patchData.vendor = {
+        connect: {
+          workspaceId_id: {
+            workspaceId,
+            id: patch.vendorId,
+          },
+        },
+      };
+    }
+    if (patch.vendorName) {
+      patchData.vendorName = patch.vendorName;
+    }
+    if (patch.vendorInvoiceNumber !== undefined) {
+      patchData.vendorInvoiceNumber = patch.vendorInvoiceNumber?.trim() || null;
+    }
+    if (patch.billDate) {
+      patchData.billDate = patch.billDate;
+    }
+    if (patch.dueDate !== undefined) {
+      patchData.dueDate = patch.dueDate || null;
+    }
+    if (patch.paymentId !== undefined) {
+      patchData.paymentId = patch.paymentId?.trim() || null;
+    }
+    if (patch.discountAmount !== undefined) {
+      patchData.discountAmount = patch.discountAmount;
+    }
+    if (patch.freightAmount !== undefined) {
+      patchData.freightAmount = patch.freightAmount;
+    }
+    if (patch.otherCharges !== undefined) {
+      patchData.otherCharges = patch.otherCharges;
+    }
+    if (patch.roundOff !== undefined) {
+      patchData.roundOff = patch.roundOff;
+    }
+    if (patch.subtotal !== undefined) {
+      patchData.subtotal = patch.subtotal;
+    }
+    if (patch.taxAmount !== undefined) {
+      patchData.taxAmount = patch.taxAmount;
+    }
+    if (patch.totalAmount !== undefined) {
+      patchData.totalAmount = patch.totalAmount;
+    }
+
+    try {
+      await db.$transaction(async (tx) => {
+        await tx.purchaseBill.update({
+          where: { workspaceId_id: { workspaceId, id: bill.id } },
+          data: patchData,
+        });
+
+        if (Array.isArray(patch.lines) && patch.lines.length > 0) {
+          // ── Step 1: Find all previous completed StorageReceipts for this bill ──────
+          const completedReceipts = await tx.storageReceipt.findMany({
+            where: { purchaseBillId: bill.id, workspaceId, status: "completed" },
+            include: { lines: true },
+          });
+
+          // ── Step 2: Mark all previous completed receipts as "superseded" ────────────
+          if (completedReceipts.length > 0) {
+            await tx.storageReceipt.updateMany({
+              where: {
+                purchaseBillId: bill.id,
+                workspaceId,
+                status: "completed",
+              },
+              data: { status: "superseded" },
+            });
+
+            // ── Step 3: Reverse physical stock for each previously received line ────
+            for (const receipt of completedReceipts) {
+              for (const rl of receipt.lines ?? []) {
+                if (!rl.sku || (Number(rl.receivedQty) ?? 0) <= 0) continue;
+                const reverseQty = Number(rl.receivedQty) - (Number(rl.damagedQty) || 0);
+                if (reverseQty <= 0) continue;
+
+                // Deduct from StorageStock (FIFO across locations)
+                const stocks = await tx.storageStock.findMany({
+                  where: { workspaceId, sku: rl.sku },
+                  orderBy: { updatedAt: "asc" },
+                });
+                let remaining = reverseQty;
+                for (const stock of stocks) {
+                  if (remaining <= 0) break;
+                  const deduct = Math.min(stock.availableQty, remaining);
+                  if (deduct <= 0) continue;
+                  await tx.storageStock.update({
+                    where: { id: stock.id },
+                    data: {
+                      availableQty: Math.max(0, stock.availableQty - deduct),
+                      updatedAt: new Date(),
+                    },
+                  });
+                  remaining -= deduct;
+                }
+
+                // Deduct from Inventory.available to keep sync
+                const prod = await tx.product.findFirst({
+                  where: { workspaceId, sku: rl.sku },
+                  select: { id: true },
+                });
+                if (prod) {
+                  const inv = await tx.inventory.findFirst({
+                    where: { workspaceId, productId: prod.id },
+                  });
+                  if (inv && inv.available > 0) {
+                    await tx.inventory.update({
+                      where: { id: inv.id },
+                      data: {
+                        available: Math.max(0, inv.available - reverseQty),
+                        updatedAt: new Date(),
+                      },
+                    });
+                  }
+                }
+              }
+            }
+
+            // ── Step 4: Write audit log for supersession ──────────────────────────
+            await tx.storageOperationLog.create({
+              data: {
+                organizationId: bill.organizationId,
+                workspaceId,
+                operationType: "receiving_superseded_by_edit",
+                sku: "MULTI",
+                qty: completedReceipts.reduce((s, r) => s + r.totalReceivedUnits, 0),
+                actorId: "system",
+                actorName: "Purchase Edit",
+                reason: `Purchase bill ${bill.billNumber} was edited — previous GRN superseded, re-queued for receiving.`,
+                metadata: {
+                  billId: bill.id,
+                  billNumber: bill.billNumber,
+                  supersededReceiptIds: completedReceipts.map((r) => r.id),
+                  supersededAt: new Date().toISOString(),
+                } as any,
+              },
+            });
+
+            // ── Step 5: Reset bill status to "ordered" so receiving engine picks it up
+            await tx.purchaseBill.update({
+              where: { workspaceId_id: { workspaceId, id: bill.id } },
+              data: { status: "ordered" },
+            });
+          }
+
+          // ── Step 6: Delete old lines and recreate fresh with pending QC ──────────
+          await tx.purchaseBillLine.deleteMany({
+            where: { billId: bill.id, workspaceId },
+          });
+
+          for (let index = 0; index < patch.lines.length; index++) {
+            const line = patch.lines[index];
+            const qty = Math.round(Number(line.quantity) || 0);
+            const price = Number(line.unitPrice) || 0;
+            const amount = Number((qty * price).toFixed(2));
+            const gstRate = Number(line.gstRate) || 0;
+            const tax = Number((line.taxAmount ?? ((amount * gstRate) / 100)).toFixed(2));
+            const intent = (line.intent as BusinessIntent) ?? "sellable";
+            const lineItemType = line.lineItemType ?? intentToLineItemType(intent);
+
+            // Universal Product Sync: Canonical Master Catalog & DB propagation across all tables
+            let resolvedProductId: string | null = null;
+            if (line.sku && typeof line.sku === "string" && line.sku.trim()) {
+              const syncResult = await universalProductSyncService.syncSkuMetadata(tx, {
+                workspaceId,
+                organizationId: bill.organizationId,
+                sku: line.sku.trim(),
+                name: (line.description || line.sku).trim(),
+                intent,
+                costPrice: price,
+                hsn: line.hsn?.trim() || null,
+                gstRate,
+              });
+              resolvedProductId = syncResult.productId;
+            } else if (line.productId && typeof line.productId === "string" && line.productId.trim()) {
+              const rawPid = line.productId.trim();
+              const matchedProduct = await tx.product.findFirst({
+                where: {
+                  workspaceId,
+                  OR: [
+                    { id: rawPid },
+                    { productId: rawPid },
+                  ],
+                },
+              });
+              resolvedProductId = matchedProduct ? matchedProduct.id : null;
+            } else if (line.description && typeof line.description === "string" && line.description.trim()) {
+              const matchedByName = await tx.product.findFirst({
+                where: {
+                  workspaceId,
+                  name: { equals: line.description.trim(), mode: "insensitive" },
+                },
+              });
+              resolvedProductId = matchedByName ? matchedByName.id : null;
+            }
+
+            // ── Step 7: Determine fresh qcStatus for new line (always reset to pending) ──
+            //   For non-stock intents (expense, service, etc.) QC is not applicable.
+            //   For all stock lines (sellable, consumable, physical asset) → pending receiving.
+            let qcStatus: string;
+            if (!canRequireQC(intent, { physicalStorageReceivingRequired: line.physicalStorageReceivingRequired })) {
+              qcStatus = "not_applicable";
+            } else {
+              qcStatus = "pending";
+            }
+
+            await tx.purchaseBillLine.create({
+              data: {
+                id: `line-${crypto.randomUUID().slice(0, 8)}-${index + 1}`,
+                workspaceId,
+                billId: bill.id,
+                description: line.description.trim(),
+                quantity: qty,
+                unitPrice: price,
+                amount,
+                qtyDamaged: 0,
+                uom: line.uom || "pcs",
+                sku: line.sku?.trim() || null,
+                hsn: line.hsn?.trim() || null,
+                productId: resolvedProductId,
+                gstRate,
+                cgstAmount: line.cgstAmount ?? (tax / 2),
+                sgstAmount: line.sgstAmount ?? (tax / 2),
+                igstAmount: line.igstAmount ?? tax,
+                taxAmount: tax,
+                intent,
+                lineItemType,
+                freightMode: line.freightMode || null,
+                qcStatus,
+                // qcRecord intentionally null — fresh unreceived line
+              },
+            });
+          }
+        }
+      });
+    } catch (err) {
+      console.error("[PurchaseRepository.updateBill] Error updating bill in DB:", err);
+      throw err;
+    }
+
+    const fallbackIdx = this.fallbackBills.findIndex(
+      (b) => b.id === bill.id && b.workspaceId === workspaceId,
+    );
+    if (fallbackIdx !== -1) {
+      this.fallbackBills[fallbackIdx] = {
+        ...this.fallbackBills[fallbackIdx]!,
+        ...patch,
+        lines: patch.lines ? (patch.lines as any) : this.fallbackBills[fallbackIdx]!.lines,
+      };
+    }
 
     const updated = await this.getBill(organizationId, workspaceId, bill.id);
     return updated!;
@@ -1520,7 +1891,11 @@ export class PrismaPurchaseRepository {
 
     const updated = await db.purchaseBill.findUnique({
       where: { id: raw.id },
-      include: { lines: true, payments: true },
+      include: {
+        lines: true,
+        payments: true,
+        storageReceipts: { include: { lines: true } },
+      },
     });
     return mapPrismaBillToDomain(updated);
   }

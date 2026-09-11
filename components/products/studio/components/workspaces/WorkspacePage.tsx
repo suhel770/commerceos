@@ -13,13 +13,17 @@ import IdentitySection from "../../overview/sections/IdentitySection";
 import {
   ActivityWorkspace,
   AttributesWorkspace,
+  CategoryMappingWorkspace,
   ChannelsWorkspace,
   CommercialsWorkspace,
   ComplianceWorkspace,
+  ExceptionsWorkspace,
   GrowthWorkspace,
   InventoryWorkspace,
   MediaWorkspace,
+  PreviewWorkspace,
   PublishingWorkspace,
+  ReadinessWorkspace,
   SupplyWorkspace,
   VariantsWorkspace,
 } from "./features";
@@ -45,13 +49,13 @@ const workspaceMeta: Record<
     title: "Commercials",
     description: "Pricing, cost and profitability.",
   },
-    inventory: {
-      title: "Inventory",
-      description: "Stock, reservations, warehouses, thresholds and synchronization.",
-    },
+  inventory: {
+    title: "Inventory",
+    description: "Stock, reservations, warehouses, thresholds and synchronization.",
+  },
   supply: {
-      title: "Supply",
-      description: "Suppliers, procurement references and replenishment.",
+    title: "Supply",
+    description: "Suppliers, procurement references and replenishment.",
   },
   attributes: {
     title: "Attributes",
@@ -81,6 +85,22 @@ const workspaceMeta: Record<
     title: "Activity",
     description: "Audit history and product timeline.",
   },
+  exceptions: {
+    title: "Exceptions & Actions Required",
+    description: "Action items and delta channel requirements needing attention.",
+  },
+  readiness: {
+    title: "Channel Readiness",
+    description: "Real-time compliance score and factor fulfillment.",
+  },
+  preview: {
+    title: "Marketplace Simulation Preview",
+    description: "Internal transformed catalog representation across channels.",
+  },
+  category_mapping: {
+    title: "Category Taxonomy Mapping",
+    description: "Canonical category linkage to target marketplace verticals.",
+  },
 };
 
 function renderWorkspace(workspace: WorkspacePageId) {
@@ -109,6 +129,14 @@ function renderWorkspace(workspace: WorkspacePageId) {
       return <PublishingWorkspace />;
     case "activity":
       return <ActivityWorkspace />;
+    case "exceptions":
+      return <ExceptionsWorkspace />;
+    case "readiness":
+      return <ReadinessWorkspace />;
+    case "preview":
+      return <PreviewWorkspace />;
+    case "category_mapping":
+      return <CategoryMappingWorkspace />;
   }
 }
 
@@ -132,43 +160,40 @@ export default function WorkspacePage() {
   const meta = workspaceMeta[workspace];
 
   return (
-    <div className="mx-auto max-w-[1500px] px-4 pb-5 pt-4 sm:px-6">
-      <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
+    <div className="mx-auto max-w-[1800px] px-4 pb-5 pt-2 sm:px-6">
+      <div className="mb-3 flex flex-col gap-2 rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-2.5">
           <Button
             type="button"
             variant="outline"
             size="icon"
             aria-label="Back to Product Control Center"
             onClick={() => setActiveWorkspace("overview")}
-            className="shrink-0"
+            className="h-8 w-8 rounded-xl shrink-0 cursor-pointer"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
           </Button>
 
           <div className="min-w-0">
-            <h2 className="text-xl font-bold text-slate-900">
-              {meta.title} Workspace
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              {meta.description}
-            </p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 truncate">
+                {meta.title} Workspace
+              </h2>
+              <span className="text-[11px] text-slate-400 font-normal truncate hidden md:inline">
+                — {meta.description}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
           <span
             className={
               saveError
-                ? "text-xs font-medium text-red-600"
-                : "text-xs font-medium text-slate-500"
+                ? "text-[11px] font-semibold text-red-600"
+                : "text-[11px] font-semibold text-slate-500"
             }
-            role={
-              saveError
-                ? "alert"
-                : undefined
-            }
+            role={saveError ? "alert" : undefined}
           >
             {saving
               ? "Saving changes…"
@@ -183,25 +208,22 @@ export default function WorkspacePage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() =>
-                refresh()
-              }
+              size="sm"
+              className="h-7 text-xs rounded-xl"
+              onClick={() => refresh()}
             >
-              Reload Saved Version
+              Reload
             </Button>
           )}
 
           <Button
             type="button"
-            disabled={
-              saving ||
-              !dirty ||
-              !listing?.permissions
-                .canEdit
-            }
+            size="sm"
+            className="h-7.5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition cursor-pointer"
+            disabled={saving || !dirty || !listing?.permissions.canEdit}
             onClick={() => save()}
           >
-            <Save className="mr-2 h-4 w-4" />
+            <Save className="mr-1.5 h-3.5 w-3.5" />
             Update Master Listing
           </Button>
         </div>

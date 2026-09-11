@@ -25,31 +25,19 @@ export default function ProductStudio() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-slate-50">
-
-      <div className="sticky top-0 z-40 border-b border-slate-200 bg-white">
-        <StudioHeader />
-        <StudioWorkflowNavigation />
-      </div>
+    <div className="flex min-h-full flex-col bg-slate-50/60">
+      <StudioHeader />
+      <StudioWorkflowNavigation />
 
       <main className="flex-1">
-
         {activeWorkspace === "overview" ? (
-          <div className="mx-auto max-w-[1800px] px-4 pb-5 pt-4 sm:px-6">
-
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-
-              <ProductControlCenter />
-
-              <WorkspaceGrid />
-
-            </section>
-
+          <div className="mx-auto max-w-[1800px] px-4 py-3 sm:px-6">
+            <ProductControlCenter />
+            <WorkspaceGrid />
           </div>
         ) : (
           <WorkspacePage />
         )}
-
       </main>
 
       <StudioAIDock />

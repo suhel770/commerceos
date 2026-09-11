@@ -134,37 +134,51 @@ export default function ProductSummary({
         <div className="grid grid-cols-3 divide-x divide-slate-200">
           <SummaryMetric
             label="Selling Price"
-            value={`₹${product.pricing.sellingPrice}`}
+            value={
+              product.pricing?.sellingPrice !== undefined && product.pricing?.sellingPrice !== null
+                ? `₹${product.pricing.sellingPrice}`
+                : "Not configured"
+            }
           />
           <SummaryMetric
             label="Cost Price"
-            value={`₹${product.pricing.costPrice}`}
+            value={
+              product.pricing?.costPrice !== undefined && product.pricing?.costPrice !== null
+                ? `₹${product.pricing.costPrice}`
+                : "Not configured"
+            }
           />
           <div className="px-3 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
               Gross Profit
             </p>
-            <div className="mt-0.5 flex items-baseline gap-1.5">
-              <span
-                className={`text-lg font-bold ${
-                  product.pricing.margin >= 0
-                    ? "text-emerald-600"
-                    : "text-red-600"
-                }`}
-              >
-                {product.pricing.margin}%
-              </span>
-              <span className="text-slate-300">•</span>
-              <span
-                className={`text-sm font-semibold ${
-                  product.pricing.profit >= 0
-                    ? "text-emerald-600"
-                    : "text-red-600"
-                }`}
-              >
-                ₹{product.pricing.profit}
-              </span>
-            </div>
+            {product.pricing?.sellingPrice && product.pricing?.costPrice ? (
+              <div className="mt-0.5 flex items-baseline gap-1.5">
+                <span
+                  className={`text-lg font-bold ${
+                    product.pricing.margin >= 0
+                      ? "text-emerald-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {product.pricing.margin}%
+                </span>
+                <span className="text-slate-300">•</span>
+                <span
+                  className={`text-sm font-semibold ${
+                    product.pricing.profit >= 0
+                      ? "text-emerald-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  ₹{product.pricing.profit}
+                </span>
+              </div>
+            ) : (
+              <p className="mt-0.5 text-xs font-semibold text-slate-400">
+                Not configured
+              </p>
+            )}
           </div>
         </div>
       </div>

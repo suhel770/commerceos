@@ -45,11 +45,18 @@ export async function safeResponseJson<T = any>(
     );
   }
   if (!response.ok || (payload && payload.success === false)) {
-    throw new Error(
+    const details = payload?.error?.details;
+    let detailMsg = "";
+    if (Array.isArray(details) && details.length > 0) {
+      detailMsg = details
+        .map((d: any) => `${d.field ? `${d.field}: ` : ""}${d.message}`)
+        .join("; ");
+    }
+    const baseMsg =
       payload?.error?.message ??
-        payload?.message ??
-        `Request failed (${response.status})`
-    );
+      payload?.message ??
+      `Request failed (${response.status})`;
+    throw new Error(detailMsg ? `${baseMsg}: ${detailMsg}` : baseMsg);
   }
   return payload;
 }

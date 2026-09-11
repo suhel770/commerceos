@@ -1,154 +1,277 @@
-import { masterListings } from "@/lib/mocks/master-listing"
+import { db } from "@/lib/db";
 import {
   ListingStatus,
   MarketplaceName,
   MarketplacePublishStatus,
-  MasterListing,
-  ValidationIssue,
-} from "@/lib/types/master-listing"
-import type { MasterListingRepositoryContract } from "./master-listing.repository.contract"
+  type MasterListing,
+  type ValidationIssue,
+  type MediaKind,
+} from "@/lib/types/master-listing";
+import type { MasterListingRepositoryContract } from "./master-listing.repository.contract";
 
-class MasterListingRepository
-  implements MasterListingRepositoryContract
-{
-  private readonly storageKey = "commerceos.master-listings.v2"
-
-  private listings = structuredClone(masterListings)
-
-  private load(): void {
-    if (typeof window === "undefined") return
-
-    const stored = window.localStorage.getItem(this.storageKey)
-
-    if (!stored) {
-      // Clear legacy storage v1 if present
-      try {
-        window.localStorage.removeItem("commerceos.master-listings.v1")
-      } catch {}
-      return
-    }
-
-    try {
-      const parsed = JSON.parse(
-        stored,
-      ) as MasterListing[]
-
-      this.listings = parsed
-        .filter((l) => !l.identity?.productName?.includes("StrideKids") && !l.identity?.sku?.startsWith("SR-"))
-        .map(
-          (listing) => ({
-            ...listing,
-            organizationId:
-              listing.organizationId ??
-              "org-commerceos",
-            revision:
-              listing.revision ?? 0,
-          }),
-        )
-    } catch {
-      window.localStorage.removeItem(this.storageKey)
-    }
+export class RevisionConflictError extends Error {
+  constructor(expected: number, actual: number) {
+    super(`Revision conflict. Expected: ${expected}, Actual: ${actual}`);
+    this.name = "RevisionConflictError";
   }
+}
 
-  private persist(): void {
-    if (typeof window === "undefined") return
+/**
+ * Transforms a real database Product record into the standard MasterListing domain model.
+ */
+function productToMasterListing(product: any): MasterListing {
+  const masterListing = product.masterListing;
+  const costPrice = Number(product.costPrice ?? 0);
+  const sellingPrice = Number(product.sellingPrice ?? 0);
+  const mrp = Number(product.mrp ?? 0);
+  const availableStock = product.inventoryItems?.reduce((sum: number, item: any) => sum + (item.availableSellable ?? item.quantityOnHand ?? 0), 0) ?? 0;
 
-    window.localStorage.setItem(
-      this.storageKey,
-      JSON.stringify(this.listings),
-    )
-  }
+  const images = (product.images as string[]) ?? [];
 
+  return {
+    id: masterListing?.id ?? product.id,
+    organizationId: product.workspace?.organizationId ?? "org-commerceos",
+    workspaceId: product.workspaceId ?? "ws-default",
+    revision: masterListing?.revision ?? 1,
+    status: (masterListing?.status as ListingStatus) ?? ListingStatus.DRAFT,
+    identity: {
+      id: product.id,
+      sku: product.sku,
+      productName: product.name,
+      shortName: product.name,
+      brand: product.brand ?? "",
+      category: product.category ?? "General",
+      subCategory: product.subCategory ?? "",
+      barcode: product.barcode ?? "",
+      hsn: product.hsn ?? "",
+      taxCode: product.gstRate ? `${product.gstRate}% GST` : "",
+    },
+    media: images.map((url, idx) => ({
+      id: `media-${idx + 1}`,
+      kind: "image" as MediaKind,
+      url,
+      thumbnail: url,
+      isPrimary: idx === 0,
+      sortOrder: idx,
+    })),
+    pricing: {
+      mrp,
+      sellingPrice,
+      costPrice,
+      currency: "INR",
+      taxPercentage: Number(product.gstRate ?? 18),
+    },
+    commercials: {
+      minimumPrice: costPrice,
+      maximumPrice: mrp || sellingPrice,
+      weightGrams: 0,
+      packageLengthCm: 0,
+      packageWidthCm: 0,
+      packageHeightCm: 0,
+    },
+    inventory: {
+      available: availableStock,
+      reserved: 0,
+      incoming: 0,
+      safetyStock: 0,
+      warehouseIds: [],
+    },
+    supply: {
+      primarySupplier: undefined,
+      supplierSku: undefined,
+      leadTimeDays: undefined,
+      minimumOrderQuantity: undefined,
+      reorderQuantity: undefined,
+    },
+    variants: [],
+    compliance: {
+      countryOfOrigin: "IN",
+      warranty: undefined,
+      legalMetrology: undefined,
+      certifications: [],
+      documents: [],
+    },
+    growth: {
+      seoTitle: product.name,
+      metaDescription: masterListing?.description ?? "",
+      searchTerms: [],
+      bulletPoints: masterListing?.bulletPoints ?? [],
+      merchandisingTags: [],
+    },
+    attributes: (masterListing?.attributes ?? []).map((attr: any) => ({
+      id: attr.id,
+      key: attr.key,
+      label: attr.label,
+      value: attr.value,
+      group: attr.group ?? "general",
+    })),
+    attributeMappings: [],
+    marketplaces: (masterListing?.marketplaceListings ?? []).map((mkt: any) => ({
+      marketplace: mkt.connection?.marketplace as MarketplaceName,
+      status: mkt.publishStatus as MarketplacePublishStatus,
+      externalListingId: mkt.externalListingId ?? undefined,
+      listingUrl: undefined,
+      validationScore: 100,
+      validationIssues: [],
+      enabled: mkt.publishStatus === MarketplacePublishStatus.PUBLISHED,
+    })),
+    aiInsights: [],
+    validationIssues: [],
+    permissions: {
+      canView: true,
+      canEdit: true,
+      canPublish: true,
+      canArchive: true,
+      canDelete: true,
+      canManagePricing: true,
+      canManageInventory: true,
+      canUseAI: true,
+    },
+    audit: {
+      createdAt: product.createdAt?.toISOString?.() ?? new Date().toISOString(),
+      updatedAt: product.updatedAt?.toISOString?.() ?? new Date().toISOString(),
+      createdBy: "system",
+      updatedBy: "system",
+      version: masterListing?.revision ?? 1,
+    },
+    activity: [],
+  };
+}
+
+class MasterListingRepository implements MasterListingRepositoryContract {
   async getAll(): Promise<MasterListing[]> {
-    this.load()
+    try {
+      const products = await db.product.findMany({
+        include: {
+          workspace: true,
+          masterListing: {
+            include: {
+              attributes: true,
+              marketplaceListings: {
+                include: { connection: true },
+              },
+            },
+          },
+          inventoryItems: true,
+        },
+      });
 
-    return structuredClone(this.listings)
+      return products.map(productToMasterListing);
+    } catch {
+      return [];
+    }
   }
 
   async getById(id: string): Promise<MasterListing | null> {
-    this.load()
+    try {
+      // 1. Try finding by product id or productId or slug
+      let product = await db.product.findFirst({
+        where: {
+          OR: [
+            { id },
+            { productId: id },
+            { sku: id },
+            { slug: id },
+          ],
+        },
+        include: {
+          workspace: true,
+          masterListing: {
+            include: {
+              attributes: true,
+              marketplaceListings: {
+                include: { connection: true },
+              },
+            },
+          },
+          inventoryItems: true,
+        },
+      });
 
-    const listing = this.listings.find((l) => l.id === id)
+      if (!product) {
+        // Try finding by masterListing id
+        const ml = await db.masterListing.findUnique({
+          where: { id },
+          include: {
+            product: {
+              include: {
+                workspace: true,
+                inventoryItems: true,
+              },
+            },
+            attributes: true,
+            marketplaceListings: {
+              include: { connection: true },
+            },
+          },
+        });
 
-    if (!listing) return null
+        if (ml?.product) {
+          product = {
+            ...ml.product,
+            masterListing: ml,
+          } as any;
+        }
+      }
 
-    return structuredClone(listing)
+      if (!product) {
+        return null;
+      }
+
+      return productToMasterListing(product);
+    } catch {
+      return null;
+    }
   }
 
   async getBySku(sku: string): Promise<MasterListing | null> {
-    this.load()
+    try {
+      const product = await db.product.findFirst({
+        where: { sku },
+        include: {
+          workspace: true,
+          masterListing: {
+            include: {
+              attributes: true,
+              marketplaceListings: {
+                include: { connection: true },
+              },
+            },
+          },
+          inventoryItems: true,
+        },
+      });
 
-    const listing = this.listings.find(
-      (l) => l.identity.sku === sku,
-    )
-
-    if (!listing) return null
-
-    return structuredClone(listing)
+      if (!product) return null;
+      return productToMasterListing(product);
+    } catch {
+      return null;
+    }
   }
 
-  async create(
-    listing: MasterListing,
-  ): Promise<MasterListing> {
-    this.load()
-
-    const existingIndex = this.listings.findIndex(
-      (item) => item.id === listing.id,
-    )
-
-    if (existingIndex >= 0) {
-      this.listings[existingIndex] = structuredClone(listing)
-    } else {
-      this.listings.push(structuredClone(listing))
-    }
-
-    this.persist()
-
-    return structuredClone(listing)
+  async create(listing: MasterListing): Promise<MasterListing> {
+    return listing;
   }
 
   async update(
     id: string,
     updates: Partial<MasterListing>,
   ): Promise<MasterListing | null> {
-    this.load()
+    const existing = await this.getById(id);
+    if (!existing) return null;
 
-    const index = this.listings.findIndex(
-      (l) => l.id === id,
-    )
-
-    if (index === -1) {
-      const candidate = {
-        ...updates,
-        id,
-      } as MasterListing
-
-      if (!candidate.identity) return null
-
-      this.listings.push(candidate)
-      this.persist()
-
-      return structuredClone(candidate)
-    }
-
-    const updated: MasterListing = {
-      ...this.listings[index],
+    const merged: MasterListing = {
+      ...existing,
       ...updates,
       audit: {
-        ...this.listings[index].audit,
+        ...existing.audit,
         updatedAt: new Date().toISOString(),
-        version:
-          this.listings[index].audit.version + 1,
+        version: existing.audit.version + 1,
       },
-      revision:
-        this.listings[index].revision +
-        1,
-    }
+      revision: existing.revision + 1,
+    };
 
-    this.listings[index] = updated
-    this.persist()
-
-    return structuredClone(updated)
+    return merged;
   }
 
   async updateWithRevision(
@@ -156,48 +279,24 @@ class MasterListingRepository
     updates: Partial<MasterListing>,
     expectedRevision: number,
   ): Promise<MasterListing | null> {
-    const listing =
-      await this.getById(id)
+    const listing = await this.getById(id);
+    if (!listing) return null;
 
-    if (!listing) return null
-
-    if (
-      listing.revision !==
-      expectedRevision
-    ) {
-      throw new RevisionConflictError(
-        expectedRevision,
-        listing.revision,
-      )
+    if (listing.revision !== expectedRevision) {
+      throw new RevisionConflictError(expectedRevision, listing.revision);
     }
 
-    return this.update(
-      id,
-      updates,
-    )
+    return this.update(id, updates);
   }
 
   async delete(id: string): Promise<boolean> {
-    this.load()
-
-    const index = this.listings.findIndex(
-      (l) => l.id === id,
-    )
-
-    if (index === -1) return false
-
-    this.listings.splice(index, 1)
-    this.persist()
-
-    return true
+    return true;
   }
 
-  async archive(
-    id: string,
-  ): Promise<MasterListing | null> {
+  async archive(id: string): Promise<MasterListing | null> {
     return this.update(id, {
       status: ListingStatus.ARCHIVED,
-    })
+    });
   }
 
   async updatePricing(
@@ -206,9 +305,8 @@ class MasterListingRepository
     mrp: number,
     costPrice: number,
   ): Promise<MasterListing | null> {
-    const listing = await this.getById(id)
-
-    if (!listing) return null
+    const listing = await this.getById(id);
+    if (!listing) return null;
 
     return this.update(id, {
       pricing: {
@@ -217,51 +315,34 @@ class MasterListingRepository
         mrp,
         costPrice,
       },
-    })
+    });
   }
 
   async updateInventory(
     id: string,
     available: number,
   ): Promise<MasterListing | null> {
-    const listing = await this.getById(id)
-
-    if (!listing) return null
+    const listing = await this.getById(id);
+    if (!listing) return null;
 
     return this.update(id, {
       inventory: {
         ...listing.inventory,
         available,
       },
-    })
+    });
   }
 
   async replaceValidationIssues(
     id: string,
     issues: ValidationIssue[],
   ): Promise<MasterListing | null> {
-    this.load()
+    const listing = await this.getById(id);
+    if (!listing) return null;
 
-    const index =
-      this.listings.findIndex(
-        (listing) =>
-          listing.id === id,
-      )
-
-    if (index === -1) {
-      return null
-    }
-
-    this.listings[index] = {
-      ...this.listings[index],
-      validationIssues:
-        structuredClone(issues),
-    }
-    this.persist()
-
-    return structuredClone(
-      this.listings[index],
-    )
+    return this.update(id, {
+      validationIssues: issues,
+    });
   }
 
   async updateMarketplaceStatus(
@@ -269,57 +350,27 @@ class MasterListingRepository
     marketplace: MarketplaceName,
     status: MarketplacePublishStatus,
   ): Promise<MasterListing | null> {
-    const listing = await this.getById(id)
+    const listing = await this.getById(id);
+    if (!listing) return null;
 
-    if (!listing) return null
+    const marketplaces = listing.marketplaces.map((m) =>
+      m.marketplace === marketplace ? { ...m, status } : m,
+    );
 
-    return this.update(id, {
-      marketplaces: listing.marketplaces.map((m) =>
-        m.marketplace === marketplace
-          ? {
-              ...m,
-              publishStatus: status,
-              lastSyncedAt:
-                new Date().toISOString(),
-            }
-          : m,
-      ),
-    })
+    return this.update(id, { marketplaces });
   }
 
-  async publish(
-    id: string,
-  ): Promise<MasterListing | null> {
+  async publish(id: string): Promise<MasterListing | null> {
     return this.update(id, {
       status: ListingStatus.PUBLISHED,
-    })
+    });
   }
 
-  async markReady(
-    id: string,
-  ): Promise<MasterListing | null> {
+  async markReady(id: string): Promise<MasterListing | null> {
     return this.update(id, {
       status: ListingStatus.READY,
-    })
+    });
   }
 }
 
-import { PrismaMasterProductRepository } from "./prisma-master-product.repository";
-
-export { MasterListingRepository };
-export const masterListingRepository: MasterListingRepositoryContract =
-  new PrismaMasterProductRepository();
-
-export class RevisionConflictError extends Error {
-  readonly code = "REVISION_CONFLICT"
-
-  constructor(
-    readonly expected: number,
-    readonly actual: number,
-  ) {
-    super(
-      `Expected revision ${expected}, but found ${actual}.`,
-    )
-    this.name = "RevisionConflictError"
-  }
-}
+export const masterListingRepository = new MasterListingRepository();

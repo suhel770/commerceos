@@ -195,11 +195,12 @@ class ConsumableRulesService {
     });
   }
 
-  /**
-   * Get list of authoritative consumable items available in inventory for dropdown selector
-   */
-  public async getAvailableConsumables() {
-    return await consumableUsageRuleRepository.getAuthoritativeConsumableOptions();
+  public async getAvailableConsumables(tenantScope?: {
+    organizationId?: string;
+    workspaceId?: string;
+    warehouseId?: string;
+  }) {
+    return await consumableUsageRuleRepository.getAuthoritativeConsumableOptions(tenantScope);
   }
 }
 

@@ -3,6 +3,10 @@ import { Product, ProductStatus } from "@/lib/types/product";
 import { inventoryRepository } from "@/lib/inventory/repository";
 import { isConsumableCatalogItem } from "@/lib/catalog/item-classification";
 import { locationStockRepository } from "@/lib/storage/engine/receiving.engine";
+import { getProductSlug, slugifyProductName } from "@/lib/products/slug";
+import { generateNextUniversalProductId } from "@/lib/products/product-id-generator";
+
+export { getProductSlug, slugifyProductName };
 
 export interface ProductListOptions {
   organizationId?: string;
@@ -12,6 +16,7 @@ export interface ProductListOptions {
   brand?: string;
   status?: string;
   onlySellable?: boolean;
+  onlyWithStock?: boolean;
 }
 
 export function isConsumableItem(sku: string, name = ""): boolean {
@@ -100,6 +105,24 @@ class ProductRepository {
 
     const combinedBalances = [...inventoryBalances];
 
+    const dbPrdMap = new Map<string, { productId?: string; brand?: string; category?: string; name?: string }>();
+    try {
+      const dbAll = await db.product.findMany({
+        select: { id: true, sku: true, productId: true, brand: true, category: true, name: true },
+      });
+      for (const item of dbAll) {
+        const info = {
+          productId: item.productId || undefined,
+          brand: item.brand && item.brand !== "CommerceOS" ? item.brand : undefined,
+          category: item.category && item.category !== "General" ? item.category : undefined,
+          name: item.name,
+        };
+        dbPrdMap.set(item.id.toLowerCase(), info);
+        dbPrdMap.set(item.sku.toLowerCase(), info);
+        dbPrdMap.set(item.name.toLowerCase(), info);
+      }
+    } catch {}
+
     for (const b of combinedBalances) {
       // Strictly ignore consumables and packaging supplies
       const intent = b.intent || options?.inventoryIntentByKey?.get(String(b.productId || b.sku).toLowerCase()) ||
@@ -118,19 +141,20 @@ class ProductRepository {
         existing.inventory.damaged += b.damaged || 0;
         existing.inventory.inTransit += b.inTransit || 0;
       } else {
-        // Create inventory-driven product entry
-        const cat =
-          b.productName.toLowerCase().includes("shoe") || b.productName.toLowerCase().includes("sandal")
-            ? "Footwear"
-            : "Apparel";
+        const dbInfo = dbPrdMap.get(skuKey) || dbPrdMap.get(String(b.productId || "").toLowerCase()) || dbPrdMap.get(String(b.productName || "").toLowerCase());
+        const resolvedPrdId = dbInfo?.productId || (b.productId && b.productId.startsWith("PRD-") ? b.productId : undefined);
+        const resolvedBrand = dbInfo?.brand || (b.brand && b.brand !== "CommerceOS" ? b.brand : undefined) || "";
+        const resolvedCategory = dbInfo?.category && dbInfo.category !== "General" ? dbInfo.category : (b.category && b.category !== "General" ? b.category : "");
+        const resolvedName = dbInfo?.name || b.productName || b.sku;
 
         discoveredMap.set(skuKey, {
           id: b.productId || `prod-${b.sku}`,
+          productId: resolvedPrdId,
           sku: b.sku,
-          slug: b.sku.toLowerCase(),
-          name: b.productName || b.sku,
-          brand: "CommerceOS",
-          category: cat,
+          slug: getProductSlug({ id: b.productId, name: resolvedName, sku: b.sku }),
+          name: resolvedName,
+          brand: resolvedBrand,
+          category: resolvedCategory,
           image: "/images/products/placeholder.jpg",
           gallery: [],
           status: "Active",
@@ -167,13 +191,14 @@ class ProductRepository {
 
   async findAll(options?: ProductListOptions): Promise<Product[]> {
     let list: Product[] = [];
-    const inventoryIntentByKey = await this.getInventoryIntentByKey(options?.workspaceId);
+    const targetWs = options?.workspaceId && options.workspaceId !== "ws-anonymous" ? options.workspaceId : undefined;
+    const inventoryIntentByKey = await this.getInventoryIntentByKey(targetWs);
 
     // 1. Try PostgreSQL via Prisma if available
     try {
       const dbProducts = await db.product.findMany({
         where: {
-          workspaceId: options?.workspaceId || undefined,
+          workspaceId: targetWs || undefined,
           status: options?.status || undefined,
           category: options?.category || undefined,
           brand: options?.brand || undefined,
@@ -190,31 +215,36 @@ class ProductRepository {
       });
 
       if (dbProducts && dbProducts.length > 0) {
-        list = dbProducts.map((p) => ({
-          id: p.id,
-          sku: p.sku,
-          slug: p.slug || p.id,
-          name: p.name,
-          brand: p.brand || "CommerceOS",
-          category: p.category,
-          subCategory: p.subCategory || undefined,
-          barcode: p.barcode || undefined,
-          hsn: p.hsn || undefined,
-          gstRate: Number(p.gstRate || 18),
-          image: p.images?.[0] || "/images/products/placeholder.jpg",
-          gallery: p.images || [],
-          status: (p.status as ProductStatus) || "Active",
-          pricing: {
-            mrp: Number(p.mrp || 0),
-            sellingPrice: Number(p.sellingPrice || 0),
-            costPrice: Number(p.costPrice || 0),
-            profit: Number(p.sellingPrice || 0) - Number(p.costPrice || 0),
-            margin:
-              Number(p.sellingPrice || 0) > 0
-                ? Math.round(((Number(p.sellingPrice) - Number(p.costPrice)) / Number(p.sellingPrice)) * 100)
-                : 0,
-          },
-          inventory: {
+        list = dbProducts.map((p) => {
+          const resolvedSlug = getProductSlug({ id: p.id, name: p.name, slug: p.slug, sku: p.sku });
+
+          return {
+            id: p.id,
+            productId: (p as any).productId || undefined,
+            productType: (p as any).productType || "SELLABLE",
+            sku: p.sku,
+            slug: resolvedSlug,
+            name: p.name,
+            brand: p.brand && p.brand !== "CommerceOS" ? p.brand : "",
+            category: p.category && p.category !== "General" ? p.category : "",
+            subCategory: p.subCategory || undefined,
+            barcode: p.barcode || undefined,
+            hsn: p.hsn || undefined,
+            gstRate: Number(p.gstRate || 18),
+            image: p.images?.[0] || "/images/products/placeholder.jpg",
+            gallery: p.images || [],
+            status: (p.status as ProductStatus) || "Active",
+            pricing: {
+              mrp: Number(p.mrp || 0),
+              sellingPrice: Number(p.sellingPrice || 0),
+              costPrice: Number(p.costPrice || 0),
+              profit: Number(p.sellingPrice || 0) - Number(p.costPrice || 0),
+              margin:
+                Number(p.sellingPrice || 0) > 0
+                  ? Math.round(((Number(p.sellingPrice) - Number(p.costPrice)) / Number(p.sellingPrice)) * 100)
+                  : 0,
+            },
+            inventory: {
             available: 0,
             reserved: 0,
             incoming: 0,
@@ -243,12 +273,12 @@ class ProductRepository {
             listingStatus: (ml.listingStatus as any) || "Live",
             stockSync: ml.stockSync,
             lastSync: ml.lastSyncedAt?.toISOString() || new Date().toISOString(),
-            healthScore: 90,
           })),
           createdAt: p.createdAt.toISOString(),
           updatedAt: p.updatedAt.toISOString(),
-        }));
-      }
+        };
+      });
+    }
     } catch {
       // Fallback to inventory-driven discovery
     }
@@ -285,17 +315,20 @@ class ProductRepository {
     }
 
 
-    // The Products page is a live projection of available inventory, not a
-    // master-data directory. Keep packaging/consumables out of this tab.
+    // Filter out consumable packaging and operational items from sellable catalog
     list = list.filter(
       (p) =>
-        p.inventory.available > 0 &&
         !isConsumableCatalogItem(
           p.sku,
           p.name,
           inventoryIntentByKey.get(p.id.toLowerCase()) || inventoryIntentByKey.get(p.sku.toLowerCase()),
         ),
     );
+
+    // Only enforce physical inventory filter if explicitly requested via options.onlyWithStock
+    if (options?.onlyWithStock) {
+      list = list.filter((p) => p.inventory.available > 0);
+    }
 
     // 3. Search and text filters
     if (options?.search) {
@@ -304,6 +337,7 @@ class ProductRepository {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           p.sku.toLowerCase().includes(q) ||
+          (p.productId && p.productId.toLowerCase().includes(q)) ||
           (p.category && p.category.toLowerCase().includes(q)) ||
           (p.barcode && p.barcode.toLowerCase().includes(q))
       );
@@ -327,7 +361,15 @@ class ProductRepository {
     options?: { organizationId?: string; workspaceId?: string }
   ): Promise<Product | undefined> {
     const list = await this.findAll(options);
-    return list.find((p) => p.id === id || p.slug === id);
+    const target = id.toLowerCase().trim();
+    return list.find((p) => 
+      p.id.toLowerCase().trim() === target || 
+      (p.productId && p.productId.toLowerCase().trim() === target) ||
+      p.slug.toLowerCase().trim() === target ||
+      getProductSlug(p) === target ||
+      slugifyProductName(p.name) === target ||
+      p.sku.toLowerCase().trim() === target
+    );
   }
 
   async findBySku(
@@ -348,8 +390,13 @@ class ProductRepository {
       throw new Error(`Cannot create sellable product for consumable SKU: ${product.sku}`);
     }
 
+    const resolvedPrdId = product.productId || (await generateNextUniversalProductId(product.productType || "SELLABLE", options?.workspaceId));
+    const resolvedSlug = getProductSlug(product);
     const fullProduct: Product = {
       ...product,
+      productId: resolvedPrdId,
+      productType: product.productType || "SELLABLE",
+      slug: resolvedSlug,
       performance: product.performance || {
         ordersToday: 0,
         revenueToday: 0,
@@ -366,9 +413,11 @@ class ProductRepository {
       await db.product.create({
         data: {
           id: fullProduct.id,
+          productId: fullProduct.productId,
+          productType: fullProduct.productType || "SELLABLE",
           workspaceId: options?.workspaceId || "ws-default",
           sku: fullProduct.sku,
-          slug: fullProduct.slug || fullProduct.id,
+          slug: fullProduct.slug,
           name: fullProduct.name,
           brand: fullProduct.brand,
           category: fullProduct.category,
@@ -381,6 +430,7 @@ class ProductRepository {
           mrp: fullProduct.pricing?.mrp || 0,
           status: fullProduct.status || "Active",
           images: fullProduct.gallery && fullProduct.gallery.length > 0 ? fullProduct.gallery : [fullProduct.image],
+          intent: fullProduct.intent || "sellable",
         },
       });
     } catch {
@@ -396,11 +446,14 @@ class ProductRepository {
     updates: Partial<Product>,
     options?: { organizationId?: string; workspaceId?: string }
   ): Promise<Product | undefined> {
+    const updatedSlug = updates.name ? slugifyProductName(updates.name) : undefined;
+
     try {
       await db.product.update({
         where: { id },
         data: {
           name: updates.name,
+          slug: updatedSlug,
           brand: updates.brand,
           category: updates.category,
           subCategory: updates.subCategory,
@@ -418,7 +471,12 @@ class ProductRepository {
 
     const existing = this.memoryProducts.get(id);
     if (existing) {
-      const merged = { ...existing, ...updates, updatedAt: new Date().toISOString() };
+      const merged = {
+        ...existing,
+        ...updates,
+        slug: updatedSlug || existing.slug,
+        updatedAt: new Date().toISOString(),
+      };
       this.memoryProducts.set(id, merged);
       return merged;
     }

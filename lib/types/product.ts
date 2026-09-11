@@ -12,6 +12,9 @@ export interface Product {
 
   id: string;
 
+  /** Universal human-readable Product ID (e.g. "PRD-000124", "PRD-000201"). */
+  productId?: string;
+
   slug: string;
 
   sku: string;
@@ -23,6 +26,8 @@ export interface Product {
   image: string;
 
   status: ProductStatus;
+  intent?: string;
+  productType?: "SELLABLE" | "CONSUMABLE" | string;
 
   /** Primary supply vendor (demo-business SSOT). */
   vendorId?: string;
@@ -48,8 +53,6 @@ export interface Product {
   category: string;
 
   subCategory?: string;
-
-  productType?: string;
 
   department?: string;
 

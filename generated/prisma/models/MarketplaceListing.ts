@@ -43,12 +43,15 @@ export type MarketplaceListingMinAggregateOutputType = {
   marketplaceConnectionId: string | null
   marketplaceSku: string | null
   externalListingId: string | null
+  externalProductId: string | null
   title: string | null
   sellingPrice: runtime.Decimal | null
   publishStatus: $Enums.MarketplacePublishStatus | null
   listingStatus: string | null
   stockSync: boolean | null
   buyBoxPercentage: number | null
+  listingUrl: string | null
+  lastAttemptedSyncAt: Date | null
   lastSyncedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,12 +64,15 @@ export type MarketplaceListingMaxAggregateOutputType = {
   marketplaceConnectionId: string | null
   marketplaceSku: string | null
   externalListingId: string | null
+  externalProductId: string | null
   title: string | null
   sellingPrice: runtime.Decimal | null
   publishStatus: $Enums.MarketplacePublishStatus | null
   listingStatus: string | null
   stockSync: boolean | null
   buyBoxPercentage: number | null
+  listingUrl: string | null
+  lastAttemptedSyncAt: Date | null
   lastSyncedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -79,12 +85,17 @@ export type MarketplaceListingCountAggregateOutputType = {
   marketplaceConnectionId: number
   marketplaceSku: number
   externalListingId: number
+  externalProductId: number
   title: number
   sellingPrice: number
   publishStatus: number
   listingStatus: number
   stockSync: number
   buyBoxPercentage: number
+  listingUrl: number
+  syncErrors: number
+  rawPayload: number
+  lastAttemptedSyncAt: number
   lastSyncedAt: number
   createdAt: number
   updatedAt: number
@@ -109,12 +120,15 @@ export type MarketplaceListingMinAggregateInputType = {
   marketplaceConnectionId?: true
   marketplaceSku?: true
   externalListingId?: true
+  externalProductId?: true
   title?: true
   sellingPrice?: true
   publishStatus?: true
   listingStatus?: true
   stockSync?: true
   buyBoxPercentage?: true
+  listingUrl?: true
+  lastAttemptedSyncAt?: true
   lastSyncedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -127,12 +141,15 @@ export type MarketplaceListingMaxAggregateInputType = {
   marketplaceConnectionId?: true
   marketplaceSku?: true
   externalListingId?: true
+  externalProductId?: true
   title?: true
   sellingPrice?: true
   publishStatus?: true
   listingStatus?: true
   stockSync?: true
   buyBoxPercentage?: true
+  listingUrl?: true
+  lastAttemptedSyncAt?: true
   lastSyncedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -145,12 +162,17 @@ export type MarketplaceListingCountAggregateInputType = {
   marketplaceConnectionId?: true
   marketplaceSku?: true
   externalListingId?: true
+  externalProductId?: true
   title?: true
   sellingPrice?: true
   publishStatus?: true
   listingStatus?: true
   stockSync?: true
   buyBoxPercentage?: true
+  listingUrl?: true
+  syncErrors?: true
+  rawPayload?: true
+  lastAttemptedSyncAt?: true
   lastSyncedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -250,12 +272,17 @@ export type MarketplaceListingGroupByOutputType = {
   marketplaceConnectionId: string
   marketplaceSku: string
   externalListingId: string | null
+  externalProductId: string | null
   title: string | null
   sellingPrice: runtime.Decimal
   publishStatus: $Enums.MarketplacePublishStatus
   listingStatus: string
   stockSync: boolean
   buyBoxPercentage: number | null
+  listingUrl: string | null
+  syncErrors: runtime.JsonValue | null
+  rawPayload: runtime.JsonValue | null
+  lastAttemptedSyncAt: Date | null
   lastSyncedAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -291,12 +318,17 @@ export type MarketplaceListingWhereInput = {
   marketplaceConnectionId?: Prisma.StringFilter<"MarketplaceListing"> | string
   marketplaceSku?: Prisma.StringFilter<"MarketplaceListing"> | string
   externalListingId?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
+  externalProductId?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
   title?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
   sellingPrice?: Prisma.DecimalFilter<"MarketplaceListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFilter<"MarketplaceListing"> | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFilter<"MarketplaceListing"> | string
   stockSync?: Prisma.BoolFilter<"MarketplaceListing"> | boolean
   buyBoxPercentage?: Prisma.FloatNullableFilter<"MarketplaceListing"> | number | null
+  listingUrl?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
+  syncErrors?: Prisma.JsonNullableFilter<"MarketplaceListing">
+  rawPayload?: Prisma.JsonNullableFilter<"MarketplaceListing">
+  lastAttemptedSyncAt?: Prisma.DateTimeNullableFilter<"MarketplaceListing"> | Date | string | null
   lastSyncedAt?: Prisma.DateTimeNullableFilter<"MarketplaceListing"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MarketplaceListing"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketplaceListing"> | Date | string
@@ -311,12 +343,17 @@ export type MarketplaceListingOrderByWithRelationInput = {
   marketplaceConnectionId?: Prisma.SortOrder
   marketplaceSku?: Prisma.SortOrder
   externalListingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   sellingPrice?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
   listingStatus?: Prisma.SortOrder
   stockSync?: Prisma.SortOrder
   buyBoxPercentage?: Prisma.SortOrderInput | Prisma.SortOrder
+  listingUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncErrors?: Prisma.SortOrderInput | Prisma.SortOrder
+  rawPayload?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastAttemptedSyncAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -336,12 +373,17 @@ export type MarketplaceListingWhereUniqueInput = Prisma.AtLeast<{
   marketplaceConnectionId?: Prisma.StringFilter<"MarketplaceListing"> | string
   marketplaceSku?: Prisma.StringFilter<"MarketplaceListing"> | string
   externalListingId?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
+  externalProductId?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
   title?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
   sellingPrice?: Prisma.DecimalFilter<"MarketplaceListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFilter<"MarketplaceListing"> | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFilter<"MarketplaceListing"> | string
   stockSync?: Prisma.BoolFilter<"MarketplaceListing"> | boolean
   buyBoxPercentage?: Prisma.FloatNullableFilter<"MarketplaceListing"> | number | null
+  listingUrl?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
+  syncErrors?: Prisma.JsonNullableFilter<"MarketplaceListing">
+  rawPayload?: Prisma.JsonNullableFilter<"MarketplaceListing">
+  lastAttemptedSyncAt?: Prisma.DateTimeNullableFilter<"MarketplaceListing"> | Date | string | null
   lastSyncedAt?: Prisma.DateTimeNullableFilter<"MarketplaceListing"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MarketplaceListing"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketplaceListing"> | Date | string
@@ -356,12 +398,17 @@ export type MarketplaceListingOrderByWithAggregationInput = {
   marketplaceConnectionId?: Prisma.SortOrder
   marketplaceSku?: Prisma.SortOrder
   externalListingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   sellingPrice?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
   listingStatus?: Prisma.SortOrder
   stockSync?: Prisma.SortOrder
   buyBoxPercentage?: Prisma.SortOrderInput | Prisma.SortOrder
+  listingUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncErrors?: Prisma.SortOrderInput | Prisma.SortOrder
+  rawPayload?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastAttemptedSyncAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -382,12 +429,17 @@ export type MarketplaceListingScalarWhereWithAggregatesInput = {
   marketplaceConnectionId?: Prisma.StringWithAggregatesFilter<"MarketplaceListing"> | string
   marketplaceSku?: Prisma.StringWithAggregatesFilter<"MarketplaceListing"> | string
   externalListingId?: Prisma.StringNullableWithAggregatesFilter<"MarketplaceListing"> | string | null
+  externalProductId?: Prisma.StringNullableWithAggregatesFilter<"MarketplaceListing"> | string | null
   title?: Prisma.StringNullableWithAggregatesFilter<"MarketplaceListing"> | string | null
   sellingPrice?: Prisma.DecimalWithAggregatesFilter<"MarketplaceListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusWithAggregatesFilter<"MarketplaceListing"> | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringWithAggregatesFilter<"MarketplaceListing"> | string
   stockSync?: Prisma.BoolWithAggregatesFilter<"MarketplaceListing"> | boolean
   buyBoxPercentage?: Prisma.FloatNullableWithAggregatesFilter<"MarketplaceListing"> | number | null
+  listingUrl?: Prisma.StringNullableWithAggregatesFilter<"MarketplaceListing"> | string | null
+  syncErrors?: Prisma.JsonNullableWithAggregatesFilter<"MarketplaceListing">
+  rawPayload?: Prisma.JsonNullableWithAggregatesFilter<"MarketplaceListing">
+  lastAttemptedSyncAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MarketplaceListing"> | Date | string | null
   lastSyncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MarketplaceListing"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MarketplaceListing"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MarketplaceListing"> | Date | string
@@ -397,12 +449,17 @@ export type MarketplaceListingCreateInput = {
   id?: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -417,12 +474,17 @@ export type MarketplaceListingUncheckedCreateInput = {
   marketplaceConnectionId: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -432,12 +494,17 @@ export type MarketplaceListingUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -452,12 +519,17 @@ export type MarketplaceListingUncheckedUpdateInput = {
   marketplaceConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -470,12 +542,17 @@ export type MarketplaceListingCreateManyInput = {
   marketplaceConnectionId: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -485,12 +562,17 @@ export type MarketplaceListingUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -503,12 +585,17 @@ export type MarketplaceListingUncheckedUpdateManyInput = {
   marketplaceConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -542,12 +629,17 @@ export type MarketplaceListingCountOrderByAggregateInput = {
   marketplaceConnectionId?: Prisma.SortOrder
   marketplaceSku?: Prisma.SortOrder
   externalListingId?: Prisma.SortOrder
+  externalProductId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   sellingPrice?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
   listingStatus?: Prisma.SortOrder
   stockSync?: Prisma.SortOrder
   buyBoxPercentage?: Prisma.SortOrder
+  listingUrl?: Prisma.SortOrder
+  syncErrors?: Prisma.SortOrder
+  rawPayload?: Prisma.SortOrder
+  lastAttemptedSyncAt?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -565,12 +657,15 @@ export type MarketplaceListingMaxOrderByAggregateInput = {
   marketplaceConnectionId?: Prisma.SortOrder
   marketplaceSku?: Prisma.SortOrder
   externalListingId?: Prisma.SortOrder
+  externalProductId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   sellingPrice?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
   listingStatus?: Prisma.SortOrder
   stockSync?: Prisma.SortOrder
   buyBoxPercentage?: Prisma.SortOrder
+  listingUrl?: Prisma.SortOrder
+  lastAttemptedSyncAt?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -583,12 +678,15 @@ export type MarketplaceListingMinOrderByAggregateInput = {
   marketplaceConnectionId?: Prisma.SortOrder
   marketplaceSku?: Prisma.SortOrder
   externalListingId?: Prisma.SortOrder
+  externalProductId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   sellingPrice?: Prisma.SortOrder
   publishStatus?: Prisma.SortOrder
   listingStatus?: Prisma.SortOrder
   stockSync?: Prisma.SortOrder
   buyBoxPercentage?: Prisma.SortOrder
+  listingUrl?: Prisma.SortOrder
+  lastAttemptedSyncAt?: Prisma.SortOrder
   lastSyncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -695,20 +793,21 @@ export type NullableFloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type MarketplaceListingCreateWithoutMasterListingInput = {
   id?: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -720,12 +819,17 @@ export type MarketplaceListingUncheckedCreateWithoutMasterListingInput = {
   marketplaceConnectionId: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -767,12 +871,17 @@ export type MarketplaceListingScalarWhereInput = {
   marketplaceConnectionId?: Prisma.StringFilter<"MarketplaceListing"> | string
   marketplaceSku?: Prisma.StringFilter<"MarketplaceListing"> | string
   externalListingId?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
+  externalProductId?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
   title?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
   sellingPrice?: Prisma.DecimalFilter<"MarketplaceListing"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFilter<"MarketplaceListing"> | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFilter<"MarketplaceListing"> | string
   stockSync?: Prisma.BoolFilter<"MarketplaceListing"> | boolean
   buyBoxPercentage?: Prisma.FloatNullableFilter<"MarketplaceListing"> | number | null
+  listingUrl?: Prisma.StringNullableFilter<"MarketplaceListing"> | string | null
+  syncErrors?: Prisma.JsonNullableFilter<"MarketplaceListing">
+  rawPayload?: Prisma.JsonNullableFilter<"MarketplaceListing">
+  lastAttemptedSyncAt?: Prisma.DateTimeNullableFilter<"MarketplaceListing"> | Date | string | null
   lastSyncedAt?: Prisma.DateTimeNullableFilter<"MarketplaceListing"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MarketplaceListing"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MarketplaceListing"> | Date | string
@@ -782,12 +891,17 @@ export type MarketplaceListingCreateWithoutConnectionInput = {
   id?: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -799,12 +913,17 @@ export type MarketplaceListingUncheckedCreateWithoutConnectionInput = {
   masterListingId: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -841,12 +960,17 @@ export type MarketplaceListingCreateManyMasterListingInput = {
   marketplaceConnectionId: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -856,12 +980,17 @@ export type MarketplaceListingUpdateWithoutMasterListingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -873,12 +1002,17 @@ export type MarketplaceListingUncheckedUpdateWithoutMasterListingInput = {
   marketplaceConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -889,12 +1023,17 @@ export type MarketplaceListingUncheckedUpdateManyWithoutMasterListingInput = {
   marketplaceConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -905,12 +1044,17 @@ export type MarketplaceListingCreateManyConnectionInput = {
   masterListingId: string
   marketplaceSku: string
   externalListingId?: string | null
+  externalProductId?: string | null
   title?: string | null
   sellingPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: $Enums.MarketplacePublishStatus
   listingStatus?: string
   stockSync?: boolean
   buyBoxPercentage?: number | null
+  listingUrl?: string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Date | string | null
   lastSyncedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -920,12 +1064,17 @@ export type MarketplaceListingUpdateWithoutConnectionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -937,12 +1086,17 @@ export type MarketplaceListingUncheckedUpdateWithoutConnectionInput = {
   masterListingId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -953,12 +1107,17 @@ export type MarketplaceListingUncheckedUpdateManyWithoutConnectionInput = {
   masterListingId?: Prisma.StringFieldUpdateOperationsInput | string
   marketplaceSku?: Prisma.StringFieldUpdateOperationsInput | string
   externalListingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sellingPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   publishStatus?: Prisma.EnumMarketplacePublishStatusFieldUpdateOperationsInput | $Enums.MarketplacePublishStatus
   listingStatus?: Prisma.StringFieldUpdateOperationsInput | string
   stockSync?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyBoxPercentage?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  listingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncErrors?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  rawPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastAttemptedSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -973,12 +1132,17 @@ export type MarketplaceListingSelect<ExtArgs extends runtime.Types.Extensions.In
   marketplaceConnectionId?: boolean
   marketplaceSku?: boolean
   externalListingId?: boolean
+  externalProductId?: boolean
   title?: boolean
   sellingPrice?: boolean
   publishStatus?: boolean
   listingStatus?: boolean
   stockSync?: boolean
   buyBoxPercentage?: boolean
+  listingUrl?: boolean
+  syncErrors?: boolean
+  rawPayload?: boolean
+  lastAttemptedSyncAt?: boolean
   lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -993,12 +1157,17 @@ export type MarketplaceListingSelectCreateManyAndReturn<ExtArgs extends runtime.
   marketplaceConnectionId?: boolean
   marketplaceSku?: boolean
   externalListingId?: boolean
+  externalProductId?: boolean
   title?: boolean
   sellingPrice?: boolean
   publishStatus?: boolean
   listingStatus?: boolean
   stockSync?: boolean
   buyBoxPercentage?: boolean
+  listingUrl?: boolean
+  syncErrors?: boolean
+  rawPayload?: boolean
+  lastAttemptedSyncAt?: boolean
   lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1013,12 +1182,17 @@ export type MarketplaceListingSelectUpdateManyAndReturn<ExtArgs extends runtime.
   marketplaceConnectionId?: boolean
   marketplaceSku?: boolean
   externalListingId?: boolean
+  externalProductId?: boolean
   title?: boolean
   sellingPrice?: boolean
   publishStatus?: boolean
   listingStatus?: boolean
   stockSync?: boolean
   buyBoxPercentage?: boolean
+  listingUrl?: boolean
+  syncErrors?: boolean
+  rawPayload?: boolean
+  lastAttemptedSyncAt?: boolean
   lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1033,18 +1207,23 @@ export type MarketplaceListingSelectScalar = {
   marketplaceConnectionId?: boolean
   marketplaceSku?: boolean
   externalListingId?: boolean
+  externalProductId?: boolean
   title?: boolean
   sellingPrice?: boolean
   publishStatus?: boolean
   listingStatus?: boolean
   stockSync?: boolean
   buyBoxPercentage?: boolean
+  listingUrl?: boolean
+  syncErrors?: boolean
+  rawPayload?: boolean
+  lastAttemptedSyncAt?: boolean
   lastSyncedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MarketplaceListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "masterListingId" | "marketplaceConnectionId" | "marketplaceSku" | "externalListingId" | "title" | "sellingPrice" | "publishStatus" | "listingStatus" | "stockSync" | "buyBoxPercentage" | "lastSyncedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["marketplaceListing"]>
+export type MarketplaceListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "masterListingId" | "marketplaceConnectionId" | "marketplaceSku" | "externalListingId" | "externalProductId" | "title" | "sellingPrice" | "publishStatus" | "listingStatus" | "stockSync" | "buyBoxPercentage" | "listingUrl" | "syncErrors" | "rawPayload" | "lastAttemptedSyncAt" | "lastSyncedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["marketplaceListing"]>
 export type MarketplaceListingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   masterListing?: boolean | Prisma.MasterListingDefaultArgs<ExtArgs>
   connection?: boolean | Prisma.MarketplaceConnectionDefaultArgs<ExtArgs>
@@ -1071,12 +1250,17 @@ export type $MarketplaceListingPayload<ExtArgs extends runtime.Types.Extensions.
     marketplaceConnectionId: string
     marketplaceSku: string
     externalListingId: string | null
+    externalProductId: string | null
     title: string | null
     sellingPrice: runtime.Decimal
     publishStatus: $Enums.MarketplacePublishStatus
     listingStatus: string
     stockSync: boolean
     buyBoxPercentage: number | null
+    listingUrl: string | null
+    syncErrors: runtime.JsonValue | null
+    rawPayload: runtime.JsonValue | null
+    lastAttemptedSyncAt: Date | null
     lastSyncedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -1511,12 +1695,17 @@ export interface MarketplaceListingFieldRefs {
   readonly marketplaceConnectionId: Prisma.FieldRef<"MarketplaceListing", 'String'>
   readonly marketplaceSku: Prisma.FieldRef<"MarketplaceListing", 'String'>
   readonly externalListingId: Prisma.FieldRef<"MarketplaceListing", 'String'>
+  readonly externalProductId: Prisma.FieldRef<"MarketplaceListing", 'String'>
   readonly title: Prisma.FieldRef<"MarketplaceListing", 'String'>
   readonly sellingPrice: Prisma.FieldRef<"MarketplaceListing", 'Decimal'>
   readonly publishStatus: Prisma.FieldRef<"MarketplaceListing", 'MarketplacePublishStatus'>
   readonly listingStatus: Prisma.FieldRef<"MarketplaceListing", 'String'>
   readonly stockSync: Prisma.FieldRef<"MarketplaceListing", 'Boolean'>
   readonly buyBoxPercentage: Prisma.FieldRef<"MarketplaceListing", 'Float'>
+  readonly listingUrl: Prisma.FieldRef<"MarketplaceListing", 'String'>
+  readonly syncErrors: Prisma.FieldRef<"MarketplaceListing", 'Json'>
+  readonly rawPayload: Prisma.FieldRef<"MarketplaceListing", 'Json'>
+  readonly lastAttemptedSyncAt: Prisma.FieldRef<"MarketplaceListing", 'DateTime'>
   readonly lastSyncedAt: Prisma.FieldRef<"MarketplaceListing", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"MarketplaceListing", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MarketplaceListing", 'DateTime'>

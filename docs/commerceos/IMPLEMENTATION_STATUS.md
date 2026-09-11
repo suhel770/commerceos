@@ -369,9 +369,60 @@ Purchase never mutates Inventory stock directly — routing is via domain events
 - Browser E2E suite for edit → save → refresh → validate → publish
 - Live marketplace API credentials and webhooks
 
+## Pending / Deferred Items Backlog
+
+- **Marketplace-Specific Returns & Claims Redesign (Deferred to Returns Module Phase)**:
+  - *Context*: Different marketplaces have unique dispute schemas and evidence requirements.
+  - *Channel Requirements*:
+    - **Amazon**: SAFE-T Claim ID, Order ID, Return LPN / Tracking ID, Label & Outer Box Evidence.
+    - **Flipkart**: SPF (Seller Protection Fund) Claim ID, Incident Token, Reverse AWB, Return Tracking.
+    - **Meesho**: Ticket ID, Sub-Order Number, Weight mismatch, Unboxing proof.
+    - **Shopify / D2C**: Dispute Case ID, Carrier Proof of Delivery (POD).
+  - *Scope*: Redesign "Raise Wrong Return" form with dynamic schema switching per marketplace, photo/video attachments, and automated marketplace dispute status tracking.
+
 ## Cleanup notes (2026-07-25)
 
 Removed unused orphan UI/lib leftovers (superseded Studio headers/tabs, dead page-hero,
 unused readiness widgets, unused form stubs, unused dashboard mocks, unused contracts/
 constants/utils). Preserved Bible paths: `WorkspaceSheet.tsx`, listing-engine, connector
 stubs, live Product Overview / Studio workspaces.
+
+---
+
+## Autonomous Orchestrator State Assessment (Phase 2 Update - 2026-09-03)
+
+### 1. Completed Modules & Features
+- **Master Product Foundation & Studio**: Complete multi-tab control center (Identity, Media, Commercials, Variants, Inventory, Supply, Compliance, Publishing, Channels, Growth, Activity).
+- **Universal Product Identity Foundation**: Canonical `PRD-000101` (Sellable) and `PRD-000201` (Consumable) ID formatting, slug generator, and dual ID/SKU lookup.
+- **Marketplace Intelligence Foundation**: `MarketplaceRegistry`, `MarketplaceSchema`, `MarketplaceCategoryMapping`, `UniversalAttributeRegistry`, and `MarketplaceAttributeDefinition` models defined and deployed to PostgreSQL.
+- **Listing Engine (Local Simulation)**: Adapters for Amazon, Flipkart, Meesho, Myntra, Shopify; category taxonomy mapping; readiness scoring; simulated publish queue and state machine.
+- **Inventory Stock Engine**: Available, reserved, incoming, damaged, and in-transit unit tracking; multi-warehouse partition; channel allocation rules; inventory consumption ledger.
+- **Order Management System (OMS)**: Full 9-stage lifecycle (Confirmed → Reserved → Allocated → Picked → Packed → Shipped → Delivered → Settled → Closed); `Shipments` sub-aggregate; hold history; customer return vs RTO workflows.
+- **Purchase & Procurement (Phase A+++)**: Vendor registry, purchase bills, line intent routing (`sellable`, `consumable`, `asset`, `expense`), thin GST computation, purchase stock projection, vendor spend metrics.
+- **Consumables System**: Packaging consumables table, twin toggle button, rule-based consumption mapping per product.
+
+### 2. Partially Completed Modules
+- **Universal Listing Workspace (`/products/[slug]/edit`)**: Architecture approved (`docs/universal-listing-workspace.md`), components created (`CategoryMappingWorkspace`, `ExceptionsWorkspace`, `PreviewWorkspace`, `ReadinessWorkspace`), active integration with DB models in progress.
+- **Workspace Management & RBAC**: Typed permissions and `authorize()` policy implemented; no UI for organization/workspace switching or user invitation; runtime context relies on mock Owner headers.
+- **Shipping & Carrier Integration**: Shipment-level label and AWB states modeled; live courier connectors deferred.
+- **Returns & Claims**: In-order return cases and claims implemented; standalone reverse logistics workspace deferred.
+- **AI Features**: Optional collapsible advisor panels and credit-gating implemented; rule-based suggestions active; live LLM deferred.
+
+### 3. Missing Requirements & Blockers
+- **Durable OMS Persistence**: Domain models (`Shipment`, `ReturnCase`, `Settlement`, `Claim`) defined in `lib/orders/types.ts` but not yet reflected in Prisma schema `Order`.
+- **Live Marketplace Credentials & Webhooks**: Live OAuth2 handshake, webhooks, and rate-limiting queues for Amazon SP-API and Flipkart.
+- **Dedicated Warehouse Operations**: Bins, barcode scanning workflows, directed putaway, and cycle count execution.
+- **Authenticated Identity Provider**: Real session authentication to replace header-controlled mock Owner.
+
+### 4. Known Bugs & Inconsistencies
+- **Catalog Product Disappearance Bug (`lib/repositories/product.repository.ts`)**: `findAll()` hardcoded `p.inventory.available > 0`, causing products with 0 stock (newly created or unreceived items) to be completely omitted from product listings and `findById()` lookups.
+- **PrismaInventoryRepository Sync Blanking (`lib/inventory/prisma-inventory.repository.ts`)**: If `StorageStock` has 0 physical entries, `listBalances()` immediately returned `[]` instead of returning persisted `db.inventory` records.
+- **Database Migrations Lag**: `20260825000000_add_outbox_audit_job` and `20260901000000_phase1_marketplace_intelligence_engine` were pending (now deployed).
+
+### 5. Recommended Implementation Order
+1. **P0 Foundation Fix**: Fix product repository & inventory balance queries so catalog products remain queryable and editable regardless of stock balance.
+2. **P1 Universal Listing Workspace Completion**: Wire the 4 sub-workspaces (`CategoryMapping`, `Exceptions`, `Preview`, `Readiness`) to the PostgreSQL intelligence engine and ensure 100% test passing.
+3. **P2 Warehouse Operations Foundation**: Replace `/warehouse` placeholder with operational receiving, bin management, and storage-to-inventory ledger syncing.
+4. **P3 Purchase GRN Workflow**: Connect Purchase Bill receiving directly to Warehouse Storage and Inventory ledger without direct mutation from bill save.
+
+

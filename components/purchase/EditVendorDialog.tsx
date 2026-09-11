@@ -27,6 +27,14 @@ type EditVendorDialogProps = {
   onUpdate(id: string, patch: Partial<CreateVendorInput> & { status?: VendorStatus }): Promise<Vendor | null>;
 };
 
+function extractMobileDigits(phone?: string | null): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits.slice(-10);
+}
+
 export default function EditVendorDialog({
   vendor,
   submitting,
@@ -65,7 +73,7 @@ export default function EditVendorDialog({
       registrationType: vendor.registrationType ?? "regular",
       gstin: vendor.gstin ?? "",
       pan: vendor.pan ?? extractPanFromGstin(vendor.gstin) ?? "",
-      phone: vendor.phone ?? "",
+      phone: extractMobileDigits(vendor.phone),
       email: vendor.email ?? "",
       address: vendor.address ?? "",
       city: vendor.city ?? "",
@@ -136,13 +144,26 @@ export default function EditVendorDialog({
       return;
     }
 
+    const sanitizedEmail = form.email.trim();
+    const cleanEmail = ["na", "n/a", "none", "-", "nil", "null"].includes(sanitizedEmail.toLowerCase())
+      ? ""
+      : sanitizedEmail;
+
+    const cleanPhoneDigits = form.phone.replace(/\D/g, "").slice(0, 10);
+    if (cleanPhoneDigits && cleanPhoneDigits.length !== 10) {
+      setError("Mobile number must be exactly 10 digits.");
+      return;
+    }
+
     const patch: Partial<CreateVendorInput> & { status?: VendorStatus } = {
       name: form.name.trim(),
       registrationType: form.registrationType,
-      gstin: form.gstin.trim(),
-      pan: form.pan.trim() || extractPanFromGstin(form.gstin.trim()) || "",
-      phone: form.phone.trim(),
-      email: form.email.trim(),
+      gstin: form.gstin.trim() ? form.gstin.replace(/\s+/g, "").toUpperCase() : "",
+      pan: form.pan.trim()
+        ? form.pan.replace(/\s+/g, "").toUpperCase()
+        : extractPanFromGstin(form.gstin.trim()) || "",
+      phone: cleanPhoneDigits ? `+91${cleanPhoneDigits}` : "",
+      email: cleanEmail,
       address: form.address.trim(),
       city: form.city.trim(),
       state: form.state.trim(),
@@ -151,7 +172,7 @@ export default function EditVendorDialog({
       bankName: form.bankName.trim(),
       bankAccountName: form.bankAccountName.trim(),
       bankAccountNumber: form.bankAccountNumber.trim(),
-      bankIfsc: form.bankIfsc.trim(),
+      bankIfsc: form.bankIfsc.trim() ? form.bankIfsc.replace(/\s+/g, "").toUpperCase() : "",
       paymentTermsDays: Number(form.paymentTermsDays) || 30,
       leadTimeDays: Number(form.leadTimeDays) || 7,
       status: form.status,
@@ -160,9 +181,13 @@ export default function EditVendorDialog({
       allowedPurchaseIntents: form.allowedPurchaseIntents,
     };
 
-    const updated = await onUpdate(vendor.id, patch);
-    if (updated) {
-      onClose();
+    try {
+      const updated = await onUpdate(vendor.id, patch);
+      if (updated) {
+        onClose();
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to update vendor.");
     }
   };
 
@@ -286,14 +311,26 @@ export default function EditVendorDialog({
 
             <div>
               <div className="mb-1 flex h-5 items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700">Phone</label>
+                <label className="text-xs font-semibold text-slate-700">Mobile number</label>
               </div>
-              <input
-                value={form.phone}
-                onChange={(event) => setField("phone", event.target.value)}
-                placeholder="+91 9876543210"
-                className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:border-violet-500 focus:outline-none"
-              />
+              <div className="flex h-10 w-full items-center rounded-xl border border-slate-200 bg-white transition focus-within:border-violet-500 focus-within:ring-1 focus-within:ring-violet-500 overflow-hidden">
+                <span className="flex h-full items-center justify-center border-r border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-600 select-none">
+                  +91
+                </span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={10}
+                  value={form.phone}
+                  onChange={(event) => {
+                    const onlyDigits = event.target.value.replace(/\D/g, "").slice(0, 10);
+                    setField("phone", onlyDigits);
+                  }}
+                  placeholder="9876543210"
+                  className="h-full w-full bg-transparent px-3 text-sm tracking-wider font-mono focus:outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400"
+                />
+              </div>
             </div>
 
             <div>

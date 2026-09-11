@@ -4,23 +4,29 @@ import { useState } from "react";
 import ConsumablesTableHeader from "./ConsumablesTableHeader";
 import ConsumablesRow from "./ConsumablesRow";
 import type { ConsumableItem } from "@/lib/consumables/consumable.service";
-import { Boxes } from "lucide-react";
+import { Boxes, Plus } from "lucide-react";
 import BillInspectorDrawer from "@/components/purchase/BillInspectorDrawer";
+import ConsumableInspectorDrawer from "./ConsumableInspectorDrawer";
 import { safeResponseJson } from "@/lib/api/client";
 import type { PurchaseBill } from "@/lib/purchase";
 
 interface ConsumablesDataTableProps {
   consumables: ConsumableItem[];
   loading: boolean;
+  isCatalogEmpty: boolean;
+  onAddTrigger: () => void;
 }
 
 export default function ConsumablesDataTable({
   consumables,
   loading,
+  isCatalogEmpty,
+  onAddTrigger,
 }: ConsumablesDataTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedBill, setSelectedBill] = useState<PurchaseBill | null>(null);
   const [openingSku, setOpeningSku] = useState<string | null>(null);
+  const [inspectingConsumable, setInspectingConsumable] = useState<ConsumableItem | null>(null);
 
   const openSourceBill = async (consumable: ConsumableItem) => {
     setOpeningSku(consumable.sku);
@@ -85,6 +91,30 @@ export default function ConsumablesDataTable({
                   </div>
                 </td>
               </tr>
+            ) : isCatalogEmpty ? (
+              <tr>
+                <td colSpan={9} className="py-16 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                      <Boxes className="h-6 w-6" />
+                    </div>
+                    <p className="mt-3 text-sm font-extrabold text-slate-700">
+                      No consumables yet
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400 mb-4">
+                      Add packaging and materials used across your products.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={onAddTrigger}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Consumable
+                    </button>
+                  </div>
+                </td>
+              </tr>
             ) : consumables.length === 0 ? (
               <tr>
                 <td colSpan={9} className="py-16 text-center">
@@ -110,6 +140,7 @@ export default function ConsumablesDataTable({
                   onToggle={() => handleToggleOne(consumable.id)}
                   onOpenSourceBill={openSourceBill}
                   openingSourceBill={openingSku === consumable.sku}
+                  onInspect={() => setInspectingConsumable(consumable)}
                 />
               ))
             )}
@@ -117,6 +148,11 @@ export default function ConsumablesDataTable({
         </table>
       </div>
       <BillInspectorDrawer bill={selectedBill} onClose={() => setSelectedBill(null)} />
+      <ConsumableInspectorDrawer
+        consumable={inspectingConsumable}
+        isOpen={inspectingConsumable !== null}
+        onClose={() => setInspectingConsumable(null)}
+      />
     </div>
   );
 }

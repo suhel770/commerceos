@@ -412,11 +412,15 @@ function buildCatalog(): Product[] {
   return products;
 }
 
-export const DEMO_CATALOG: Product[] = [];
+export const DEMO_CATALOG: Product[] = buildCatalog();
 
-export const DEMO_SELLABLE: Product[] = [];
+export const DEMO_SELLABLE: Product[] = DEMO_CATALOG.filter(
+  (p) => p.productType !== "packaging",
+);
 
-export const DEMO_PACKAGING: Product[] = [];
+export const DEMO_PACKAGING: Product[] = DEMO_CATALOG.filter(
+  (p) => p.productType === "packaging",
+);
 
 export function productById(id: string): Product | null {
   const found = DEMO_CATALOG.find((row) => row.id === id);
@@ -424,5 +428,5 @@ export function productById(id: string): Product | null {
 }
 
 export function productsForVendor(vendorId: string): Product[] {
-  return [];
+  return DEMO_CATALOG.filter((p) => p.vendorId === vendorId);
 }

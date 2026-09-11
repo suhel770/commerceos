@@ -46,6 +46,10 @@ const workspaceTitles: Record<
   compliance: "Compliance",
   publishing: "Publishing",
   activity: "Activity",
+  exceptions: "Exceptions",
+  readiness: "Readiness",
+  preview: "Preview",
+  category_mapping: "Category Taxonomy Mapping",
 };
 
 const workspaceDescriptions: Record<
@@ -64,6 +68,10 @@ const workspaceDescriptions: Record<
   compliance: "GST, HSN and marketplace policy compliance.",
   publishing: "Readiness, validation and publishing workflow.",
   activity: "Audit history and product timeline.",
+  exceptions: "Action items and delta channel requirements needing attention.",
+  readiness: "Real-time compliance score and factor fulfillment.",
+  preview: "Internal transformed catalog representation across channels.",
+  category_mapping: "Canonical category linkage to target marketplace verticals.",
 };
 
 function renderWorkspaceSection(

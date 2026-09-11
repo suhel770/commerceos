@@ -10,8 +10,8 @@ describe("CommerceOS — Product Consumable Usage Rules & BOM Specification", ()
   const orgB = "org-merchant-beta";
   const wsB = "ws-beta";
 
-  beforeEach(() => {
-    consumableUsageRuleRepository.clearForTesting();
+  beforeEach(async () => {
+    await consumableUsageRuleRepository.clearForTesting();
     locationStockRepository.clearForTesting();
     inventoryConsumptionLedger.clearForTesting();
 

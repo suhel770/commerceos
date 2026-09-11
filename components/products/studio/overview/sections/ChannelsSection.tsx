@@ -1,459 +1,211 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Share2,
-  Link2,
-  Sparkles,
   Globe2,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  Radio,
+  ExternalLink,
+  Plus,
+  Layers,
 } from "lucide-react";
-
+import { Button } from "@/components/ui/button";
+import { useStudio } from "../../context/StudioContext";
 import StudioField from "../../shared/StudioField";
-
-const connectedChannels: string[] = [];
-
-const marketplaceStatus: Array<{
-  channel: string;
-  status: string;
-  sync: string;
-  color: string;
-}> = [];
-
-const syncTimeline: Array<{
-  title: string;
-  date: string;
-  color: string;
-}> = [];
-
-const channelPerformance: Array<{
-  channel: string;
-  score: string;
-}> = [];
+import { MarketplaceName, type MasterAttribute, type MasterListing } from "@/lib/types/master-listing";
+import { getMarketplaceRegistry } from "@/lib/marketplace/registry/marketplace-registry";
 
 export default function ChannelsSection() {
+  const { listing, setActiveWorkspace } = useStudio();
+
+  const channelData = useMemo(() => {
+    if (!listing) return [];
+
+    const channels = [
+      MarketplaceName.AMAZON,
+      MarketplaceName.FLIPKART,
+      MarketplaceName.MEESHO,
+      MarketplaceName.MYNTRA,
+      MarketplaceName.SHOPIFY,
+    ];
+
+    const hasTitle = Boolean(listing.identity.productName?.trim());
+    const hasCategory = Boolean(listing.identity.category?.trim());
+    const hasPrice = Number(listing.pricing?.sellingPrice) > 0;
+    const hasMedia = listing.media && listing.media.length > 0;
+    const hasOrigin = listing.attributes.some((a: MasterAttribute) => a.key === "country_of_origin" && a.value);
+    const hasSize = listing.attributes.some((a: MasterAttribute) => (a.key === "shoe_size_uk" || a.key === "size") && a.value);
+
+    return channels.map((mp) => {
+      const reg = getMarketplaceRegistry(mp);
+      const isConnected = listing.marketplaces.some((m: MasterListing["marketplaces"][number]) => m.marketplace === mp && m.enabled);
+
+      let score = 0;
+      if (hasTitle) score += 25;
+      if (hasCategory) score += 25;
+      if (hasPrice) score += 20;
+      if (hasMedia) score += 15;
+
+      if (mp === MarketplaceName.MYNTRA && hasSize) score += 15;
+      else if (mp === MarketplaceName.AMAZON && hasOrigin) score += 15;
+      else if (mp !== MarketplaceName.MYNTRA && mp !== MarketplaceName.AMAZON) score += 15;
+
+      return {
+        marketplace: mp,
+        name: reg.name,
+        isConnected,
+        score,
+        status: !isConnected ? "NOT_CONNECTED" : score >= 90 ? "READY" : "ACTION_REQUIRED",
+      };
+    });
+  }, [listing]);
+
+  if (!listing) return null;
+
+  const connectedList = channelData.filter((c) => c.isConnected);
+  const healthScore = connectedList.length > 0
+    ? Math.round(connectedList.reduce((acc, c) => acc + c.score, 0) / connectedList.length)
+    : 0;
+
   return (
     <div className="space-y-8">
-
       {/* Header */}
-
-      <div className="flex items-start justify-between">
-
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-
           <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
             <Share2 className="h-4 w-4" />
-            Channel Management
+            Universal Channel Intelligence
           </div>
 
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
-            Sales Channels
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+            Marketplace Channels & Sync
           </h2>
 
-          <p className="mt-2 max-w-3xl text-[15px] leading-7 text-slate-500">
-            Manage marketplace connections, synchronization rules,
-            publishing preferences and channel-specific configurations
-            from one centralized CommerceOS workspace.
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+            Manage marketplace readiness, channel mapping, and synchronization from this centralized Master Product workspace.
           </p>
-
         </div>
 
-        <div className="rounded-2xl border border-cyan-200 bg-cyan-50 px-5 py-4">
-
+        <div className="rounded-2xl border border-cyan-200 bg-cyan-50/70 px-5 py-4">
           <div className="flex items-center gap-3">
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white">
-
-              <Sparkles className="h-5 w-5 text-cyan-600" />
-
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-cyan-600 shadow-xs">
+              <Sparkles className="h-5 w-5" />
             </div>
-
             <div>
-
-              <p className="text-xs text-slate-500">
-                Channel Health
-              </p>
-
-              <h3 className="text-2xl font-bold text-cyan-700">
-                0%
-              </h3>
-
+              <p className="text-xs font-medium text-slate-500">Channel Readiness</p>
+              <h3 className="text-xl font-bold text-cyan-800">{healthScore}%</h3>
             </div>
-
           </div>
-
         </div>
-
       </div>
 
+      {/* Grid */}
       <div className="grid gap-6 xl:grid-cols-2">
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-7">
-
-          <div className="mb-6 flex items-center gap-3">
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-50">
-
-              <Globe2 className="h-5 w-5 text-cyan-600" />
-
+        {/* Connected Channels Overview */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600">
+                <Globe2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Connected Channels</h3>
+                <p className="text-xs text-slate-500">Active marketplace mappings</p>
+              </div>
             </div>
 
-            <div>
-
-              <h3 className="text-lg font-semibold text-slate-900">
-                Channel Configuration
-              </h3>
-
-              <p className="text-sm text-slate-500">
-                Global synchronization settings
-              </p>
-
-            </div>
-
+            <Button
+              size="sm"
+              onClick={() => setActiveWorkspace("channels")}
+              className="bg-slate-900 text-white hover:bg-slate-800"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Manage Channels
+            </Button>
           </div>
 
-          <div className="space-y-5">
-
-            <StudioField
-              label="Default Sales Channel"
-              value="—"
-            />
-
-            <StudioField
-              label="Inventory Synchronization"
-              value="—"
-            />
-
-            <StudioField
-              label="Price Synchronization"
-              value="—"
-            />
-
-            <StudioField
-              label="Order Synchronization"
-              value="—"
-            />
-
-            <StudioField
-              label="Catalog Synchronization"
-              value="—"
-            />
-
-            <StudioField
-              label="Status Synchronization"
-              value="—"
-            />
-
-          </div>
-
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-7">
-
-          <div className="mb-6 flex items-center gap-3">
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
-
-              <Link2 className="h-5 w-5 text-emerald-600" />
-
-            </div>
-
-            <div>
-
-              <h3 className="text-lg font-semibold text-slate-900">
-                Connected Channels
-              </h3>
-
-              <p className="text-sm text-slate-500">
-                Active marketplace integrations
-              </p>
-
-            </div>
-
-          </div>
-
-          <div className="space-y-4">
-
-            {connectedChannels.length === 0 ? (
-              <p className="text-sm text-slate-500">No data yet</p>
-            ) : (
-              connectedChannels.map((channel) => (
-                <div
-                  key={channel}
-                  className="flex items-center gap-3 rounded-2xl border border-slate-200 p-4"
-                >
-
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
-
-                    <Link2 className="h-4 w-4 text-emerald-600" />
-
+          <div className="space-y-3">
+            {channelData.map((channel) => (
+              <div
+                key={channel.marketplace}
+                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-3.5"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white font-bold uppercase text-xs text-slate-700 shadow-2xs">
+                    {channel.marketplace.slice(0, 2)}
                   </div>
-
-                  <span className="font-medium text-slate-800">
-                    {channel}
-                  </span>
-
-                </div>
-              ))
-            )}
-
-          </div>
-
-        </div>
-
-      </div>
-            <div className="grid gap-6 xl:grid-cols-2">
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-7">
-
-          <div className="mb-6">
-
-            <h3 className="text-lg font-semibold text-slate-900">
-              Marketplace Status
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Health and synchronization status across connected channels.
-            </p>
-
-          </div>
-
-          <div className="space-y-4">
-
-            {marketplaceStatus.length === 0 ? (
-              <p className="text-sm text-slate-500">No data yet</p>
-            ) : (
-              marketplaceStatus.map((channel) => (
-                <div
-                  key={channel.channel}
-                  className="rounded-2xl border border-slate-200 p-5"
-                >
-
-                  <div className="flex items-start justify-between">
-
-                    <div>
-
-                      <h4 className="font-semibold text-slate-900">
-                        {channel.channel}
-                      </h4>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        {channel.sync}
-                      </p>
-
-                    </div>
-
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        channel.color === "emerald"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-amber-50 text-amber-700"
-                      }`}
-                    >
-                      {channel.status}
-                    </span>
-
-                  </div>
-
-                </div>
-              ))
-            )}
-
-          </div>
-
-        </div>
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-7">
-
-          <div className="mb-6">
-
-            <h3 className="text-lg font-semibold text-slate-900">
-              CommerceOS Channel Intelligence
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              AI monitors synchronization health across every marketplace.
-            </p>
-
-          </div>
-
-          <div className="space-y-4">
-
-            <p className="text-sm text-slate-500">No data yet</p>
-
-          </div>
-
-        </div>
-
-      </div>
-            <div className="grid gap-6 xl:grid-cols-2">
-
-        <div className="rounded-3xl border border-slate-200 bg-white p-7">
-
-          <div className="mb-6">
-
-            <h3 className="text-lg font-semibold text-slate-900">
-              Synchronization Timeline
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Latest synchronization events across all connected channels.
-            </p>
-
-          </div>
-
-          <div className="space-y-5">
-
-            {syncTimeline.length === 0 ? (
-              <p className="text-sm text-slate-500">No data yet</p>
-            ) : (
-              syncTimeline.map((event) => (
-                <div
-                  key={event.title}
-                  className="flex gap-4"
-                >
-
-                  <div
-                    className={`mt-2 h-3 w-3 rounded-full ${event.color}`}
-                  />
-
                   <div>
-
-                    <h4 className="font-semibold text-slate-900">
-                      {event.title}
-                    </h4>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {event.date}
-                    </p>
-
+                    <h4 className="text-sm font-semibold text-slate-900">{channel.name}</h4>
+                    <span className="text-xs text-slate-500">
+                      {channel.isConnected ? `${channel.score}% Ready` : "Not connected"}
+                    </span>
                   </div>
-
                 </div>
-              ))
-            )}
 
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    channel.status === "READY"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : channel.status === "ACTION_REQUIRED"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-slate-200 text-slate-600"
+                  }`}
+                >
+                  {channel.status.replace("_", " ")}
+                </span>
+              </div>
+            ))}
           </div>
-
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-7">
-
-          <div className="mb-6">
-
-            <h3 className="text-lg font-semibold text-slate-900">
-              Channel Performance
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Health score of every connected sales channel.
-            </p>
-
-          </div>
-
-          <div className="space-y-5">
-
-            {channelPerformance.length === 0 ? (
-              <p className="text-sm text-slate-500">No data yet</p>
-            ) : (
-              channelPerformance.map((channel) => (
-                <div key={channel.channel}>
-
-                  <div className="mb-2 flex items-center justify-between">
-
-                    <span className="font-medium text-slate-700">
-                      {channel.channel}
-                    </span>
-
-                    <span className="font-semibold text-slate-900">
-                      {channel.score}
-                    </span>
-
-                  </div>
-
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-
-                    <div
-                      className="h-full rounded-full bg-cyan-600"
-                      style={{
-                        width: channel.score,
-                      }}
-                    />
-
-                  </div>
-
-                </div>
-              ))
-            )}
-
-          </div>
-
-        </div>
-
-      </div>
-            {/* Workspace Footer */}
-
-      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-7">
-
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-
+        {/* Action Items & Quick Navigation */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
           <div>
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Intelligence Workspaces</h3>
+                <p className="text-xs text-slate-500">Fast jump to channel intelligence</p>
+              </div>
+            </div>
 
-            <h3 className="text-xl font-semibold text-slate-900">
-              Channel Workspace Status
-            </h3>
-
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-500">
-              Connected sales channels are monitored by CommerceOS.
-              Inventory, pricing, catalog updates and listing status sync
-              automatically while AI detects failed synchronizations and
-              marketplace outages before they impact your business.
+            <p className="text-xs text-slate-600 leading-5">
+              CommerceOS automates multi-channel listing preparation by standardizing data once at the Master Product layer.
             </p>
 
+            <div className="mt-4 space-y-2">
+              <button
+                onClick={() => setActiveWorkspace("readiness" as any)}
+                className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-left transition-colors hover:bg-slate-100 text-xs font-semibold text-slate-800"
+              >
+                <span>Channel Readiness Command Center</span>
+                <span className="text-indigo-600 font-bold">Open →</span>
+              </button>
+
+              <button
+                onClick={() => setActiveWorkspace("exceptions" as any)}
+                className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-left transition-colors hover:bg-slate-100 text-xs font-semibold text-slate-800"
+              >
+                <span>Exceptions & Action Items</span>
+                <span className="text-rose-600 font-bold">Inspect →</span>
+              </button>
+
+              <button
+                onClick={() => setActiveWorkspace("preview" as any)}
+                className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-left transition-colors hover:bg-slate-100 text-xs font-semibold text-slate-800"
+              >
+                <span>Marketplace Simulation Preview</span>
+                <span className="text-emerald-600 font-bold">View →</span>
+              </button>
+            </div>
           </div>
-
-          <div className="flex gap-10">
-
-            <div className="text-center">
-
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Connected
-              </p>
-
-              <h3 className="mt-2 text-4xl font-bold text-cyan-600">
-                0
-              </h3>
-
-            </div>
-
-            <div className="text-center">
-
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Live Sync
-              </p>
-
-              <h3 className="mt-2 text-4xl font-bold text-emerald-600">
-                0%
-              </h3>
-
-            </div>
-
-            <div className="text-center">
-
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                AI Score
-              </p>
-
-              <h3 className="mt-2 text-4xl font-bold text-violet-600">
-                0%
-              </h3>
-
-            </div>
-
-          </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

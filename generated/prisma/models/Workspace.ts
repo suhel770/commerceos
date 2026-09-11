@@ -197,6 +197,7 @@ export type WorkspaceWhereInput = {
   warehouses?: Prisma.WarehouseListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   marketplaceConnections?: Prisma.MarketplaceConnectionListRelationFilter
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingListRelationFilter
   vendors?: Prisma.VendorListRelationFilter
   purchaseBills?: Prisma.PurchaseBillListRelationFilter
   purchaseOrders?: Prisma.PurchaseOrderListRelationFilter
@@ -221,6 +222,7 @@ export type WorkspaceOrderByWithRelationInput = {
   warehouses?: Prisma.WarehouseOrderByRelationAggregateInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
   marketplaceConnections?: Prisma.MarketplaceConnectionOrderByRelationAggregateInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingOrderByRelationAggregateInput
   vendors?: Prisma.VendorOrderByRelationAggregateInput
   purchaseBills?: Prisma.PurchaseBillOrderByRelationAggregateInput
   purchaseOrders?: Prisma.PurchaseOrderOrderByRelationAggregateInput
@@ -250,6 +252,7 @@ export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
   warehouses?: Prisma.WarehouseListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   marketplaceConnections?: Prisma.MarketplaceConnectionListRelationFilter
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingListRelationFilter
   vendors?: Prisma.VendorListRelationFilter
   purchaseBills?: Prisma.PurchaseBillListRelationFilter
   purchaseOrders?: Prisma.PurchaseOrderListRelationFilter
@@ -297,6 +300,7 @@ export type WorkspaceCreateInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -320,6 +324,7 @@ export type WorkspaceUncheckedCreateInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -343,6 +348,7 @@ export type WorkspaceUpdateInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -366,6 +372,7 @@ export type WorkspaceUncheckedUpdateInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -538,6 +545,20 @@ export type WorkspaceUpdateOneRequiredWithoutMasterListingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkspaceUpdateToOneWithWhereWithoutMasterListingsInput, Prisma.WorkspaceUpdateWithoutMasterListingsInput>, Prisma.WorkspaceUncheckedUpdateWithoutMasterListingsInput>
 }
 
+export type WorkspaceCreateNestedOneWithoutMarketplaceCategoryMappingsInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutMarketplaceCategoryMappingsInput, Prisma.WorkspaceUncheckedCreateWithoutMarketplaceCategoryMappingsInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutMarketplaceCategoryMappingsInput
+  connect?: Prisma.WorkspaceWhereUniqueInput
+}
+
+export type WorkspaceUpdateOneRequiredWithoutMarketplaceCategoryMappingsNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutMarketplaceCategoryMappingsInput, Prisma.WorkspaceUncheckedCreateWithoutMarketplaceCategoryMappingsInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutMarketplaceCategoryMappingsInput
+  upsert?: Prisma.WorkspaceUpsertWithoutMarketplaceCategoryMappingsInput
+  connect?: Prisma.WorkspaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkspaceUpdateToOneWithWhereWithoutMarketplaceCategoryMappingsInput, Prisma.WorkspaceUpdateWithoutMarketplaceCategoryMappingsInput>, Prisma.WorkspaceUncheckedUpdateWithoutMarketplaceCategoryMappingsInput>
+}
+
 export type WorkspaceCreateNestedOneWithoutMarketplaceConnectionsInput = {
   create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutMarketplaceConnectionsInput, Prisma.WorkspaceUncheckedCreateWithoutMarketplaceConnectionsInput>
   connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutMarketplaceConnectionsInput
@@ -704,6 +725,7 @@ export type WorkspaceCreateWithoutOrganizationInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -726,6 +748,7 @@ export type WorkspaceUncheckedCreateWithoutOrganizationInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -786,6 +809,7 @@ export type WorkspaceCreateWithoutMembersInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -808,6 +832,7 @@ export type WorkspaceUncheckedCreateWithoutMembersInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -846,6 +871,7 @@ export type WorkspaceUpdateWithoutMembersInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -868,6 +894,7 @@ export type WorkspaceUncheckedUpdateWithoutMembersInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -890,6 +917,7 @@ export type WorkspaceCreateWithoutProductsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -912,6 +940,7 @@ export type WorkspaceUncheckedCreateWithoutProductsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -950,6 +979,7 @@ export type WorkspaceUpdateWithoutProductsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -972,6 +1002,7 @@ export type WorkspaceUncheckedUpdateWithoutProductsInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -994,6 +1025,7 @@ export type WorkspaceCreateWithoutMasterListingsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -1016,6 +1048,7 @@ export type WorkspaceUncheckedCreateWithoutMasterListingsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1054,6 +1087,7 @@ export type WorkspaceUpdateWithoutMasterListingsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -1073,6 +1107,115 @@ export type WorkspaceUncheckedUpdateWithoutMasterListingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutWorkspaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutWorkspaceNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
+  vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
+  purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
+  storageLocations?: Prisma.StorageLocationUncheckedUpdateManyWithoutWorkspaceNestedInput
+  storageStocks?: Prisma.StorageStockUncheckedUpdateManyWithoutWorkspaceNestedInput
+  storageReceipts?: Prisma.StorageReceiptUncheckedUpdateManyWithoutWorkspaceNestedInput
+  storageReceiptLines?: Prisma.StorageReceiptLineUncheckedUpdateManyWithoutWorkspaceNestedInput
+  storageOperationLogs?: Prisma.StorageOperationLogUncheckedUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type WorkspaceCreateWithoutMarketplaceCategoryMappingsInput = {
+  id?: string
+  name: string
+  code?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutWorkspacesInput
+  members?: Prisma.WorkspaceMemberCreateNestedManyWithoutWorkspaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutWorkspaceInput
+  masterListings?: Prisma.MasterListingCreateNestedManyWithoutWorkspaceInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
+  orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
+  marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
+  purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
+  storageLocations?: Prisma.StorageLocationCreateNestedManyWithoutWorkspaceInput
+  storageStocks?: Prisma.StorageStockCreateNestedManyWithoutWorkspaceInput
+  storageReceipts?: Prisma.StorageReceiptCreateNestedManyWithoutWorkspaceInput
+  storageReceiptLines?: Prisma.StorageReceiptLineCreateNestedManyWithoutWorkspaceInput
+  storageOperationLogs?: Prisma.StorageOperationLogCreateNestedManyWithoutWorkspaceInput
+}
+
+export type WorkspaceUncheckedCreateWithoutMarketplaceCategoryMappingsInput = {
+  id?: string
+  organizationId: string
+  name: string
+  code?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.WorkspaceMemberUncheckedCreateNestedManyWithoutWorkspaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutWorkspaceInput
+  masterListings?: Prisma.MasterListingUncheckedCreateNestedManyWithoutWorkspaceInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
+  purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
+  storageLocations?: Prisma.StorageLocationUncheckedCreateNestedManyWithoutWorkspaceInput
+  storageStocks?: Prisma.StorageStockUncheckedCreateNestedManyWithoutWorkspaceInput
+  storageReceipts?: Prisma.StorageReceiptUncheckedCreateNestedManyWithoutWorkspaceInput
+  storageReceiptLines?: Prisma.StorageReceiptLineUncheckedCreateNestedManyWithoutWorkspaceInput
+  storageOperationLogs?: Prisma.StorageOperationLogUncheckedCreateNestedManyWithoutWorkspaceInput
+}
+
+export type WorkspaceCreateOrConnectWithoutMarketplaceCategoryMappingsInput = {
+  where: Prisma.WorkspaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkspaceCreateWithoutMarketplaceCategoryMappingsInput, Prisma.WorkspaceUncheckedCreateWithoutMarketplaceCategoryMappingsInput>
+}
+
+export type WorkspaceUpsertWithoutMarketplaceCategoryMappingsInput = {
+  update: Prisma.XOR<Prisma.WorkspaceUpdateWithoutMarketplaceCategoryMappingsInput, Prisma.WorkspaceUncheckedUpdateWithoutMarketplaceCategoryMappingsInput>
+  create: Prisma.XOR<Prisma.WorkspaceCreateWithoutMarketplaceCategoryMappingsInput, Prisma.WorkspaceUncheckedCreateWithoutMarketplaceCategoryMappingsInput>
+  where?: Prisma.WorkspaceWhereInput
+}
+
+export type WorkspaceUpdateToOneWithWhereWithoutMarketplaceCategoryMappingsInput = {
+  where?: Prisma.WorkspaceWhereInput
+  data: Prisma.XOR<Prisma.WorkspaceUpdateWithoutMarketplaceCategoryMappingsInput, Prisma.WorkspaceUncheckedUpdateWithoutMarketplaceCategoryMappingsInput>
+}
+
+export type WorkspaceUpdateWithoutMarketplaceCategoryMappingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkspacesNestedInput
+  members?: Prisma.WorkspaceMemberUpdateManyWithoutWorkspaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutWorkspaceNestedInput
+  masterListings?: Prisma.MasterListingUpdateManyWithoutWorkspaceNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
+  marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
+  purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
+  storageLocations?: Prisma.StorageLocationUpdateManyWithoutWorkspaceNestedInput
+  storageStocks?: Prisma.StorageStockUpdateManyWithoutWorkspaceNestedInput
+  storageReceipts?: Prisma.StorageReceiptUpdateManyWithoutWorkspaceNestedInput
+  storageReceiptLines?: Prisma.StorageReceiptLineUpdateManyWithoutWorkspaceNestedInput
+  storageOperationLogs?: Prisma.StorageOperationLogUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type WorkspaceUncheckedUpdateWithoutMarketplaceCategoryMappingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.WorkspaceMemberUncheckedUpdateManyWithoutWorkspaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutWorkspaceNestedInput
+  masterListings?: Prisma.MasterListingUncheckedUpdateManyWithoutWorkspaceNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1098,6 +1241,7 @@ export type WorkspaceCreateWithoutMarketplaceConnectionsInput = {
   masterListings?: Prisma.MasterListingCreateNestedManyWithoutWorkspaceInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -1120,6 +1264,7 @@ export type WorkspaceUncheckedCreateWithoutMarketplaceConnectionsInput = {
   masterListings?: Prisma.MasterListingUncheckedCreateNestedManyWithoutWorkspaceInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1158,6 +1303,7 @@ export type WorkspaceUpdateWithoutMarketplaceConnectionsInput = {
   masterListings?: Prisma.MasterListingUpdateManyWithoutWorkspaceNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -1180,6 +1326,7 @@ export type WorkspaceUncheckedUpdateWithoutMarketplaceConnectionsInput = {
   masterListings?: Prisma.MasterListingUncheckedUpdateManyWithoutWorkspaceNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1202,6 +1349,7 @@ export type WorkspaceCreateWithoutWarehousesInput = {
   masterListings?: Prisma.MasterListingCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -1224,6 +1372,7 @@ export type WorkspaceUncheckedCreateWithoutWarehousesInput = {
   masterListings?: Prisma.MasterListingUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1262,6 +1411,7 @@ export type WorkspaceUpdateWithoutWarehousesInput = {
   masterListings?: Prisma.MasterListingUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -1284,6 +1434,7 @@ export type WorkspaceUncheckedUpdateWithoutWarehousesInput = {
   masterListings?: Prisma.MasterListingUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1306,6 +1457,7 @@ export type WorkspaceCreateWithoutOrdersInput = {
   masterListings?: Prisma.MasterListingCreateNestedManyWithoutWorkspaceInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -1328,6 +1480,7 @@ export type WorkspaceUncheckedCreateWithoutOrdersInput = {
   masterListings?: Prisma.MasterListingUncheckedCreateNestedManyWithoutWorkspaceInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1366,6 +1519,7 @@ export type WorkspaceUpdateWithoutOrdersInput = {
   masterListings?: Prisma.MasterListingUpdateManyWithoutWorkspaceNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -1388,6 +1542,7 @@ export type WorkspaceUncheckedUpdateWithoutOrdersInput = {
   masterListings?: Prisma.MasterListingUncheckedUpdateManyWithoutWorkspaceNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1411,6 +1566,7 @@ export type WorkspaceCreateWithoutVendorsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
   storageLocations?: Prisma.StorageLocationCreateNestedManyWithoutWorkspaceInput
@@ -1433,6 +1589,7 @@ export type WorkspaceUncheckedCreateWithoutVendorsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
   storageLocations?: Prisma.StorageLocationUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1471,6 +1628,7 @@ export type WorkspaceUpdateWithoutVendorsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
   storageLocations?: Prisma.StorageLocationUpdateManyWithoutWorkspaceNestedInput
@@ -1493,6 +1651,7 @@ export type WorkspaceUncheckedUpdateWithoutVendorsInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   storageLocations?: Prisma.StorageLocationUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1515,6 +1674,7 @@ export type WorkspaceCreateWithoutPurchaseBillsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
   storageLocations?: Prisma.StorageLocationCreateNestedManyWithoutWorkspaceInput
@@ -1537,6 +1697,7 @@ export type WorkspaceUncheckedCreateWithoutPurchaseBillsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
   storageLocations?: Prisma.StorageLocationUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1575,6 +1736,7 @@ export type WorkspaceUpdateWithoutPurchaseBillsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
   storageLocations?: Prisma.StorageLocationUpdateManyWithoutWorkspaceNestedInput
@@ -1597,6 +1759,7 @@ export type WorkspaceUncheckedUpdateWithoutPurchaseBillsInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   storageLocations?: Prisma.StorageLocationUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1619,6 +1782,7 @@ export type WorkspaceCreateWithoutPurchaseOrdersInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   storageLocations?: Prisma.StorageLocationCreateNestedManyWithoutWorkspaceInput
@@ -1641,6 +1805,7 @@ export type WorkspaceUncheckedCreateWithoutPurchaseOrdersInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   storageLocations?: Prisma.StorageLocationUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1679,6 +1844,7 @@ export type WorkspaceUpdateWithoutPurchaseOrdersInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   storageLocations?: Prisma.StorageLocationUpdateManyWithoutWorkspaceNestedInput
@@ -1701,6 +1867,7 @@ export type WorkspaceUncheckedUpdateWithoutPurchaseOrdersInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   storageLocations?: Prisma.StorageLocationUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1723,6 +1890,7 @@ export type WorkspaceCreateWithoutStorageLocationsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -1745,6 +1913,7 @@ export type WorkspaceUncheckedCreateWithoutStorageLocationsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1783,6 +1952,7 @@ export type WorkspaceUpdateWithoutStorageLocationsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -1805,6 +1975,7 @@ export type WorkspaceUncheckedUpdateWithoutStorageLocationsInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1827,6 +1998,7 @@ export type WorkspaceCreateWithoutStorageStocksInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -1849,6 +2021,7 @@ export type WorkspaceUncheckedCreateWithoutStorageStocksInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1887,6 +2060,7 @@ export type WorkspaceUpdateWithoutStorageStocksInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -1909,6 +2083,7 @@ export type WorkspaceUncheckedUpdateWithoutStorageStocksInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1931,6 +2106,7 @@ export type WorkspaceCreateWithoutStorageReceiptsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -1953,6 +2129,7 @@ export type WorkspaceUncheckedCreateWithoutStorageReceiptsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1991,6 +2168,7 @@ export type WorkspaceUpdateWithoutStorageReceiptsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -2013,6 +2191,7 @@ export type WorkspaceUncheckedUpdateWithoutStorageReceiptsInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2035,6 +2214,7 @@ export type WorkspaceCreateWithoutStorageReceiptLinesInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -2057,6 +2237,7 @@ export type WorkspaceUncheckedCreateWithoutStorageReceiptLinesInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2095,6 +2276,7 @@ export type WorkspaceUpdateWithoutStorageReceiptLinesInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -2117,6 +2299,7 @@ export type WorkspaceUncheckedUpdateWithoutStorageReceiptLinesInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2139,6 +2322,7 @@ export type WorkspaceCreateWithoutStorageOperationLogsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWorkspaceInput
@@ -2161,6 +2345,7 @@ export type WorkspaceUncheckedCreateWithoutStorageOperationLogsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutWorkspaceInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWorkspaceInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedCreateNestedManyWithoutWorkspaceInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedCreateNestedManyWithoutWorkspaceInput
   vendors?: Prisma.VendorUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseBills?: Prisma.PurchaseBillUncheckedCreateNestedManyWithoutWorkspaceInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2199,6 +2384,7 @@ export type WorkspaceUpdateWithoutStorageOperationLogsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -2221,6 +2407,7 @@ export type WorkspaceUncheckedUpdateWithoutStorageOperationLogsInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2250,6 +2437,7 @@ export type WorkspaceUpdateWithoutOrganizationInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWorkspaceNestedInput
@@ -2272,6 +2460,7 @@ export type WorkspaceUncheckedUpdateWithoutOrganizationInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutWorkspaceNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWorkspaceNestedInput
   marketplaceConnections?: Prisma.MarketplaceConnectionUncheckedUpdateManyWithoutWorkspaceNestedInput
+  marketplaceCategoryMappings?: Prisma.MarketplaceCategoryMappingUncheckedUpdateManyWithoutWorkspaceNestedInput
   vendors?: Prisma.VendorUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseBills?: Prisma.PurchaseBillUncheckedUpdateManyWithoutWorkspaceNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2302,6 +2491,7 @@ export type WorkspaceCountOutputType = {
   warehouses: number
   orders: number
   marketplaceConnections: number
+  marketplaceCategoryMappings: number
   vendors: number
   purchaseBills: number
   purchaseOrders: number
@@ -2319,6 +2509,7 @@ export type WorkspaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensi
   warehouses?: boolean | WorkspaceCountOutputTypeCountWarehousesArgs
   orders?: boolean | WorkspaceCountOutputTypeCountOrdersArgs
   marketplaceConnections?: boolean | WorkspaceCountOutputTypeCountMarketplaceConnectionsArgs
+  marketplaceCategoryMappings?: boolean | WorkspaceCountOutputTypeCountMarketplaceCategoryMappingsArgs
   vendors?: boolean | WorkspaceCountOutputTypeCountVendorsArgs
   purchaseBills?: boolean | WorkspaceCountOutputTypeCountPurchaseBillsArgs
   purchaseOrders?: boolean | WorkspaceCountOutputTypeCountPurchaseOrdersArgs
@@ -2379,6 +2570,13 @@ export type WorkspaceCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Type
  */
 export type WorkspaceCountOutputTypeCountMarketplaceConnectionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.MarketplaceConnectionWhereInput
+}
+
+/**
+ * WorkspaceCountOutputType without action
+ */
+export type WorkspaceCountOutputTypeCountMarketplaceCategoryMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MarketplaceCategoryMappingWhereInput
 }
 
 /**
@@ -2452,6 +2650,7 @@ export type WorkspaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   warehouses?: boolean | Prisma.Workspace$warehousesArgs<ExtArgs>
   orders?: boolean | Prisma.Workspace$ordersArgs<ExtArgs>
   marketplaceConnections?: boolean | Prisma.Workspace$marketplaceConnectionsArgs<ExtArgs>
+  marketplaceCategoryMappings?: boolean | Prisma.Workspace$marketplaceCategoryMappingsArgs<ExtArgs>
   vendors?: boolean | Prisma.Workspace$vendorsArgs<ExtArgs>
   purchaseBills?: boolean | Prisma.Workspace$purchaseBillsArgs<ExtArgs>
   purchaseOrders?: boolean | Prisma.Workspace$purchaseOrdersArgs<ExtArgs>
@@ -2501,6 +2700,7 @@ export type WorkspaceInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   warehouses?: boolean | Prisma.Workspace$warehousesArgs<ExtArgs>
   orders?: boolean | Prisma.Workspace$ordersArgs<ExtArgs>
   marketplaceConnections?: boolean | Prisma.Workspace$marketplaceConnectionsArgs<ExtArgs>
+  marketplaceCategoryMappings?: boolean | Prisma.Workspace$marketplaceCategoryMappingsArgs<ExtArgs>
   vendors?: boolean | Prisma.Workspace$vendorsArgs<ExtArgs>
   purchaseBills?: boolean | Prisma.Workspace$purchaseBillsArgs<ExtArgs>
   purchaseOrders?: boolean | Prisma.Workspace$purchaseOrdersArgs<ExtArgs>
@@ -2528,6 +2728,7 @@ export type $WorkspacePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     warehouses: Prisma.$WarehousePayload<ExtArgs>[]
     orders: Prisma.$OrderPayload<ExtArgs>[]
     marketplaceConnections: Prisma.$MarketplaceConnectionPayload<ExtArgs>[]
+    marketplaceCategoryMappings: Prisma.$MarketplaceCategoryMappingPayload<ExtArgs>[]
     vendors: Prisma.$VendorPayload<ExtArgs>[]
     purchaseBills: Prisma.$PurchaseBillPayload<ExtArgs>[]
     purchaseOrders: Prisma.$PurchaseOrderPayload<ExtArgs>[]
@@ -2945,6 +3146,7 @@ export interface Prisma__WorkspaceClient<T, Null = never, ExtArgs extends runtim
   warehouses<T extends Prisma.Workspace$warehousesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$warehousesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WarehousePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orders<T extends Prisma.Workspace$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   marketplaceConnections<T extends Prisma.Workspace$marketplaceConnectionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$marketplaceConnectionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MarketplaceConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  marketplaceCategoryMappings<T extends Prisma.Workspace$marketplaceCategoryMappingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$marketplaceCategoryMappingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MarketplaceCategoryMappingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   vendors<T extends Prisma.Workspace$vendorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$vendorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VendorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   purchaseBills<T extends Prisma.Workspace$purchaseBillsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$purchaseBillsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PurchaseBillPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   purchaseOrders<T extends Prisma.Workspace$purchaseOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$purchaseOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3530,6 +3732,30 @@ export type Workspace$marketplaceConnectionsArgs<ExtArgs extends runtime.Types.E
   take?: number
   skip?: number
   distinct?: Prisma.MarketplaceConnectionScalarFieldEnum | Prisma.MarketplaceConnectionScalarFieldEnum[]
+}
+
+/**
+ * Workspace.marketplaceCategoryMappings
+ */
+export type Workspace$marketplaceCategoryMappingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MarketplaceCategoryMapping
+   */
+  select?: Prisma.MarketplaceCategoryMappingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MarketplaceCategoryMapping
+   */
+  omit?: Prisma.MarketplaceCategoryMappingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MarketplaceCategoryMappingInclude<ExtArgs> | null
+  where?: Prisma.MarketplaceCategoryMappingWhereInput
+  orderBy?: Prisma.MarketplaceCategoryMappingOrderByWithRelationInput | Prisma.MarketplaceCategoryMappingOrderByWithRelationInput[]
+  cursor?: Prisma.MarketplaceCategoryMappingWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MarketplaceCategoryMappingScalarFieldEnum | Prisma.MarketplaceCategoryMappingScalarFieldEnum[]
 }
 
 /**

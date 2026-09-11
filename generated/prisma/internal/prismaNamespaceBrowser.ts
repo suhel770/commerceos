@@ -59,6 +59,11 @@ export const ModelName = {
   Product: 'Product',
   MasterListing: 'MasterListing',
   MasterAttribute: 'MasterAttribute',
+  MarketplaceRegistry: 'MarketplaceRegistry',
+  MarketplaceSchema: 'MarketplaceSchema',
+  MarketplaceCategoryMapping: 'MarketplaceCategoryMapping',
+  UniversalAttributeRegistry: 'UniversalAttributeRegistry',
+  MarketplaceAttributeDefinition: 'MarketplaceAttributeDefinition',
   MarketplaceConnection: 'MarketplaceConnection',
   MarketplaceListing: 'MarketplaceListing',
   MarketplaceAttributeMapping: 'MarketplaceAttributeMapping',
@@ -164,6 +169,7 @@ export type WorkspaceMemberScalarFieldEnum = (typeof WorkspaceMemberScalarFieldE
 
 export const ProductScalarFieldEnum = {
   id: 'id',
+  productId: 'productId',
   workspaceId: 'workspaceId',
   sku: 'sku',
   slug: 'slug',
@@ -180,6 +186,7 @@ export const ProductScalarFieldEnum = {
   status: 'status',
   images: 'images',
   intent: 'intent',
+  productType: 'productType',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -215,13 +222,108 @@ export const MasterAttributeScalarFieldEnum = {
 export type MasterAttributeScalarFieldEnum = (typeof MasterAttributeScalarFieldEnum)[keyof typeof MasterAttributeScalarFieldEnum]
 
 
+export const MarketplaceRegistryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  countryCode: 'countryCode',
+  category: 'category',
+  logoUrl: 'logoUrl',
+  documentationUrl: 'documentationUrl',
+  capabilities: 'capabilities',
+  authType: 'authType',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceRegistryScalarFieldEnum = (typeof MarketplaceRegistryScalarFieldEnum)[keyof typeof MarketplaceRegistryScalarFieldEnum]
+
+
+export const MarketplaceSchemaScalarFieldEnum = {
+  id: 'id',
+  marketplace: 'marketplace',
+  verticalCode: 'verticalCode',
+  verticalName: 'verticalName',
+  countryCode: 'countryCode',
+  schemaVersion: 'schemaVersion',
+  effectiveDate: 'effectiveDate',
+  active: 'active',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceSchemaScalarFieldEnum = (typeof MarketplaceSchemaScalarFieldEnum)[keyof typeof MarketplaceSchemaScalarFieldEnum]
+
+
+export const MarketplaceCategoryMappingScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  commerceCategory: 'commerceCategory',
+  marketplace: 'marketplace',
+  marketplaceCategoryId: 'marketplaceCategoryId',
+  marketplaceCategoryName: 'marketplaceCategoryName',
+  marketplaceVertical: 'marketplaceVertical',
+  schemaId: 'schemaId',
+  status: 'status',
+  confidenceScore: 'confidenceScore',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceCategoryMappingScalarFieldEnum = (typeof MarketplaceCategoryMappingScalarFieldEnum)[keyof typeof MarketplaceCategoryMappingScalarFieldEnum]
+
+
+export const UniversalAttributeRegistryScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  label: 'label',
+  dataType: 'dataType',
+  unit: 'unit',
+  allowedValues: 'allowedValues',
+  group: 'group',
+  description: 'description',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UniversalAttributeRegistryScalarFieldEnum = (typeof UniversalAttributeRegistryScalarFieldEnum)[keyof typeof UniversalAttributeRegistryScalarFieldEnum]
+
+
+export const MarketplaceAttributeDefinitionScalarFieldEnum = {
+  id: 'id',
+  schemaId: 'schemaId',
+  attributeKey: 'attributeKey',
+  label: 'label',
+  dataType: 'dataType',
+  unit: 'unit',
+  allowedValues: 'allowedValues',
+  isRequired: 'isRequired',
+  requirementLevel: 'requirementLevel',
+  universalAttributeKey: 'universalAttributeKey',
+  conditionalRulesJson: 'conditionalRulesJson',
+  transformationRulesJson: 'transformationRulesJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MarketplaceAttributeDefinitionScalarFieldEnum = (typeof MarketplaceAttributeDefinitionScalarFieldEnum)[keyof typeof MarketplaceAttributeDefinitionScalarFieldEnum]
+
+
 export const MarketplaceConnectionScalarFieldEnum = {
   id: 'id',
   workspaceId: 'workspaceId',
   marketplace: 'marketplace',
+  accountName: 'accountName',
   enabled: 'enabled',
   sellerId: 'sellerId',
+  region: 'region',
+  healthStatus: 'healthStatus',
+  lastHealthCheckAt: 'lastHealthCheckAt',
   encryptedCredentials: 'encryptedCredentials',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -236,12 +338,17 @@ export const MarketplaceListingScalarFieldEnum = {
   marketplaceConnectionId: 'marketplaceConnectionId',
   marketplaceSku: 'marketplaceSku',
   externalListingId: 'externalListingId',
+  externalProductId: 'externalProductId',
   title: 'title',
   sellingPrice: 'sellingPrice',
   publishStatus: 'publishStatus',
   listingStatus: 'listingStatus',
   stockSync: 'stockSync',
   buyBoxPercentage: 'buyBoxPercentage',
+  listingUrl: 'listingUrl',
+  syncErrors: 'syncErrors',
+  rawPayload: 'rawPayload',
+  lastAttemptedSyncAt: 'lastAttemptedSyncAt',
   lastSyncedAt: 'lastSyncedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

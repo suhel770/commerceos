@@ -47,8 +47,8 @@ export function Button({
   };
 
   const sizes = {
-    default: "rounded-xl px-4 py-2 text-sm",
-    sm: "rounded-lg px-3 py-1.5 text-xs",
+    default: "rounded-xl px-4 py-2 text-sm font-semibold",
+    sm: "rounded-lg px-3 py-1.5 text-[13px] font-semibold",
     icon: "h-10 w-10 rounded-xl p-0",
     "icon-sm": "h-8 w-8 rounded-lg p-0",
   };
@@ -58,7 +58,7 @@ export function Button({
   return (
     <Component
       {...props}
-      className={`inline-flex items-center justify-center whitespace-nowrap font-medium transition disabled:pointer-events-none disabled:opacity-50 ${sizes[size]} ${styles[variant]} ${className}`}
+      className={`inline-flex items-center justify-center whitespace-nowrap transition disabled:pointer-events-none disabled:opacity-50 ${sizes[size]} ${styles[variant]} ${className}`}
     >
       {children}
     </Component>

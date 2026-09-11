@@ -370,8 +370,10 @@ export default function BillsWorkspace() {
       setMessage("Purchase bill updated successfully.");
       return true;
     } catch (err: any) {
-      setMessage(err?.message || "Failed to update purchase bill.");
-      return false;
+      const msg = err?.message || "Failed to update purchase bill.";
+      setError(msg);
+      setMessage(msg);
+      throw new Error(msg);
     } finally {
       setSubmitting(false);
     }

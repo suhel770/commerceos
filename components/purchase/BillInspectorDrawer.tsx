@@ -16,6 +16,7 @@ import {
   type PurchaseBill,
   type Vendor,
 } from "@/lib/purchase";
+import { getUniversalProductId } from "@/lib/products/product-id-utils";
 
 import { paymentLabel, workflowLabel } from "./purchase-ops";
 
@@ -361,15 +362,37 @@ export default function BillInspectorDrawer({
                                 <p className="font-bold text-slate-900 text-xs">
                                   {line.description}
                                 </p>
-                                <p className="text-xs text-slate-500 font-mono">
-                                  {[
-                                    line.sku,
-                                    line.hsn ? `HSN ${line.hsn}` : null,
-                                    `${line.gstRate}% GST`,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" · ")}
-                                </p>
+                                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500 font-mono flex-wrap">
+                                  {(() => {
+                                    const linePrdId = getUniversalProductId({
+                                      productId: line.productId,
+                                      sku: line.sku,
+                                      name: line.description,
+                                    });
+                                    if (!linePrdId) return null;
+                                    return (
+                                      <>
+                                        <span className="font-bold text-indigo-600 bg-indigo-50/80 px-1 py-0.5 rounded border border-indigo-100/60 text-[10px]">
+                                          {linePrdId}
+                                        </span>
+                                        <span className="text-slate-300">·</span>
+                                      </>
+                                    );
+                                  })()}
+                                  {line.sku && (
+                                    <>
+                                      <span>{line.sku}</span>
+                                      <span className="text-slate-300">·</span>
+                                    </>
+                                  )}
+                                  {line.hsn && (
+                                    <>
+                                      <span>HSN {line.hsn}</span>
+                                      <span className="text-slate-300">·</span>
+                                    </>
+                                  )}
+                                  <span>{line.gstRate}% GST</span>
+                                </div>
                               </td>
                               <td className="px-2 py-2.5 text-right font-semibold text-slate-700 font-mono">
                                 {line.quantity}

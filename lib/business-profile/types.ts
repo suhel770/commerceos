@@ -20,6 +20,7 @@ export type BusinessProfile = {
   phone: string;
   email: string;
   ownerName: string;
+  trackConsumables?: boolean;
   updatedAt: string;
 };
 
@@ -35,4 +36,5 @@ export type UpdateBusinessProfileInput = {
   phone?: string;
   email?: string;
   ownerName?: string;
+  trackConsumables?: boolean;
 };

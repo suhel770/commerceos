@@ -12,16 +12,16 @@ export function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h3 className="text-lg font-semibold text-slate-900">
+    <section className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
+      <h3 className="text-xs font-bold text-slate-900">
         {title}
       </h3>
 
-      <p className="mt-1 text-sm leading-6 text-slate-500">
+      <p className="mt-0.5 text-[11px] text-slate-400 font-medium leading-normal">
         {description}
       </p>
 
-      <div className="mt-5">
+      <div className="mt-3">
         {children}
       </div>
     </section>
@@ -38,15 +38,15 @@ export function Field({
   hint?: string;
 }) {
   return (
-    <label className="space-y-2">
-      <span className="block text-sm font-medium text-slate-700">
+    <label className="space-y-1 block">
+      <span className="block text-[11px] font-bold text-slate-700">
         {label}
       </span>
 
       {children}
 
       {hint && (
-        <span className="block text-xs text-slate-500">
+        <span className="block text-[10px] text-slate-400 font-medium">
           {hint}
         </span>
       )}
@@ -60,7 +60,7 @@ export function EmptyState({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
+    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-xs text-slate-500 font-medium">
       {children}
     </div>
   );

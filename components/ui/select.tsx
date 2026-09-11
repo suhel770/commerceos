@@ -72,7 +72,7 @@ function SelectContent({
         data-align-trigger={position === "item-aligned"}
         sideOffset={sideOffset}
         className={cn(
-          "relative z-50 max-h-72 min-w-(--radix-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 text-slate-900 shadow-xl duration-150 data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "relative z-[9999] max-h-72 min-w-(--radix-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 text-slate-900 shadow-xl duration-150 data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         position={position}

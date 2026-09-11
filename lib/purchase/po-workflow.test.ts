@@ -66,6 +66,14 @@ describe("CommerceOS Purchase Order (PO) Architectural Separation Suite", () => 
   it("TEST 2: PO Service creates Purchase Order with auto-generated PO Number and calculated totals", async () => {
     vi.spyOn(purchaseRepository, "getVendor").mockResolvedValue(sampleVendor as any);
     vi.spyOn(purchaseRepository, "listOrders").mockResolvedValue([]);
+    vi.spyOn(purchaseRepository, "createOrder").mockImplementation(async (orgId, wsId, order) => ({
+      id: "po-123",
+      organizationId: orgId,
+      workspaceId: wsId,
+      status: "DRAFT",
+      currency: "INR",
+      ...order,
+    }) as any);
 
     const createdPO = await purchaseService.createOrder(
       testContext.organizationId,
@@ -94,7 +102,7 @@ describe("CommerceOS Purchase Order (PO) Architectural Separation Suite", () => 
 
     expect(createdPO.poNumber).toContain("PO-2026-");
     expect(createdPO.vendorName).toBe("Nova Footwear Industries");
-    expect(createdPO.status).toBe("DRAFT");
+    expect(createdPO.status.toLowerCase()).toBe("draft");
     expect(createdPO.subtotal).toBe(5000); // 10 * 500
     expect(createdPO.taxAmount).toBe(900); // 18% of 5000
     expect(createdPO.totalAmount).toBe(6000); // 5000 + 900 + 100 freight

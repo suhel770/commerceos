@@ -1,8 +1,10 @@
 import { inventoryApplication } from "@/lib/application/inventory.application";
 import { inventoryConsumptionLedger } from "@/lib/inventory/consumption-ledger";
 import { DEFAULT_WAREHOUSE_ID } from "@/lib/inventory/types";
-import { products } from "@/lib/mocks/products";
 import { orderService } from "@/lib/orders/service";
+import { businessProfileRepository } from "@/lib/business-profile/repository";
+import { consumableRulesService } from "@/lib/consumable-rules/consumable-rules.service";
+import { db } from "@/lib/db";
 import {
   CUSTOMER_RETURN_ELIGIBLE,
   OrderError,
@@ -97,6 +99,61 @@ async function consumeShippedStock(
       });
     } catch {
       // Best-effort ledger sync
+    }
+  }
+
+  // Deduct packaging consumables automatically based on BOM rules if trackConsumables is enabled
+  const profile = businessProfileRepository.get();
+  if (profile.trackConsumables !== false) {
+    for (const line of order.lines) {
+      try {
+        const proposals = await consumableRulesService.calculateExpectedUsage({
+          productSku: line.sku,
+          orderQuantity: line.quantity,
+          tenantScope: {
+            organizationId: context.organizationId,
+            workspaceId: context.workspaceId,
+          },
+        });
+
+        for (const prop of proposals) {
+          const invRecord = await db.inventory.findFirst({
+            where: {
+              workspaceId: context.workspaceId,
+              sku: prop.consumableSku,
+            },
+          });
+
+          if (invRecord?.productId) {
+            await inventoryApplication.adjust(context, {
+              productId: invRecord.productId,
+              warehouseId: order.warehouseId ?? DEFAULT_WAREHOUSE_ID,
+              delta: -prop.calculatedQuantity,
+              bucket: "available",
+              reason: `packaging_deduction:${order.orderNumber}`,
+            });
+          }
+
+          inventoryConsumptionLedger.recordConsumption({
+            idempotencyKey: `order-fulfill-${order.id}-${prop.consumableSku}-${line.sku}`,
+            organizationId: context.organizationId,
+            workspaceId: context.workspaceId,
+            sku: prop.consumableSku,
+            productName: prop.consumableName,
+            inventoryType: "CONSUMABLE",
+            quantity: prop.calculatedQuantity,
+            usageType: "ORDER_FULFILLMENT",
+            reason: `Packaging deduction for Product ${line.sku}`,
+            relatedOrderId: order.orderNumber || order.id,
+            relatedShipmentId: order.shipments?.[0]?.id,
+            reference: `Order #${order.orderNumber || order.id}`,
+            sourceLocationId: line.warehouseId || order.warehouseId,
+            actorName: actorName(context),
+          });
+        }
+      } catch (err) {
+        // Best-effort packaging sync
+      }
     }
   }
 }

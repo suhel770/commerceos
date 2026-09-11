@@ -53,6 +53,69 @@ const purchaseStatusSchema = z.enum([
   "void",
 ]);
 
+const ALLOWED_VENDOR_CATEGORIES = [
+  "product_manufacturer",
+  "wholesaler",
+  "packaging",
+  "labels",
+  "courier",
+  "office_supplies",
+  "marketing",
+  "software",
+  "professional_service",
+  "utilities",
+  "assets",
+  "other",
+] as const;
+
+const sanitizedVendorEmail = z
+  .string()
+  .trim()
+  .max(160)
+  .optional()
+  .or(z.literal(""))
+  .transform((value) => {
+    if (!value) return undefined;
+    const v = value.trim();
+    if (["na", "n/a", "none", "-", "nil", "null"].includes(v.toLowerCase())) return undefined;
+    return v;
+  })
+  .refine(
+    (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+    "Invalid email format",
+  );
+
+const sanitizedVendorGstin = z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal(""))
+  .transform((val) => {
+    if (!val) return undefined;
+    const cleaned = val.replace(/\s+/g, "").toUpperCase();
+    if (["NA", "N/A", "NONE", "-"].includes(cleaned)) return undefined;
+    return cleaned.slice(0, 15);
+  });
+
+const sanitizedVendorPan = z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal(""))
+  .transform((val) => {
+    if (!val) return undefined;
+    const cleaned = val.replace(/\s+/g, "").toUpperCase();
+    if (["NA", "N/A", "NONE", "-"].includes(cleaned)) return undefined;
+    return cleaned.slice(0, 10);
+  });
+
+const sanitizedVendorDays = (def: number) =>
+  z.preprocess((val) => {
+    if (val === "" || val === null || val === undefined) return def;
+    const n = Math.round(Number(val));
+    return Number.isNaN(n) ? def : Math.max(0, Math.min(365, n));
+  }, z.number().int().min(0).max(365).optional());
+
 const vendorRegistrationTypeSchema = z
   .string()
   .trim()
@@ -68,58 +131,112 @@ const vendorRegistrationTypeSchema = z
     return "regular";
   });
 
+const sanitizedVendorPhone = z
+  .string()
+  .trim()
+  .max(40)
+  .optional()
+  .or(z.literal(""))
+  .transform((val) => {
+    if (!val) return undefined;
+    const digits = val.replace(/\D/g, "");
+    if (digits.length === 10) {
+      return `+91${digits}`;
+    }
+    if (digits.length === 12 && digits.startsWith("91")) {
+      return `+${digits}`;
+    }
+    return val.trim();
+  });
+
+const sanitizedVendorPhoneForUpdate = z
+  .string()
+  .trim()
+  .max(40)
+  .optional()
+  .or(z.literal(""))
+  .transform((val) => {
+    if (val === undefined) return undefined;
+    if (!val) return "";
+    const digits = val.replace(/\D/g, "");
+    if (digits.length === 10) {
+      return `+91${digits}`;
+    }
+    if (digits.length === 12 && digits.startsWith("91")) {
+      return `+${digits}`;
+    }
+    return val.trim();
+  });
+
 export const createVendorSchema = z
   .object({
     name: z.string().trim().min(1).max(160),
     code: optionalText(60),
     vendor_code: optionalText(60),
     registrationType: vendorRegistrationTypeSchema.optional(),
-    gstin: optionalText(15),
-    pan: optionalText(10),
-    phone: optionalText(20),
-    email: z
-      .string()
-      .trim()
-      .max(160)
-      .optional()
-      .or(z.literal(""))
-      .transform((value) => {
-        if (!value) return undefined;
-        return value;
-      })
-      .refine(
-        (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-        "Invalid email",
-      ),
+    gstin: sanitizedVendorGstin,
+    pan: sanitizedVendorPan,
+    phone: sanitizedVendorPhone,
+    email: sanitizedVendorEmail,
     address: optionalText(300),
     city: optionalText(80),
     state: optionalText(80),
     pincode: optionalText(20),
     contactPerson: optionalText(120),
     businessCategory: z
-      .enum([
-        "product_manufacturer",
-        "wholesaler",
-        "packaging",
-        "labels",
-        "courier",
-        "office_supplies",
-        "marketing",
-        "software",
-        "professional_service",
-        "utilities",
-        "assets",
-        "other",
-      ])
-      .optional(),
-    rating: z.number().min(1).max(5).optional(),
+      .preprocess((val) => {
+        if (!val || typeof val !== "string" || !val.trim()) return undefined;
+        const v = val.trim().toLowerCase();
+        return (ALLOWED_VENDOR_CATEGORIES as readonly string[]).includes(v) ? v : "other";
+      }, z.enum(ALLOWED_VENDOR_CATEGORIES).optional()),
+    rating: z
+      .preprocess((val) => {
+        if (val === "" || val === null || val === undefined) return undefined;
+        const n = Number(val);
+        return Number.isNaN(n) ? undefined : Math.max(1, Math.min(5, n));
+      }, z.number().min(1).max(5).optional()),
     bankName: optionalText(120),
     bankAccountName: optionalText(160),
     bankAccountNumber: optionalText(40),
     bankIfsc: optionalText(20),
-    paymentTermsDays: z.number().int().min(0).max(365).optional(),
-    leadTimeDays: z.number().int().min(0).max(365).optional(),
+    paymentTermsDays: sanitizedVendorDays(30),
+    leadTimeDays: sanitizedVendorDays(7),
     notes: optionalText(500),
+    defaultPurchaseIntent: z
+      .preprocess((val) => {
+        if (val === "" || val === null || val === undefined) return undefined;
+        if (typeof val === "string") {
+          const s = val.trim().toLowerCase();
+          if (s === "office_supplies") return "expense";
+          if (s === "packaging_material") return "consumable";
+          if (s === "inventory_product") return "sellable";
+          return s;
+        }
+        return val;
+      }, z.enum([
+        "sellable",
+        "consumable",
+        "asset",
+        "expense",
+        "service",
+        "marketing",
+        "freight",
+        "other",
+      ]).optional()),
+    allowedPurchaseIntents: z
+      .array(
+        z.enum([
+          "sellable",
+          "consumable",
+          "asset",
+          "expense",
+          "service",
+          "marketing",
+          "freight",
+          "other",
+        ]),
+      )
+      .optional(),
   })
   .passthrough();
 
@@ -139,36 +256,70 @@ export const updateVendorSchema = z
   .object({
     name: z.string().trim().min(1).max(160).optional(),
     registrationType: vendorRegistrationTypeSchema.optional(),
-    gstin: optionalTextForUpdate(15),
-    pan: optionalTextForUpdate(10),
-    phone: optionalTextForUpdate(20),
-    email: z
-      .string()
-      .trim()
-      .max(160)
-      .optional()
-      .or(z.literal(""))
-      .transform((value) => {
-        if (value === undefined) return undefined;
-        return value.trim();
-      })
-      .refine(
-        (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-        "Invalid email",
-      ),
+    gstin: sanitizedVendorGstin,
+    pan: sanitizedVendorPan,
+    phone: sanitizedVendorPhoneForUpdate,
+    email: sanitizedVendorEmail,
     address: optionalTextForUpdate(300),
     city: optionalTextForUpdate(80),
     state: optionalTextForUpdate(80),
     pincode: optionalTextForUpdate(20),
     contactPerson: optionalTextForUpdate(120),
+    businessCategory: z
+      .preprocess((val) => {
+        if (!val || typeof val !== "string" || !val.trim()) return undefined;
+        const v = val.trim().toLowerCase();
+        return (ALLOWED_VENDOR_CATEGORIES as readonly string[]).includes(v) ? v : "other";
+      }, z.enum(ALLOWED_VENDOR_CATEGORIES).optional()),
+    rating: z
+      .preprocess((val) => {
+        if (val === "" || val === null || val === undefined) return undefined;
+        const n = Number(val);
+        return Number.isNaN(n) ? undefined : Math.max(1, Math.min(5, n));
+      }, z.number().min(1).max(5).optional()),
     bankName: optionalTextForUpdate(120),
     bankAccountName: optionalTextForUpdate(160),
     bankAccountNumber: optionalTextForUpdate(40),
     bankIfsc: optionalTextForUpdate(20),
-    paymentTermsDays: z.number().int().min(0).max(365).optional(),
-    leadTimeDays: z.number().int().min(0).max(365).optional(),
+    paymentTermsDays: sanitizedVendorDays(30),
+    leadTimeDays: sanitizedVendorDays(7),
     notes: optionalTextForUpdate(500),
     status: z.enum(["active", "blocked", "inactive"]).optional(),
+    defaultPurchaseIntent: z
+      .preprocess((val) => {
+        if (val === "" || val === null || val === undefined) return undefined;
+        if (typeof val === "string") {
+          const s = val.trim().toLowerCase();
+          if (s === "office_supplies") return "expense";
+          if (s === "packaging_material") return "consumable";
+          if (s === "inventory_product") return "sellable";
+          return s;
+        }
+        return val;
+      }, z.enum([
+        "sellable",
+        "consumable",
+        "asset",
+        "expense",
+        "service",
+        "marketing",
+        "freight",
+        "other",
+      ]).optional()),
+    allowedPurchaseIntents: z
+      .array(
+        z.enum([
+          "sellable",
+          "consumable",
+          "asset",
+          "expense",
+          "service",
+          "marketing",
+          "freight",
+          "other",
+        ]),
+      )
+      .optional(),
   })
   .passthrough();
 

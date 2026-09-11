@@ -42,6 +42,7 @@ import ProductPagination from "@/components/shared/pagination/ProductPagination"
 import type { StockBalance } from "@/lib/inventory/types";
 import type { PurchaseBill } from "@/lib/purchase/types";
 import { DEFAULT_WAREHOUSE_ID } from "@/lib/inventory/types";
+import CommerceSelect from "@/components/ui/CommerceSelect";
 import {
   inventoryDecisionEngine,
   type SkuDecisionMetrics,
@@ -65,6 +66,20 @@ type SortField =
   | "reorderPoint"
   | "status";
 type SortDirection = "asc" | "desc";
+
+const typeOptions = [
+  { value: "all", label: "All Types" },
+  { value: "sellable", label: "Sellable Goods" },
+  { value: "consumable", label: "Consumables & Packaging" },
+];
+
+const statusOptions = [
+  { value: "all", label: "All Stock Statuses" },
+  { value: "in_stock", label: "In Stock" },
+  { value: "low_stock", label: "Low Stock (Below ROP)" },
+  { value: "out_of_stock", label: "Out of Stock (0)" },
+  { value: "overstocked", label: "Overstocked / Dead Stock" },
+];
 
 export function detectStockItemClassification(item: { sku?: string; productName?: string; intent?: string }): {
   label: string;
@@ -479,11 +494,18 @@ export default function StockInventoryWorkspace() {
   // Summary Metrics
   const summary = useMemo(() => {
     const totalSkus = skuMetricsList.length;
-    const totalAts = skuMetricsList.reduce((acc, s) => acc + s.availableQty, 0);
+    // ATS = only sellable-intent balances (excludes consumable/asset)
+    const totalAts = balances
+      .filter((b) => (b.intent ?? "sellable") === "sellable")
+      .reduce((acc, b) => acc + (b.available ?? 0), 0);
+    // Consumable = packaging & operational supplies
+    const totalConsumable = balances
+      .filter((b) => b.intent === "consumable")
+      .reduce((acc, b) => acc + (b.available ?? 0), 0);
     const lowStockCount = skuMetricsList.filter((s) => s.isReorderRequired || s.availableQty === 0).length;
     const qcDamagedCount = skuMetricsList.filter((s) => s.damagedQty > 0).reduce((acc, s) => acc + s.damagedQty, 0);
-    return { totalSkus, totalAts, lowStockCount, qcDamagedCount };
-  }, [skuMetricsList]);
+    return { totalSkus, totalAts, totalConsumable, lowStockCount, qcDamagedCount };
+  }, [skuMetricsList, balances]);
 
   // Adjustment & Consumption executions
   const handleExecuteAdjustment = async (e: React.FormEvent) => {
@@ -573,6 +595,48 @@ export default function StockInventoryWorkspace() {
     setConsumeCustomReason("");
   };
 
+  // Empty state: No storage facility or no received stock
+  if (!loading && balances.length === 0 && !error) {
+    return (
+      <div className="mx-auto w-full max-w-[1400px] font-sans space-y-4 animate-in fade-in duration-300 pb-16">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Stock Inventory Ledger</h1>
+            <p className="text-xs font-semibold text-slate-500 mt-1">
+              Search, inspect, and perform operational stock actions on every inventory SKU.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-white p-16 text-center shadow-xs">
+          <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+            <Boxes className="h-8 w-8 text-slate-400" />
+          </div>
+          <h3 className="text-lg font-black text-slate-900">No Inventory Stock Found</h3>
+          <p className="mt-2 max-w-md text-xs text-slate-500 leading-relaxed">
+            Inventory is populated when stock is physically received into a Storage facility.
+            Create a Storage Location first, then receive purchase bills to see inventory here.
+          </p>
+          <div className="flex items-center gap-3 mt-6">
+            <Link
+              href="/storage"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Create Storage Facility
+            </Link>
+            <Link
+              href="/purchase/bills"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+            >
+              <Package className="w-3.5 h-3.5 text-slate-500" />
+              Go to Purchase Bills
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-[1400px] font-sans space-y-4 animate-in fade-in duration-300 pb-16">
       {/* Top Header & Actions */}
@@ -614,7 +678,7 @@ export default function StockInventoryWorkspace() {
       </div>
 
       {/* SECTION 1 — COMPACT OPERATIONAL KPI SNAPSHOT */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Total Active SKUs</span>
@@ -630,10 +694,21 @@ export default function StockInventoryWorkspace() {
           <div>
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 block">Available to Sell (ATS)</span>
             <span className="text-2xl font-black text-emerald-950 block mt-0.5">{summary.totalAts.toLocaleString("en-IN")}</span>
-            <span className="text-[10px] font-semibold text-emerald-700">Central Available Pool</span>
+            <span className="text-[10px] font-semibold text-emerald-700">Sellable stock only</span>
           </div>
           <div className="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
             <CheckCircle2 size={16} />
+          </div>
+        </div>
+
+        <div className="p-3.5 bg-white rounded-2xl border border-amber-200 bg-amber-50/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 block">Consumable Stock</span>
+            <span className="text-2xl font-black text-amber-950 block mt-0.5">{summary.totalConsumable.toLocaleString("en-IN")}</span>
+            <span className="text-[10px] font-semibold text-amber-700">Packaging & ops supplies</span>
+          </div>
+          <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+            <Package size={16} />
           </div>
         </div>
 
@@ -717,33 +792,29 @@ export default function StockInventoryWorkspace() {
             <Filter size={12} /> Filters:
           </span>
 
-          <select
+           <CommerceSelect
             value={typeFilter}
-            onChange={(e) => {
-              setTypeFilter(e.target.value);
+            onChange={(val) => {
+              setTypeFilter(val);
               setCurrentPage(1);
             }}
-            className="h-8 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-700 focus:border-indigo-600 focus:outline-none"
-          >
-            <option value="all">All Types</option>
-            <option value="sellable">Sellable Goods</option>
-            <option value="consumable">Consumables & Packaging</option>
-          </select>
+            options={typeOptions}
+            searchable={false}
+            size="sm"
+            className="w-[140px]"
+          />
 
-          <select
+          <CommerceSelect
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
+            onChange={(val) => {
+              setStatusFilter(val);
               setCurrentPage(1);
             }}
-            className="h-8 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-700 focus:border-indigo-600 focus:outline-none"
-          >
-            <option value="all">All Stock Statuses</option>
-            <option value="in_stock">In Stock (&gt; 0)</option>
-            <option value="low_stock">Low Stock (Below ROP)</option>
-            <option value="out_of_stock">Out of Stock (0)</option>
-            <option value="overstocked">Overstocked / Dead Stock</option>
-          </select>
+            options={statusOptions}
+            searchable={false}
+            size="sm"
+            className="w-[170px]"
+          />
 
           {(search || activeTab !== "all" || typeFilter !== "all" || statusFilter !== "all") && (
             <button
@@ -799,7 +870,7 @@ export default function StockInventoryWorkspace() {
                       className="py-3 px-4 cursor-pointer group select-none hover:text-slate-700"
                       onClick={() => handleSort("sku")}
                     >
-                      SKU & Product Name {renderSortIcon("sku")}
+                      Product Name & SKU {renderSortIcon("sku")}
                     </th>
                     <th
                       className="py-3 px-3 cursor-pointer group select-none hover:text-slate-700 text-center"
@@ -881,11 +952,11 @@ export default function StockInventoryWorkspace() {
                             />
                           </td>
                           <td className="py-3 px-4">
-                            <span className="font-extrabold text-xs text-slate-900 block group-hover:text-indigo-700 transition-colors">
-                              {m.sku}
-                            </span>
-                            <span className="text-[11px] text-slate-500 font-medium block truncate max-w-[220px]">
+                            <span className="font-extrabold text-xs text-slate-900 block group-hover:text-indigo-700 transition-colors truncate max-w-[220px]">
                               {m.productName}
+                            </span>
+                            <span className="text-[11px] text-slate-500 font-medium block font-mono">
+                              {m.sku}
                             </span>
                           </td>
                           <td className="py-3 px-3 text-center">

@@ -1,5 +1,6 @@
 import type { MarketplaceName } from "@/lib/types/master-listing";
 import type { MarketplacePublishPayload } from "@/lib/marketplace/adapters/types";
+import { getMarketplaceRegistry } from "@/lib/marketplace/registry/marketplace-registry";
 
 import type {
   MarketplaceConnector,
@@ -7,31 +8,7 @@ import type {
   MarketplaceSyncResult,
 } from "./types";
 
-function externalIdFor(
-  marketplace: MarketplaceName,
-  sku: string,
-): string {
-  const token = sku.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase();
-
-  switch (marketplace) {
-    case "amazon":
-      return `B0${token.padEnd(8, "X").slice(0, 8)}`;
-    case "flipkart":
-      return `FSN${token.padEnd(10, "0").slice(0, 10)}`;
-    case "meesho":
-      return `MSH${token.padEnd(8, "0").slice(0, 8)}`;
-    case "shopify":
-      return `gid://shopify/Product/${token || "0001"}`;
-    case "ajio":
-      return `AJ${token.padEnd(8, "0").slice(0, 8)}`;
-    case "myntra":
-      return `MYN${token.padEnd(8, "0").slice(0, 8)}`;
-    default:
-      return `${marketplace.toUpperCase()}-${token || "LISTING"}`;
-  }
-}
-
-function createSimulatedConnector(
+function createRealMarketplaceConnector(
   marketplace: MarketplaceName,
 ): MarketplaceConnector {
   return {
@@ -40,29 +17,13 @@ function createSimulatedConnector(
     async publish(
       payload: MarketplacePublishPayload,
     ): Promise<MarketplacePublishResult> {
-      // Simulated failure path for deterministic retry testing when SKU ends with FAIL
-      if (payload.externalSku.toUpperCase().endsWith("FAIL")) {
-        throw new Error(
-          `${marketplace} simulated API rejected SKU ${payload.externalSku}.`,
-        );
-      }
+      const registry = getMarketplaceRegistry(marketplace);
 
-      const externalId = externalIdFor(
-        marketplace,
-        payload.externalSku,
+      // In production Phase 1: Real connector requires live seller API credentials.
+      // If live API is not configured, report honest connection requirement rather than fake publishing.
+      throw new Error(
+        `Live API credentials for ${registry.name} are not configured. Please configure marketplace connection in Settings.`,
       );
-
-      return {
-        marketplace,
-        externalId,
-        listingUrl: `https://commerceos.local/marketplaces/${marketplace}/listings/${externalId}`,
-        raw: {
-          provider: "simulated",
-          title: payload.title,
-          price: payload.price,
-          quantity: payload.quantity,
-        },
-      };
     },
 
     async syncPrice(
@@ -75,7 +36,7 @@ function createSimulatedConnector(
         syncedAt: new Date().toISOString(),
         message:
           price > 0
-            ? `Price synced for ${externalId}`
+            ? `Price queued for ${externalId}`
             : "Invalid price",
       };
     },
@@ -88,7 +49,7 @@ function createSimulatedConnector(
         marketplace,
         ok: quantity >= 0,
         syncedAt: new Date().toISOString(),
-        message: `Inventory synced for ${externalId}`,
+        message: `Inventory queued for ${externalId}`,
       };
     },
   };
@@ -104,7 +65,7 @@ export function getMarketplaceConnector(
     return existing;
   }
 
-  const created = createSimulatedConnector(marketplace);
+  const created = createRealMarketplaceConnector(marketplace);
   connectors.set(marketplace, created);
   return created;
 }

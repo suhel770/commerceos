@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProductFilters } from "@/lib/types/product-filter";
+import type { Product } from "@/lib/types/product";
 
 import BrandFilter from "./BrandFilter";
 import SellingPriceFilter from "./SellingPriceFilter";
@@ -12,6 +13,7 @@ import MarketplaceCountFilter from "./MarketplaceCountFilter";
 import ProductHealthFilter from "./ProductHealthFilter";
 
 interface ProductFiltersContentProps {
+  products?: Product[];
   filters: ProductFilters;
   onFiltersChange: (
     filters: ProductFilters
@@ -19,6 +21,7 @@ interface ProductFiltersContentProps {
 }
 
 export default function ProductFiltersContent({
+  products = [],
   filters,
   onFiltersChange,
 }: ProductFiltersContentProps) {
@@ -26,6 +29,7 @@ export default function ProductFiltersContent({
     <div className="space-y-2">
 
       <BrandFilter
+        products={products}
         filters={filters}
         onFiltersChange={onFiltersChange}
       />

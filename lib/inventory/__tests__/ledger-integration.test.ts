@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, afterAll } from "vitest";
 import { db } from "@/lib/db";
 import { inventoryRepository } from "../repository";
 import { inventoryService } from "../service";
@@ -17,9 +17,53 @@ describe("CommerceOS — Canonical Inventory Movement Ledger Integration Suite",
       await db.$queryRaw`SELECT 1`;
       isDbAvailable = true;
 
+      // Ensure tenant prerequisites exist for foreign keys
+      await db.organization.upsert({
+        where: { id: orgId },
+        create: { id: orgId, name: "Ledger Test Org", slug: "org-ledger-test" },
+        update: {},
+      });
+      await db.workspace.upsert({
+        where: { id: wsId },
+        create: { id: wsId, organizationId: orgId, name: "Ledger Test Workspace", code: "ws-ledger-test" },
+        update: {},
+      });
+      await db.warehouse.upsert({
+        where: { workspaceId_id: { workspaceId: wsId, id: "wh-default" } },
+        create: { id: "wh-default", workspaceId: wsId, name: "Main Warehouse", code: "WH-DEF" },
+        update: {},
+      });
+      await db.product.upsert({
+        where: { workspaceId_id: { workspaceId: wsId, id: productId } },
+        create: {
+          id: productId,
+          workspaceId: wsId,
+          sku,
+          name: "Test Ledger Product",
+          category: "General",
+          intent: "sellable",
+        },
+        update: {},
+      });
+
+      await db.storageLocation.upsert({
+        where: { id: "loc-default" },
+        create: {
+          id: "loc-default",
+          organizationId: orgId,
+          workspaceId: wsId,
+          warehouseId: "wh-default",
+          code: "LOC-DEF",
+          name: "Default Location",
+          type: "WAREHOUSE",
+        },
+        update: {},
+      });
+
       // Clean up database tables
       await db.inventoryMovement.deleteMany({ where: { organizationId: orgId } });
       await db.inventoryReservation.deleteMany({ where: { organizationId: orgId } });
+      await db.storageStock.deleteMany({ where: { workspaceId: wsId } });
       await db.inventory.deleteMany({ where: { workspaceId: wsId } });
     } catch {
       isDbAvailable = false;
@@ -214,6 +258,32 @@ describe("CommerceOS — Canonical Inventory Movement Ledger Integration Suite",
         warehouseId: "wh-default",
         sku,
         available: 50,
+        intent: "sellable",
+      }
+    });
+    await db.inventoryMovement.create({
+      data: {
+        organizationId: orgId,
+        workspaceId: wsId,
+        productId,
+        sku,
+        warehouseId: "wh-default",
+        type: "Inbound",
+        quantity: 50,
+        direction: "IN",
+        intent: "sellable",
+      }
+    });
+    await db.storageStock.create({
+      data: {
+        organizationId: orgId,
+        workspaceId: wsId,
+        storageLocationId: "loc-default",
+        productId,
+        sku,
+        availableQty: 50,
+        damagedQty: 0,
+        intent: "sellable",
       }
     });
 
@@ -229,5 +299,20 @@ describe("CommerceOS — Canonical Inventory Movement Ledger Integration Suite",
     report = await ledgerReconciliationService.reconcile(orgId, wsId);
     expect(report.status).toBe("DISCREPANCIES_DETECTED");
     expect(report.issues.some((i) => i.type === "LEDGER_MISMATCH")).toBe(true);
+  });
+
+  afterAll(async () => {
+    try {
+      await db.inventoryMovement.deleteMany({ where: { organizationId: orgId } });
+      await db.storageStock.deleteMany({ where: { workspaceId: wsId } });
+      await db.inventory.deleteMany({ where: { workspaceId: wsId } });
+      await db.storageLocation.deleteMany({ where: { workspaceId: wsId } });
+      await db.product.deleteMany({ where: { workspaceId: wsId } });
+      await db.warehouse.deleteMany({ where: { workspaceId: wsId } });
+      await db.workspace.deleteMany({ where: { id: wsId } });
+      await db.organization.deleteMany({ where: { id: orgId } });
+    } catch {
+      // Ignore DB teardown errors
+    }
   });
 });

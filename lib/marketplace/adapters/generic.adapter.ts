@@ -7,6 +7,9 @@ import {
 
 import { amazonAdapter } from "./amazon.adapter";
 import { flipkartAdapter } from "./flipkart.adapter";
+import { meeshoAdapter } from "./meesho.adapter";
+import { myntraAdapter } from "./myntra.adapter";
+import { shopifyAdapter } from "./shopify.adapter";
 import {
   scoreFromIssues,
   type MarketplaceAdapter,
@@ -14,7 +17,7 @@ import {
   type MarketplaceReadiness,
 } from "./types";
 
-function createGenericAdapter(
+export function createGenericAdapter(
   marketplace: MarketplaceName,
 ): MarketplaceAdapter {
   return {
@@ -46,8 +49,7 @@ function createGenericAdapter(
       }
 
       if (
-        listing.media.filter((item) => item.kind === "image").length ===
-        0
+        listing.media.filter((item) => item.kind === "image").length === 0
       ) {
         issues.push({
           id: `${marketplace}.images.recommended`,
@@ -77,10 +79,12 @@ function createGenericAdapter(
         externalSku: listing.identity.sku,
         title: listing.identity.productName,
         price: listing.pricing.sellingPrice,
-        quantity: listing.inventory.available,
+        quantity: listing.inventory?.available || 0,
         category: listing.identity.category,
         brand: listing.identity.brand,
         hsn: listing.identity.hsn,
+        description: listing.description,
+        bulletPoints: listing.bulletPoints,
         images: listing.media
           .filter((item) => item.kind === "image")
           .map((item) => item.url),
@@ -106,14 +110,17 @@ function createGenericAdapter(
 const dedicatedAdapters: MarketplaceAdapter[] = [
   amazonAdapter,
   flipkartAdapter,
+  meeshoAdapter,
+  myntraAdapter,
+  shopifyAdapter,
 ];
 
+const dedicatedMarketplaces = new Set(
+  dedicatedAdapters.map((a) => a.marketplace),
+);
+
 const fallbackAdapters = Object.values(MarketplaceName)
-  .filter(
-    (marketplace) =>
-      marketplace !== MarketplaceName.AMAZON &&
-      marketplace !== MarketplaceName.FLIPKART,
-  )
+  .filter((marketplace) => !dedicatedMarketplaces.has(marketplace))
   .map(createGenericAdapter);
 
 export const marketplaceAdapters: MarketplaceAdapter[] = [
@@ -121,15 +128,13 @@ export const marketplaceAdapters: MarketplaceAdapter[] = [
   ...fallbackAdapters,
 ];
 
-export function getMarketplaceAdapter(marketplace: MarketplaceName) {
+export function getMarketplaceAdapter(marketplace: MarketplaceName): MarketplaceAdapter {
   const adapter = marketplaceAdapters.find(
     (item) => item.marketplace === marketplace,
   );
 
   if (!adapter) {
-    throw new Error(
-      `No marketplace adapter registered for ${marketplace}.`,
-    );
+    return createGenericAdapter(marketplace);
   }
 
   return adapter;

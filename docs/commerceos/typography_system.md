@@ -41,16 +41,18 @@ font-family: var(--font-sans), Inter, system-ui, -apple-system, BlinkMacSystemFo
 
 ## 3. Typography Hierarchy
 
-| Role | Class | Weight | Usage |
-|---|---|---|---|
-| Page Titles | `text-2xl font-black` | 800 / 900 | Main workspace title (Dashboard, Purchase, Storage) |
-| Section Headings | `text-base` / `text-lg font-extrabold` | 800 | Section banners, hero cards |
-| Table Headers | `text-xs font-extrabold uppercase tracking-wider` | 800 | Column headers across all data tables |
-| Table Body (Standard) | `text-xs font-medium` or `text-sm font-semibold` | 500 / 600 | General table cells, descriptions |
-| Table Primary Text | `text-sm font-bold` | 700 | Bill numbers, product titles, vendor names |
-| Numeric / Currency | `text-sm font-bold tabular-nums tracking-tight` | 700 | Financial amounts, balances, quantities |
-| Sub-labels / Timestamps | `text-xs font-medium text-slate-500` | 500 | Secondary vendor text, relative time ago |
-| Badges & Status Pills | `text-[10px]` to `text-xs font-bold` | 700 | Status chips, workflow states, tags |
+| Role | Token / Class | Weight | Size / Line Height | Primary Usage |
+|---|---|---|---|---|
+| Display | `text-display` / `text-3xl font-black` | 700 / 800 | 32px / 38px | Hero executive metrics, major statistics |
+| Page Titles | `text-page-title` / `text-2xl font-bold` | 700 | 26px / 32px | Main workspace titles (*Product Control Center*, *Purchase*) |
+| Section Headings | `text-section-title` / `text-lg font-semibold` | 600 | 18px / 24px | Section banners, drawer titles, modal headings |
+| Card Titles | `text-card-title` / `text-base font-semibold` | 600 | 15px / 20px | Analytics cards, widget headers, panels |
+| Body Large | `text-body-lg` / `text-base font-normal` | 400 / 500 | 16px / 24px | Hero summaries, lead descriptions |
+| Body (Primary) | `text-body-base` / `text-sm font-normal` | 400 / 500 | 15px / 22px | Standard body, modal content, primary entity name |
+| Body Small | `text-body-sm` / `text-xs font-normal` | 400 / 500 | 14px / 20px | Secondary content, table cells, form inputs |
+| Labels & KPI Tags | `text-label` / `text-xs font-bold uppercase` | 600 / 700 | 12px–13px / 18px | Form labels, KPI card categories, table headers |
+| Captions & Subtext | `text-caption` / `text-xs font-medium` | 500 | 12px / 16px | Subtext, timestamps, helper notes, badges |
+| Micro / SKU Codes | `text-micro` / `text-[11px] font-semibold` | 600 | 11px / 14px | SKU tags (`font-mono`), keyboard shortcuts, system IDs |
 
 ---
 

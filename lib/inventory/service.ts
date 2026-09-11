@@ -142,14 +142,19 @@ export class InventoryService {
     workspaceId: string,
     productId: string,
   ) {
-    const balances = await inventoryRepository.listBalances({
+    let balances = await inventoryRepository.listBalances({
       organizationId,
       workspaceId,
       productId,
     });
 
     if (balances.length === 0) {
-      throw new InventoryNotFoundError(productId, DEFAULT_WAREHOUSE_ID);
+      const single = await inventoryRepository.getBalance(productId, DEFAULT_WAREHOUSE_ID);
+      if (single) {
+        balances = [single];
+      } else {
+        throw new InventoryNotFoundError(productId, DEFAULT_WAREHOUSE_ID);
+      }
     }
 
     const totals = balances.reduce(

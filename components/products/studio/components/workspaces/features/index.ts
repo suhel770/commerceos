@@ -11,3 +11,7 @@ export { ChannelsWorkspace } from "./ChannelsWorkspace";
 export { ComplianceWorkspace } from "./ComplianceWorkspace";
 export { PublishingWorkspace } from "./PublishingWorkspace";
 export { ActivityWorkspace } from "./ActivityWorkspace";
+export { ExceptionsWorkspace } from "./ExceptionsWorkspace";
+export { ReadinessWorkspace } from "./ReadinessWorkspace";
+export { PreviewWorkspace } from "./PreviewWorkspace";
+export { CategoryMappingWorkspace } from "./CategoryMappingWorkspace";

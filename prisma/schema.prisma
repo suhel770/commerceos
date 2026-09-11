@@ -48,6 +48,16 @@ enum MarketplaceName {
   WOOCOMMERCE
   AJIO
   MYNTRA
+  NYKAA
+  TATACLIQ
+  SNAPDEAL
+  JIOMART
+  SHOPSY
+  EBAY
+  ETSY
+  WALMART
+  ONDC
+  GENERIC
 }
 
 enum MarketplacePublishStatus {
@@ -104,27 +114,28 @@ model Organization {
 }
 
 model Workspace {
-  id                     String                  @id @default(uuid())
-  organizationId         String
-  organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  name                   String
-  code                   String                  @default("ws-default")
-  members                WorkspaceMember[]
-  products               Product[]
-  masterListings         MasterListing[]
-  warehouses             Warehouse[]
-  orders                 Order[]
-  marketplaceConnections MarketplaceConnection[]
-  vendors                Vendor[]
-  purchaseBills          PurchaseBill[]
-  purchaseOrders         PurchaseOrder[]
-  storageLocations       StorageLocation[]
-  storageStocks          StorageStock[]
-  storageReceipts        StorageReceipt[]
-  storageReceiptLines    StorageReceiptLine[]
-  storageOperationLogs   StorageOperationLog[]
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
+  id                          String                       @id @default(uuid())
+  organizationId              String
+  organization                Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name                        String
+  code                        String                       @default("ws-default")
+  members                     WorkspaceMember[]
+  products                    Product[]
+  masterListings              MasterListing[]
+  warehouses                  Warehouse[]
+  orders                      Order[]
+  marketplaceConnections      MarketplaceConnection[]
+  marketplaceCategoryMappings MarketplaceCategoryMapping[]
+  vendors                     Vendor[]
+  purchaseBills               PurchaseBill[]
+  purchaseOrders              PurchaseOrder[]
+  storageLocations            StorageLocation[]
+  storageStocks               StorageStock[]
+  storageReceipts             StorageReceipt[]
+  storageReceiptLines         StorageReceiptLine[]
+  storageOperationLogs        StorageOperationLog[]
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
 
   @@unique([organizationId, code])
   @@unique([organizationId, id])
@@ -180,6 +191,7 @@ model WorkspaceMember {
 
 model Product {
   id                  String               @id @default(uuid())
+  productId           String?              @unique
   workspaceId         String
   workspace           Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   sku                 String
@@ -197,6 +209,7 @@ model Product {
   status              String               @default("Active")
   images              String[]
   intent              String               @default("sellable")
+  productType         String               @default("SELLABLE")
   masterListing       MasterListing?
   inventoryItems      Inventory[]
   orderItems          OrderItem[]
@@ -209,8 +222,11 @@ model Product {
 
   @@unique([workspaceId, id])
   @@unique([workspaceId, sku])
+  @@unique([workspaceId, productId])
   @@index([workspaceId])
   @@index([category])
+  @@index([productId])
+  @@index([productType])
 }
 
 model MasterListing {
@@ -251,24 +267,128 @@ model MasterAttribute {
 }
 
 // ----------------------------------------------------------------------------
-// 4. MARKETPLACE INTEGRATIONS & DYNAMIC ATTRIBUTE MAPPING
+// 4. MARKETPLACE REGISTRY, SCHEMAS & TAXONOMY MAPPING
 // ----------------------------------------------------------------------------
+
+model MarketplaceRegistry {
+  id               String              @id @default(uuid())
+  code             MarketplaceName     @unique
+  name             String
+  countryCode      String              @default("IN")
+  category         String              @default("MARKETPLACE") // MARKETPLACE, STORE, NETWORK, B2B
+  logoUrl          String?
+  documentationUrl String?
+  capabilities     String[]            @default([]) // e.g. ["INVENTORY_SYNC", "PRICE_SYNC", "ORDER_SYNC", "CATALOG_PUBLISH"]
+  authType         String              @default("OAUTH2") // OAUTH2, API_KEY, TOKEN_SECRET, BASIC
+  active           Boolean             @default(true)
+  schemas          MarketplaceSchema[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+}
+
+model MarketplaceSchema {
+  id                   String                           @id @default(uuid())
+  marketplace          MarketplaceName
+  marketplaceRegistry  MarketplaceRegistry              @relation(fields: [marketplace], references: [code], onDelete: Cascade)
+  verticalCode         String                           // e.g. "footwear_sandals", "apparel_tops"
+  verticalName         String
+  countryCode          String                           @default("IN")
+  schemaVersion        String                           @default("1.0.0")
+  effectiveDate        DateTime                         @default(now())
+  active               Boolean                          @default(true)
+  metadata             Json?                            @default("{}")
+  attributeDefinitions MarketplaceAttributeDefinition[]
+  categoryMappings     MarketplaceCategoryMapping[]
+  createdAt            DateTime                         @default(now())
+  updatedAt            DateTime                         @updatedAt
+
+  @@unique([marketplace, verticalCode, schemaVersion])
+  @@index([marketplace])
+  @@index([verticalCode])
+}
+
+model MarketplaceCategoryMapping {
+  id                      String             @id @default(uuid())
+  workspaceId             String
+  workspace               Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  commerceCategory        String             // e.g. "Kids Sandals", "Footwear"
+  marketplace             MarketplaceName
+  marketplaceCategoryId   String             // Official ID from marketplace
+  marketplaceCategoryName String             // Official Category Name
+  marketplaceVertical     String             // Target vertical / product type
+  schemaId                String?
+  schema                  MarketplaceSchema? @relation(fields: [schemaId], references: [id], onDelete: SetNull)
+  status                  String             @default("MAPPED") // MAPPED, SUGGESTED, PENDING_REVIEW
+  confidenceScore         Float              @default(1.0)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  @@unique([workspaceId, commerceCategory, marketplace])
+  @@index([workspaceId])
+  @@index([commerceCategory])
+  @@index([marketplace])
+}
+
+model UniversalAttributeRegistry {
+  id            String   @id @default(uuid())
+  key           String   @unique // e.g. "color", "size", "material", "gender"
+  label         String   // e.g. "Primary Color", "Shoe Size"
+  dataType      String   @default("string") // string, number, integer, boolean, enum, multi-select, date, measurement, currency, object, array
+  unit          String?  // e.g. "cm", "inches", "g", "kg"
+  allowedValues String[] @default([])
+  group         String   @default("general") // general, physical, variant, compliance, seo
+  description   String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([key])
+  @@index([group])
+}
+
+model MarketplaceAttributeDefinition {
+  id                      String               @id @default(uuid())
+  schemaId                String
+  schema                  MarketplaceSchema    @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+  attributeKey            String               // e.g. "color_name", "baseColour"
+  label                   String
+  dataType                String               @default("string")
+  unit                    String?
+  allowedValues           String[]             @default([])
+  isRequired              Boolean              @default(false)
+  requirementLevel        AttributeRequirement @default(OPTIONAL)
+  universalAttributeKey   String?              // Maps to UniversalAttributeRegistry key
+  conditionalRulesJson    Json?                @default("[]") // Conditional requirement logic
+  transformationRulesJson Json?                @default("[]") // Value/unit transformation logic
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+
+  @@unique([schemaId, attributeKey])
+  @@index([schemaId])
+  @@index([universalAttributeKey])
+}
 
 model MarketplaceConnection {
   id                   String               @id @default(uuid())
   workspaceId          String
   workspace            Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   marketplace          MarketplaceName
+  accountName          String?
   enabled              Boolean              @default(true)
   sellerId             String?
+  region               String               @default("IN")
+  healthStatus         String               @default("HEALTHY") // HEALTHY, WARNING, DISCONNECTED, DEGRADED
+  lastHealthCheckAt    DateTime?
   encryptedCredentials String?              @db.Text
+  metadata             Json?                @default("{}")
   marketplaceListings  MarketplaceListing[]
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
 
   @@unique([workspaceId, id])
-  @@unique([workspaceId, marketplace])
+  @@unique([workspaceId, marketplace, sellerId])
   @@index([workspaceId])
+  @@index([marketplace])
 }
 
 model MarketplaceListing {
@@ -280,12 +400,17 @@ model MarketplaceListing {
   connection              MarketplaceConnection    @relation(fields: [workspaceId, marketplaceConnectionId], references: [workspaceId, id], onDelete: Cascade)
   marketplaceSku          String
   externalListingId       String?
+  externalProductId       String?                  // ASIN, FSN, StyleID, CatalogID
   title                   String?
   sellingPrice            Decimal                  @db.Decimal(12, 2)
   publishStatus           MarketplacePublishStatus @default(NOT_PUBLISHED)
   listingStatus           String                   @default("Live")
   stockSync               Boolean                  @default(true)
   buyBoxPercentage        Float?
+  listingUrl              String?
+  syncErrors              Json?                    @default("[]")
+  rawPayload              Json?
+  lastAttemptedSyncAt     DateTime?
   lastSyncedAt            DateTime?
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
@@ -295,6 +420,7 @@ model MarketplaceListing {
   @@index([workspaceId])
   @@index([masterListingId])
   @@index([marketplaceConnectionId])
+  @@index([publishStatus])
 }
 
 model MarketplaceAttributeMapping {

@@ -141,16 +141,17 @@ export const amazonAdapter: MarketplaceAdapter = {
       item_name: listing.identity.productName,
       brand_name: listing.identity.brand,
       product_description:
-        listing.growth.metaDescription ??
-        listing.growth.seoTitle ??
+        listing.growth?.metaDescription ??
+        listing.growth?.seoTitle ??
+        listing.description ??
         "",
-      bullet_point: listing.growth.bulletPoints ?? [],
+      bullet_point: listing.growth?.bulletPoints ?? listing.bulletPoints ?? [],
       externally_assigned_product_identifier: listing.identity.sku,
       recommended_browse_nodes: listing.identity.category,
       hsn_code: listing.identity.hsn,
       list_price: listing.pricing.mrp,
       purchasable_offer_price: listing.pricing.sellingPrice,
-      fulfillment_availability: listing.inventory.available,
+      fulfillment_availability: listing.inventory?.available ?? 0,
       ...Object.fromEntries(
         listing.attributes.map((attribute) => [
           attribute.key,

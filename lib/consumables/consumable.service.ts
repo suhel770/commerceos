@@ -4,6 +4,7 @@ import { isConsumableCatalogItem } from "@/lib/catalog/item-classification";
 
 export interface ConsumableItem {
   id: string;
+  productId?: string;
   sku: string;
   name: string;
   category: string;
@@ -61,6 +62,69 @@ export class ConsumableService {
 
     // 1. Project available consumables from the same live Inventory balances
     // used by the Inventory page.
+    let defaultLocationName = "Main Facility";
+    try {
+      const defaultLoc = await db.storageLocation.findFirst({
+        where: { workspaceId: wsId, isDefault: true },
+        select: { name: true }
+      });
+      if (defaultLoc) {
+        defaultLocationName = defaultLoc.name;
+      }
+    } catch {}
+
+    const prdIdBySku = new Map<string, string>();
+    const costPriceBySku = new Map<string, number>();
+    const productBySku = new Map<string, { id: string; productId: string | null; name: string; costPrice: number; category: string }>();
+
+    try {
+      const consumableProducts = await db.product.findMany({
+        where: { workspaceId: wsId },
+        select: { id: true, sku: true, productId: true, name: true, costPrice: true, category: true }
+      });
+      for (const cp of consumableProducts) {
+        const cost = Number(cp.costPrice) || 0;
+        const skuK = cp.sku.toLowerCase().trim();
+        productBySku.set(skuK, {
+          id: cp.id,
+          productId: cp.productId,
+          name: cp.name,
+          costPrice: cost,
+          category: cp.category || "Packaging Supplies",
+        });
+        if (cp.productId) {
+          prdIdBySku.set(skuK, cp.productId);
+          prdIdBySku.set(cp.name.toLowerCase().trim(), cp.productId);
+        }
+        if (cost > 0) {
+          costPriceBySku.set(skuK, cost);
+          if (cp.productId) costPriceBySku.set(cp.productId.toLowerCase().trim(), cost);
+          if (cp.name) costPriceBySku.set(cp.name.toLowerCase().trim(), cost);
+        }
+      }
+    } catch {}
+
+    // Fallback: Latest Purchase Bill Line unitPrice for this workspace
+    const billLineCostBySku = new Map<string, number>();
+    try {
+      const billLines = await db.purchaseBillLine.findMany({
+        where: { workspaceId: wsId },
+        select: { sku: true, productId: true, unitPrice: true, id: true },
+        orderBy: { id: "desc" },
+      });
+      for (const bl of billLines) {
+        const p = Number(bl.unitPrice) || 0;
+        if (p > 0) {
+          if (bl.sku && !billLineCostBySku.has(bl.sku.toLowerCase().trim())) {
+            billLineCostBySku.set(bl.sku.toLowerCase().trim(), p);
+          }
+          if (bl.productId && !billLineCostBySku.has(bl.productId.toLowerCase().trim())) {
+            billLineCostBySku.set(bl.productId.toLowerCase().trim(), p);
+          }
+        }
+      }
+    } catch {}
+
     try {
       const inventoryBalances = await inventoryRepository.listBalances({ organizationId: orgId, workspaceId: wsId });
       for (const balance of inventoryBalances) {
@@ -79,11 +143,28 @@ export class ConsumableService {
         });
         const totalUsed = Math.abs(usageAgg._sum.quantity || 0);
 
+        const stockLoc = await db.storageStock.findFirst({
+          where: { workspaceId: wsId, sku: balance.sku },
+          include: { storageLocation: true }
+        });
+        const locName = stockLoc?.storageLocation?.name || defaultLocationName;
+        const locId = stockLoc?.storageLocationId || undefined;
+        const pInfo = productBySku.get(skuKey);
+        const prdId = prdIdBySku.get(skuKey) || pInfo?.productId || prdIdBySku.get(balance.productName?.toLowerCase().trim() || "") || undefined;
+
+        const resolvedUnitCost = (pInfo && pInfo.costPrice > 0 ? pInfo.costPrice : 0)
+          || costPriceBySku.get(skuKey)
+          || billLineCostBySku.get(skuKey)
+          || (stockLoc?.sku ? costPriceBySku.get(stockLoc.sku.toLowerCase().trim()) : 0)
+          || (stockLoc?.sku ? billLineCostBySku.get(stockLoc.sku.toLowerCase().trim()) : 0)
+          || 0;
+
         consumableMap.set(skuKey, {
           id: balance.id,
+          productId: prdId,
           sku: balance.sku,
-          name: balance.productName || balance.sku,
-          category: "Packaging Supplies",
+          name: pInfo?.name || balance.productName || balance.sku,
+          category: pInfo?.category || "Packaging Supplies",
           unit: "pcs",
           available: balance.available,
           reserved: balance.reserved,
@@ -91,8 +172,10 @@ export class ConsumableService {
           incoming: balance.incoming,
           damaged: balance.damaged || 0,
           reorderPoint: 25,
-          unitCost: 15,
+          unitCost: resolvedUnitCost,
           status: balance.available > 25 ? "In Stock" : "Low Stock",
+          locationId: locId,
+          storageLocationName: locName,
         });
       }
     } catch {}

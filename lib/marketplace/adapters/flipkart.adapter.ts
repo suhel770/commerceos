@@ -49,7 +49,7 @@ function flipkartIssues(listing: MasterListing): ValidationIssue[] {
     });
   }
 
-  const images = listing.media.filter((item) => item.kind === "image");
+  const images = (listing.media || []).filter((item) => item.kind === "image");
   if (images.length === 0) {
     issues.push({
       id: "flipkart.images.required",
@@ -62,8 +62,9 @@ function flipkartIssues(listing: MasterListing): ValidationIssue[] {
   }
 
   if (
-    !listing.growth.metaDescription?.trim() &&
-    listing.growth.bulletPoints.length === 0
+    !listing.growth?.metaDescription?.trim() &&
+    !listing.growth?.bulletPoints?.length &&
+    !listing.description?.trim()
   ) {
     issues.push({
       id: "flipkart.description.required",
@@ -86,19 +87,30 @@ function flipkartIssues(listing: MasterListing): ValidationIssue[] {
     });
   }
 
-  if (listing.pricing.sellingPrice <= 0) {
+  if ((listing.pricing?.sellingPrice ?? 0) <= 0) {
     issues.push({
       id: "flipkart.price.invalid",
       severity: ValidationSeverity.ERROR,
-      title: "Selling price required",
+      title: "Price required",
       description: "Flipkart requires a positive selling price.",
       field: "pricing.sellingPrice",
       marketplaces: [marketplace],
     });
   }
 
+  if (listing.inventory?.available === undefined || listing.inventory?.available < 0) {
+    issues.push({
+      id: "flipkart.stock.invalid",
+      severity: ValidationSeverity.WARNING,
+      title: "Inventory required",
+      description: "Ensure sellable inventory is available before publishing.",
+      field: "inventory.available",
+      marketplaces: [marketplace],
+    });
+  }
+
   if (
-    listing.commercials.weightGrams !== undefined &&
+    listing.commercials?.weightGrams !== undefined &&
     listing.commercials.weightGrams <= 0
   ) {
     issues.push({
@@ -123,21 +135,20 @@ export const flipkartAdapter: MarketplaceAdapter = {
 
   mapAttributes(listing) {
     return {
-      product_title: listing.identity.productName,
+      product_name: listing.identity.productName,
       brand: listing.identity.brand,
-      vertical: listing.identity.category,
       description:
-        listing.growth.metaDescription ??
-        listing.growth.seoTitle ??
+        listing.growth?.metaDescription ??
+        listing.growth?.seoTitle ??
+        listing.description ??
         "",
-      key_features: listing.growth.bulletPoints ?? [],
-      seller_sku_id: listing.identity.sku,
+      key_features: listing.growth?.bulletPoints ?? listing.bulletPoints ?? [],
       hsn: listing.identity.hsn,
-      mrp: listing.pricing.mrp,
-      selling_price: listing.pricing.sellingPrice,
-      stock_count: listing.inventory.available,
+      mrp: listing.pricing?.mrp,
+      selling_price: listing.pricing?.sellingPrice,
+      stock: listing.inventory?.available ?? 0,
       ...Object.fromEntries(
-        listing.attributes.map((attribute) => [
+        (listing.attributes || []).map((attribute) => [
           attribute.key,
           attribute.value,
         ]),
@@ -150,12 +161,12 @@ export const flipkartAdapter: MarketplaceAdapter = {
       marketplace: MarketplaceName.FLIPKART,
       externalSku: listing.identity.sku,
       title: listing.identity.productName,
-      price: listing.pricing.sellingPrice,
-      quantity: listing.inventory.available,
+      price: listing.pricing?.sellingPrice || 0,
+      quantity: listing.inventory?.available || 0,
       category: listing.identity.category,
       brand: listing.identity.brand,
       hsn: listing.identity.hsn,
-      images: listing.media
+      images: (listing.media || [])
         .filter((item) => item.kind === "image")
         .map((item) => item.url),
       attributes: flipkartAdapter.mapAttributes(listing),

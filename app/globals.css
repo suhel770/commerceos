@@ -47,6 +47,92 @@
   --ai-muted: #7e22ce;
   --ai-accent: #f59e0b;
   --ai-glow: rgba(124, 58, 237, 0.15);
+
+  /* Universal CommerceOS Typography Scale Tokens */
+  --font-size-display: 2rem;           /* 32px */
+  --line-height-display: 2.375rem;     /* 38px (1.18) */
+  --font-size-page-title: 1.625rem;    /* 26px */
+  --line-height-page-title: 2rem;      /* 32px (1.23) */
+  --font-size-section-title: 1.125rem; /* 18px */
+  --line-height-section-title: 1.5rem; /* 24px (1.33) */
+  --font-size-card-title: 0.9375rem;   /* 15px */
+  --line-height-card-title: 1.25rem;   /* 20px (1.33) */
+  --font-size-body-lg: 1rem;           /* 16px */
+  --line-height-body-lg: 1.5rem;       /* 24px (1.5) */
+  --font-size-body: 0.9375rem;         /* 15px */
+  --line-height-body: 1.375rem;        /* 22px (1.46) */
+  --font-size-body-sm: 0.875rem;       /* 14px */
+  --line-height-body-sm: 1.25rem;      /* 20px (1.42) */
+  --font-size-label: 0.8125rem;        /* 13px */
+  --line-height-label: 1.125rem;       /* 18px (1.38) */
+  --font-size-caption: 0.75rem;        /* 12px */
+  --line-height-caption: 1rem;         /* 16px (1.33) */
+  --font-size-micro: 0.6875rem;        /* 11px */
+  --line-height-micro: 0.875rem;       /* 14px (1.27) */
+}
+
+/* Universal Typography Utility Classes */
+.text-display {
+  font-size: var(--font-size-display);
+  line-height: var(--line-height-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.text-page-title {
+  font-size: var(--font-size-page-title);
+  line-height: var(--line-height-page-title);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.text-section-title {
+  font-size: var(--font-size-section-title);
+  line-height: var(--line-height-section-title);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.text-card-title {
+  font-size: var(--font-size-card-title);
+  line-height: var(--line-height-card-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.text-body-lg {
+  font-size: var(--font-size-body-lg);
+  line-height: var(--line-height-body-lg);
+  letter-spacing: -0.011em;
+}
+
+.text-body-base {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  letter-spacing: -0.01em;
+}
+
+.text-body-sm {
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body-sm);
+  letter-spacing: -0.005em;
+}
+
+.text-label {
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+  font-weight: 600;
+}
+
+.text-caption {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.text-micro {
+  font-size: var(--font-size-micro);
+  line-height: var(--line-height-micro);
+  font-weight: 600;
 }
 
 html,

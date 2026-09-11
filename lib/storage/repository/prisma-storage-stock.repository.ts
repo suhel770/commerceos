@@ -5,6 +5,7 @@
  */
 
 import { db } from "@/lib/db";
+import { universalProductSyncService } from "@/lib/products/universal-product-sync.service";
 import type { SecurityContext } from "../domain/types";
 
 export interface CreateStorageReceiptInput {
@@ -31,6 +32,8 @@ export interface StorageStockRecord {
   reservedQty: number;
   damagedQty: number;
   inTransitQty: number;
+  intent?: string;
+  productId?: string | null;
 }
 
 export interface ReverseStorageReceiptInput {
@@ -98,6 +101,9 @@ export class PrismaStorageStockRepository {
 
     const rows = await db.storageStock.findMany({
       where,
+      include: {
+        product: { select: { id: true, name: true, sku: true, intent: true } },
+      },
       orderBy: { sku: "asc" },
     });
 
@@ -105,11 +111,13 @@ export class PrismaStorageStockRepository {
       id: r.id,
       storageLocationId: r.storageLocationId,
       sku: r.sku,
-      productName: r.productName,
+      productName: r.product?.name || r.productName || r.sku,
       availableQty: r.availableQty,
       reservedQty: r.reservedQty,
       damagedQty: r.damagedQty,
       inTransitQty: r.inTransitQty,
+      intent: (r as any).intent || r.product?.intent || "sellable",
+      productId: r.productId || r.product?.id,
     }));
   }
 
@@ -191,6 +199,19 @@ export class PrismaStorageStockRepository {
           }).catch(() => {});
         }
 
+        // Universal Product Sync: Ensure SKU metadata is canonical across Product, StorageStock, ReceiptLine
+        if (line.sku && line.description) {
+          await universalProductSyncService.syncSkuMetadata(tx, {
+            workspaceId: security.workspaceId,
+            organizationId: security.organizationId,
+            sku: line.sku,
+            name: line.description,
+            intent,
+          }).catch((err) => {
+            console.warn("[Storage] Warning syncing SKU metadata during receipt:", err);
+          });
+        }
+
         // Update physical stock balance if location specified
         const targetLocId = line.putawayLocationId || input.storageLocationId;
         if (targetLocId && line.receivedQty > 0) {
@@ -207,6 +228,7 @@ export class PrismaStorageStockRepository {
             await tx.storageStock.update({
               where: { id: existing.id },
               data: {
+                productName: line.description || existing.productName,
                 availableQty: existing.availableQty + Math.max(0, line.receivedQty - (line.damagedQty || 0)),
                 damagedQty: existing.damagedQty + (line.damagedQty || 0),
                 productId: productId || existing.productId,

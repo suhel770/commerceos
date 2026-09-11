@@ -26,7 +26,6 @@ import {
 import CommerceDatePicker from "@/components/ui/CommerceDatePicker";
 import CommerceSelect from "@/components/ui/CommerceSelect";
 import type { BusinessProfile } from "@/lib/business-profile";
-import { products } from "@/lib/mocks/products";
 import {
   ALL_BUSINESS_INTENTS,
   ALL_PURCHASE_TYPES,
@@ -137,20 +136,16 @@ export default function NewPurchaseOrderDialog({
     [vendors],
   );
 
-  const catalog = useMemo(
-    () =>
-      products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        sku: product.sku,
-        hsn: product.hsn ?? "",
-        gstRate: normalizeGstRate(
-          product.gstRate ?? lookupGstRateByHsn(product.hsn) ?? 18,
-        ),
-        cost: product.pricing?.costPrice,
-      })),
-    [],
-  );
+  const [catalog, setCatalog] = useState<
+    Array<{
+      id: string;
+      name: string;
+      sku: string;
+      hsn: string;
+      gstRate: number;
+      cost?: number;
+    }>
+  >([]);
 
   const [vendorId, setVendorId] = useState("");
   const [poDate, setPoDate] = useState(todayInput);
@@ -209,10 +204,28 @@ export default function NewPurchaseOrderDialog({
 
     void (async () => {
       try {
-        const response = await fetch("/api/v1/settings/business");
-        const payload = await safeResponseJson(response);
-        if (payload.success) {
-          setBuyerProfile(payload.data as BusinessProfile);
+        const [bizRes, prdRes] = await Promise.all([
+          fetch("/api/v1/settings/business"),
+          fetch("/api/v1/products"),
+        ]);
+        const bizPayload = await safeResponseJson(bizRes);
+        if (bizPayload.success) {
+          setBuyerProfile(bizPayload.data as BusinessProfile);
+        }
+        const prdPayload = await safeResponseJson(prdRes);
+        if (prdPayload.success && Array.isArray(prdPayload.data)) {
+          setCatalog(
+            prdPayload.data.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              sku: p.sku,
+              hsn: p.hsn ?? "",
+              gstRate: normalizeGstRate(
+                p.gstRate ?? lookupGstRateByHsn(p.hsn) ?? 18,
+              ),
+              cost: p.costPrice ?? p.pricing?.costPrice,
+            })),
+          );
         }
       } catch {
         setBuyerProfile(null);

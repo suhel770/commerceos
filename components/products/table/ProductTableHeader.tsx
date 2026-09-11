@@ -9,7 +9,7 @@ export default function ProductTableHeader({
 }: ProductTableHeaderProps) {
   return (
     <thead className="sticky top-0 z-20 bg-slate-50 border-b border-slate-200 text-left">
-      <tr className="text-left text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+      <tr className="text-left text-xs font-bold uppercase tracking-wider text-slate-500">
         <th className="w-10 px-3 py-3 text-center">
           <input
             type="checkbox"

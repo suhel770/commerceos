@@ -30,6 +30,7 @@ function seedProfile(): BusinessProfile {
     phone: DEMO_BUSINESS.phone,
     email: DEMO_BUSINESS.email,
     ownerName: DEMO_BUSINESS.ownerName,
+    trackConsumables: true,
     updatedAt: nowIso(),
   };
 }
@@ -48,8 +49,42 @@ function applyGstinState(profile: BusinessProfile): BusinessProfile {
   };
 }
 
+import fs from "fs";
+import path from "path";
+
+const STORE_PATH = path.join(process.cwd(), "lib", "business-profile", "profile-store.json");
+
+function readStoredProfile(): Partial<BusinessProfile> {
+  try {
+    if (fs.existsSync(STORE_PATH)) {
+      const data = fs.readFileSync(STORE_PATH, "utf8");
+      return JSON.parse(data);
+    }
+  } catch {}
+  return {};
+}
+
+function writeStoredProfile(profile: BusinessProfile) {
+  try {
+    const dir = path.dirname(STORE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(STORE_PATH, JSON.stringify(profile, null, 2), "utf8");
+  } catch {}
+}
+
 class BusinessProfileRepository {
-  private profile: BusinessProfile = applyGstinState(seedProfile());
+  private profile: BusinessProfile;
+
+  constructor() {
+    const seeded = applyGstinState(seedProfile());
+    const stored = readStoredProfile();
+    this.profile = {
+      ...seeded,
+      ...stored,
+    };
+  }
 
   get(): BusinessProfile {
     return structuredClone(this.profile);
@@ -108,6 +143,10 @@ class BusinessProfileRepository {
         input.ownerName !== undefined
           ? input.ownerName.trim()
           : this.profile.ownerName,
+      trackConsumables:
+        input.trackConsumables !== undefined
+          ? input.trackConsumables
+          : this.profile.trackConsumables,
       updatedAt: nowIso(),
     };
 
@@ -119,6 +158,7 @@ class BusinessProfileRepository {
     }
 
     this.profile = applyGstinState(next);
+    writeStoredProfile(this.profile);
     return this.get();
   }
 }

@@ -27,7 +27,11 @@ export type StudioWorkspaceId =
   | "channels"
   | "compliance"
   | "publishing"
-  | "activity";
+  | "activity"
+  | "exceptions"
+  | "readiness"
+  | "preview"
+  | "category_mapping";
 
 export interface StudioWorkspaceConfig {
   id: StudioWorkspaceId;
@@ -127,4 +131,19 @@ export const PRODUCT_STUDIO_WORKSPACES: StudioWorkspaceConfig[] = [
     icon: History,
     enabled: true,
   },
+];
+
+export const DEFAULT_STUDIO_WORKSPACE_ORDER: StudioWorkspaceId[] = [
+  "identity",
+  "media",
+  "commercials",
+  "inventory",
+  "supply",
+  "attributes",
+  "variants",
+  "growth",
+  "channels",
+  "compliance",
+  "publishing",
+  "activity",
 ];

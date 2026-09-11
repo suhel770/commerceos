@@ -19,7 +19,6 @@ import { locationStockRepository, type ConsumptionRecord } from "@/lib/storage/e
 import { inventoryConsumptionLedger } from "./consumption-ledger";
 import { channelAllocationEngine } from "./channel-allocation.engine";
 import { inventoryLifecycleEngine } from "./inventory-lifecycle-engine";
-import { products } from "@/lib/mocks/products";
 import type { PurchaseBill } from "@/lib/purchase/types";
 import { aggregatePurchaseStockBySku } from "@/lib/purchase/stock-data";
 
@@ -108,19 +107,6 @@ class InventoryDecisionEngineClass {
       if (match && match.unitCost > 0) {
         return match.unitCost;
       }
-    }
-
-    // 2. Check product catalog
-    const productMatch = products.find(
-      (p) =>
-        p.sku.toLowerCase().trim() === normalizedSku ||
-        (Array.isArray((p as any).variants) &&
-          (p as any).variants.some((v: any) => (v.sku || "").toLowerCase().trim() === normalizedSku)),
-    );
-
-    if (productMatch) {
-      const cost = productMatch.pricing?.costPrice || (productMatch as any).costPrice || 0;
-      if (cost > 0) return cost;
     }
 
     return 0;

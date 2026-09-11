@@ -115,80 +115,36 @@ export default function StudioAIDock() {
   };
 
   return (
-    <section className="mt-auto bg-slate-50">
-
-      <div className="mx-auto max-w-[1800px] px-4 pb-5 sm:px-6">
-
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-
-          <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-
+    <section className="mt-auto bg-slate-50/60 pt-2 pb-6">
+      <div className="mx-auto max-w-[1800px] px-4 sm:px-6">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
-                <Bot className="h-4 w-4" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
+                <Sparkles className="h-4.5 w-4.5" />
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-slate-900">
-                  CommerceOS AI
+                <h3 className="text-sm font-bold text-slate-900">
+                  CommerceOS AI Assistant
                 </h3>
-                <p className="text-xs text-slate-500">
-                  Product intelligence, publishing guidance &amp; AI editing
+                <p className="text-xs text-slate-500 font-medium">
+                  Get AI-powered suggestions to optimize your product, improve SEO, and boost sales.
                 </p>
               </div>
-
             </div>
 
-            <div className="flex items-center gap-4 text-xs">
-
-              <span className="font-medium text-slate-600">
-                {aiEnabled
-                  ? `${pendingSuggestions || 2} Suggestions`
-                  : "AI Optional"}
-              </span>
-
-              <span className="font-medium text-slate-600">
-                {score}% Ready
-              </span>
-
-              <button
-                type="button"
-                disabled={!aiAvailable}
-                onClick={toggleAI}
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {aiAvailable ? (
-                  <Coins className="h-3.5 w-3.5" />
-                ) : (
-                  <CircleOff className="h-3.5 w-3.5" />
-                )}
-                {aiAvailable
-                  ? `${creditsRemaining} credits · ${aiEnabled ? "On" : "Off"}`
-                  : "No credits"}
-              </button>
-
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 aria-expanded={expanded}
-                aria-controls="commerceos-ai-panel"
-                aria-label={
-                  expanded
-                    ? "Collapse CommerceOS AI"
-                    : "Expand CommerceOS AI"
-                }
                 onClick={() => setExpanded((current) => !current)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-white px-3.5 py-2 text-xs font-bold text-blue-600 shadow-2xs transition hover:bg-blue-50 active:scale-95 cursor-pointer"
               >
-                {expanded ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
+                <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                <span>Open AI Studio</span>
               </button>
-
             </div>
-
           </div>
 
           {expanded && aiEnabled && (

@@ -82,6 +82,17 @@ export class PurchaseApplication {
     );
   }
 
+  async getVendor(context: CommerceContext, id: string): Promise<Vendor> {
+    authorize(context, "purchase.view");
+    const vendor = await purchaseService.getVendor(
+      context.organizationId,
+      context.workspaceId,
+      id,
+    );
+    assertWorkspaceAccess(context, vendor.workspaceId);
+    return vendor;
+  }
+
   async createVendor(
     context: CommerceContext,
     input: CreateVendorInput,

@@ -169,7 +169,7 @@ export function errorResponse(
     RevisionConflictError
   ) {
     status = 409;
-    code = error.code;
+    code = "REVISION_CONFLICT";
     message = error.message;
   } else if (
     error instanceof
