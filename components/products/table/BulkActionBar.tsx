@@ -4,6 +4,7 @@ import {
   Archive,
   Download,
   FolderOpen,
+  Globe,
   Tag,
   Trash2,
   X,
@@ -43,6 +44,14 @@ export default function BulkActionBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+
+        <button
+          onClick={() => onBulkAction("publish_channels")}
+          className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-xs transition hover:bg-blue-700 cursor-pointer"
+        >
+          <Globe size={16} />
+          Publish to Channels
+        </button>
 
         <button
           onClick={() => onBulkAction("activate")}

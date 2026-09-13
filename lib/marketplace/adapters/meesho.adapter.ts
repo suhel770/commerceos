@@ -88,6 +88,9 @@ export const meeshoAdapter: MarketplaceAdapter = {
       price: listing.pricing.sellingPrice,
       mrp: listing.pricing.mrp || listing.pricing.sellingPrice,
       gst_hsn: listing.identity.hsn,
+      model_name: listing.identity.modelName || undefined,
+      model_number: listing.identity.modelNumber || undefined,
+      warranty: listing.identity.warrantyPeriod || undefined,
     };
 
     for (const attr of listing.attributes) {

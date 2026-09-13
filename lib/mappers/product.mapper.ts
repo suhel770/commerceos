@@ -105,6 +105,11 @@ export class ProductMapper {
         taxCode: safeProduct.gstRate
           ? `GST${safeProduct.gstRate}`
           : undefined,
+        modelNumber: safeProduct.modelNumber,
+        modelName: safeProduct.modelName,
+        mpn: safeProduct.mpn,
+        warrantyPeriod: safeProduct.warrantyPeriod,
+        trackingMode: safeProduct.trackingMode,
       },
 
       status: this.mapStatus(safeProduct.status),

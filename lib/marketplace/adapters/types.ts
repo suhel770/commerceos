@@ -9,14 +9,36 @@ export interface MarketplacePublishPayload {
   externalSku: string;
   title: string;
   price: number;
+  mrp?: number;
   quantity: number;
   attributes: Record<string, unknown>;
   category?: string;
+  subCategory?: string;
   brand?: string;
   images?: string[];
   hsn?: string;
+  taxPercentage?: number;
   description?: string;
   bulletPoints?: string[];
+  barcode?: string;
+  isGtinExempt?: boolean;
+  packageDimensions?: {
+    lengthCm?: number;
+    widthCm?: number;
+    heightCm?: number;
+    weightGrams?: number;
+    volumetricWeightKg?: number;
+  };
+  legalMetrology?: {
+    manufacturerName?: string;
+    manufacturerAddress?: string;
+    packerName?: string;
+    consumerCareEmail?: string;
+    consumerCarePhone?: string;
+    netQuantity?: string;
+    countryOfOrigin?: string;
+    mfgMonthYear?: string;
+  };
 }
 
 export interface MarketplaceReadiness {

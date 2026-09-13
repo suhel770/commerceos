@@ -118,16 +118,18 @@ export function computeWorkspaceSummaries(
       ],
     },
     {
-      id: "supply",
-      status: listing.supply?.primarySupplier ? "ready" : "attention",
+      id: "logistics",
+      status: listing.commercials?.packageLengthCm && listing.commercials?.weightGrams ? "ready" : "attention",
       metrics: [
         {
-          label: "Lead Time",
-          value: listing.supply?.leadTimeDays !== undefined ? `${listing.supply.leadTimeDays}d` : "Not set",
+          label: "Vol. Wt",
+          value: listing.commercials?.packageLengthCm && listing.commercials?.packageWidthCm && listing.commercials?.packageHeightCm
+            ? `${((listing.commercials.packageLengthCm * listing.commercials.packageWidthCm * listing.commercials.packageHeightCm) / 5000).toFixed(2)} kg`
+            : "Not set",
         },
         {
-          label: "MOQ",
-          value: (listing.supply as any)?.minimumOrderQuantity ?? (listing.supply as any)?.moq ?? "Not set",
+          label: "Gross Wt",
+          value: listing.commercials?.weightGrams ? `${listing.commercials.weightGrams}g` : "Not set",
         },
       ],
     },

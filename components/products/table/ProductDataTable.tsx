@@ -13,6 +13,7 @@ interface ProductDataTableProps {
   products: Product[];
   loading?: boolean;
   onViewClick: (product: Product) => void;
+  onUniversalListingClick?: (product: Product) => void;
   onBulkAction: (action: string, selectedIds: string[]) => void;
 }
 
@@ -20,6 +21,7 @@ export default function ProductDataTable({
   products,
   loading = false,
   onViewClick,
+  onUniversalListingClick,
   onBulkAction,
 }: ProductDataTableProps) {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -116,6 +118,7 @@ export default function ProductDataTable({
                 selected={selectedProducts.includes(product.id)}
                 onToggle={() => toggleProduct(product.id)}
                 onViewClick={() => onViewClick(product)}
+                onUniversalListingClick={onUniversalListingClick}
               />
             ))}
           </tbody>

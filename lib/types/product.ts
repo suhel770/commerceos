@@ -60,6 +60,16 @@ export interface Product {
 
   tags?: string[];
 
+  modelNumber?: string;
+
+  modelName?: string;
+
+  mpn?: string;
+
+  warrantyPeriod?: string;
+
+  trackingMode?: "STANDARD" | "SERIAL_NUMBER" | "BATCH_LOT";
+
   /* -------------------------------------------------------------------------- */
   /* Compliance */
   /* -------------------------------------------------------------------------- */

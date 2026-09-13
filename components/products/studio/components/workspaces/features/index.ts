@@ -3,7 +3,7 @@
 export { MediaWorkspace } from "./MediaWorkspace";
 export { CommercialsWorkspace } from "./CommercialsWorkspace";
 export { InventoryWorkspace } from "./InventoryWorkspace";
-export { SupplyWorkspace } from "./SupplyWorkspace";
+export { LogisticsWorkspace } from "./LogisticsWorkspace";
 export { AttributesWorkspace } from "./AttributesWorkspace";
 export { VariantsWorkspace } from "./VariantsWorkspace";
 export { GrowthWorkspace } from "./GrowthWorkspace";

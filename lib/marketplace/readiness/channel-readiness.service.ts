@@ -3,6 +3,7 @@ import { getMarketplaceAdapter } from "@/lib/marketplace/adapters/generic.adapte
 import { categoryMappingService } from "@/lib/marketplace/taxonomy/category-mapping.service";
 import { marketplaceConnectionService } from "@/lib/marketplace/connection/connection.service";
 import { getMarketplaceRegistry } from "@/lib/marketplace/registry/marketplace-registry";
+import { brandApprovalService } from "@/lib/services/brand-approval.service";
 
 export interface ChannelReadinessScore {
   marketplace: MarketplaceName;
@@ -12,6 +13,7 @@ export interface ChannelReadinessScore {
   status: "READY" | "ACTION_REQUIRED" | "NOT_CONFIGURED" | "NOT_CONNECTED";
   categoryMapped: boolean;
   mappedCategoryName?: string;
+  brandApproved?: boolean;
   blockers: string[];
   warnings: string[];
   attributesComplete: number; // count
@@ -66,13 +68,29 @@ export class ChannelReadinessService {
         blockers.push(`Category '${listing.identity.category}' is not mapped to ${registry.name} taxonomy.`);
       }
 
-      // 3. Score calculation
+      // 3. Brand authorization validation
+      const brandApproved = brandApprovalService.isBrandApproved(listing.identity.brand, channel);
+      if (!brandApproved && isConnected) {
+        if (channel === MarketplaceName.AMAZON) {
+          blockers.push(`Brand Approval required for '${listing.identity.brand}' on Amazon (Error 5665).`);
+        } else if (channel === MarketplaceName.FLIPKART) {
+          blockers.push(`Brand Authorization Letter required for '${listing.identity.brand}' on Flipkart.`);
+        }
+      } else if (!brandApproved) {
+        if (channel === MarketplaceName.AMAZON) {
+          warnings.push(`Brand '${listing.identity.brand}' will require Amazon Brand Approval (Error 5665) upon connection.`);
+        } else if (channel === MarketplaceName.FLIPKART) {
+          warnings.push(`Brand '${listing.identity.brand}' will require Flipkart Brand Authorization upon connection.`);
+        }
+      }
+
+      // 4. Score calculation
       let score = validation.score;
       if (!categoryMapped) {
         score = Math.max(0, score - 25);
       }
 
-      // 4. Status determination
+      // 5. Status determination
       let status: ChannelReadinessScore["status"] = "ACTION_REQUIRED";
       if (!isConnected) {
         status = "NOT_CONNECTED";
@@ -92,6 +110,7 @@ export class ChannelReadinessService {
         status,
         categoryMapped,
         mappedCategoryName: mapping?.marketplaceCategoryName,
+        brandApproved,
         blockers,
         warnings,
         attributesComplete: listing.attributes.length,

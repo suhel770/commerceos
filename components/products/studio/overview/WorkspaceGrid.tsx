@@ -62,13 +62,13 @@ const WORKSPACE_DEFINITIONS: Record<string, WorkspaceDefinition> = {
     iconBackground: "bg-blue-50",
     iconColor: "text-blue-600",
   },
-  supply: {
-    id: "supply",
-    title: "Supply",
-    subtitle: "Supplier, procurement and replenishment details",
+  logistics: {
+    id: "logistics",
+    title: "Logistics & Packaging",
+    subtitle: "Dimensions, volumetric weight, dispatch SLA & GTIN exemption",
     icon: Truck,
-    iconBackground: "bg-orange-50",
-    iconColor: "text-orange-600",
+    iconBackground: "bg-sky-50",
+    iconColor: "text-sky-600",
   },
   attributes: {
     id: "attributes",

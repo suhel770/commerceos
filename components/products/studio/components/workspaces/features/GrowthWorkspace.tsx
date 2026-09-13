@@ -1,8 +1,5 @@
 "use client";
 
-import {
-  Sparkles,
-} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -31,11 +28,6 @@ export function GrowthWorkspace() {
       },
     });
   };
-
-  const hasAI =
-    listing.permissions.canUseAI &&
-    Boolean(listing.aiEntitlement?.enabled) &&
-    (listing.aiEntitlement?.creditsRemaining ?? 0) > 0;
 
   return (
     <div className="space-y-5">
@@ -121,42 +113,19 @@ export function GrowthWorkspace() {
             hint="Comma-separated tags"
           >
             <Input
-              value={listing.growth.merchandisingTags.join(
-                ", ",
-              )}
+              value={listing.growth.merchandisingTags.join(", ")}
               onChange={(event) =>
                 updateGrowth({
-                  merchandisingTags:
-                    event.target.value
-                      .split(",")
-                      .map((tag) =>
-                        tag.trim(),
-                      )
-                      .filter(Boolean),
+                  merchandisingTags: event.target.value
+                    .split(",")
+                    .map((tag) => tag.trim())
+                    .filter(Boolean),
                 })
               }
             />
           </Field>
         </div>
       </Panel>
-
-      <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5">
-        <div className="flex items-start gap-3">
-          <Sparkles className="mt-0.5 h-5 w-5 text-violet-600" />
-
-          <div>
-            <p className="font-semibold text-violet-900">
-              Optional CommerceOS AI
-            </p>
-
-            <p className="mt-1 text-sm leading-6 text-violet-800">
-              {hasAI
-                ? "AI suggestions are available, but all SEO fields remain fully editable without AI."
-                : "AI is unavailable or disabled. Manual SEO editing and marketplace publishing continue normally."}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

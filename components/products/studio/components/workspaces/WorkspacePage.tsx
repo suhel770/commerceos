@@ -20,11 +20,11 @@ import {
   ExceptionsWorkspace,
   GrowthWorkspace,
   InventoryWorkspace,
+  LogisticsWorkspace,
   MediaWorkspace,
   PreviewWorkspace,
   PublishingWorkspace,
   ReadinessWorkspace,
-  SupplyWorkspace,
   VariantsWorkspace,
 } from "./features";
 
@@ -43,19 +43,19 @@ const workspaceMeta: Record<
   },
   media: {
     title: "Media",
-    description: "Images, assets and video content.",
+    description: "Product gallery, master assets and aspect ratios.",
   },
   commercials: {
     title: "Commercials",
-    description: "Pricing, cost and profitability.",
+    description: "Pricing, margins and commercial setup.",
   },
   inventory: {
     title: "Inventory",
     description: "Stock, reservations, warehouses, thresholds and synchronization.",
   },
-  supply: {
-    title: "Supply",
-    description: "Suppliers, procurement references and replenishment.",
+  logistics: {
+    title: "Logistics & Packaging",
+    description: "Package dimensions, volumetric weight, dispatch SLA and GTIN exemption.",
   },
   attributes: {
     title: "Attributes",
@@ -113,8 +113,8 @@ function renderWorkspace(workspace: WorkspacePageId) {
       return <CommercialsWorkspace />;
     case "inventory":
       return <InventoryWorkspace />;
-    case "supply":
-      return <SupplyWorkspace />;
+    case "logistics":
+      return <LogisticsWorkspace />;
     case "attributes":
       return <AttributesWorkspace />;
     case "variants":

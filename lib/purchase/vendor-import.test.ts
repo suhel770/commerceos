@@ -142,7 +142,7 @@ function parseVendorCsv(text: string): CreateVendorInput[] {
 
     list.push({
       name: (rowData.name || cols[0]).trim(),
-      registrationType: rowData.registrationType?.includes("composition") ? "composition" : "regular",
+      registrationType: rowData.registrationType?.toLowerCase().includes("composition") ? "composition" : "regular",
       gstin: gstinVal,
       pan: panVal,
       phone: rowData.phone?.trim() || undefined,

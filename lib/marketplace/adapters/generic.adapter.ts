@@ -74,21 +74,63 @@ export function createGenericAdapter(
     },
 
     transform(listing: MasterListing): MarketplacePublishPayload {
+      const length = Number(listing.commercials?.packageLengthCm) || 0;
+      const width = Number(listing.commercials?.packageWidthCm) || 0;
+      const height = Number(listing.commercials?.packageHeightCm) || 0;
+      const deadWeightGrams = Number(listing.commercials?.weightGrams) || 0;
+      const volumetricWeightKg = length > 0 && width > 0 && height > 0
+        ? Number(((length * width * height) / 5000).toFixed(3))
+        : undefined;
+
+      const baseAttrs = this.mapAttributes(listing);
+
       return {
         marketplace,
         externalSku: listing.identity.sku,
         title: listing.identity.productName,
         price: listing.pricing.sellingPrice,
+        mrp: listing.pricing.mrp,
         quantity: listing.inventory?.available || 0,
         category: listing.identity.category,
+        subCategory: listing.identity.subCategory,
         brand: listing.identity.brand,
         hsn: listing.identity.hsn,
+        taxPercentage: listing.pricing.taxPercentage,
         description: listing.description,
-        bulletPoints: listing.bulletPoints,
+        bulletPoints: listing.bulletPoints || listing.growth?.bulletPoints,
+        barcode: listing.identity.barcode || listing.identity.ean || listing.identity.upc,
+        isGtinExempt: listing.identity.isGtinExempt,
+        packageDimensions: {
+          lengthCm: length || undefined,
+          widthCm: width || undefined,
+          heightCm: height || undefined,
+          weightGrams: deadWeightGrams || undefined,
+          volumetricWeightKg,
+        },
+        legalMetrology: {
+          manufacturerName: listing.compliance?.manufacturerName || listing.identity.manufacturer,
+          manufacturerAddress: listing.compliance?.manufacturerAddress,
+          packerName: listing.compliance?.packerName,
+          consumerCareEmail: listing.compliance?.consumerCareEmail,
+          consumerCarePhone: listing.compliance?.consumerCarePhone,
+          netQuantity: listing.compliance?.netQuantity || "1 N",
+          countryOfOrigin: listing.compliance?.countryOfOrigin || "India",
+          mfgMonthYear: listing.compliance?.mfgMonthYear,
+        },
         images: listing.media
           .filter((item) => item.kind === "image")
           .map((item) => item.url),
-        attributes: this.mapAttributes(listing),
+        attributes: {
+          ...baseAttrs,
+          model_number: listing.identity.modelNumber,
+          model_name: listing.identity.modelName,
+          part_number: listing.identity.mpn,
+          condition: listing.identity.conditionType || "NEW",
+          handling_time_days: listing.identity.handlingTimeDays || 2,
+          item_package_quantity: listing.identity.itemPackageQuantity || 1,
+          fulfillment_channel: listing.commercials?.fulfillmentChannel || "MERCHANT_FULFILLED",
+          volumetric_weight_kg: volumetricWeightKg,
+        },
       };
     },
 

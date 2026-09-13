@@ -68,6 +68,14 @@ export default function ProductCell({ product }: ProductCellProps) {
               <span className="truncate text-slate-500">{category}</span>
             </>
           )}
+          {((product as any).variants?.length ?? 0) > 0 && (
+            <>
+              <span className="text-slate-300">·</span>
+              <span className="text-[11px] font-semibold text-slate-500">
+                {(product as any).variants.length} var
+              </span>
+            </>
+          )}
         </div>
       </div>
     </div>

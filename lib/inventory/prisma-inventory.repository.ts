@@ -172,8 +172,18 @@ export class PrismaInventoryRepository implements IInventoryRepository {
       });
       const receivedSkus = new Set(storageStocks.map((s) => s.sku.toLowerCase().trim()));
 
-      // If no storage facility / no received stock, return single balance if queried specifically or fallback to memory
+      // If no storage facility / no received stock, return memory balances or single balance if queried specifically
       if (receivedSkus.size === 0) {
+        if (this.balances.length > 0) {
+          return structuredClone(
+            this.balances.filter((balance) => {
+              if (filter?.workspaceId && balance.workspaceId !== filter.workspaceId) return false;
+              if (filter?.productId && balance.productId !== filter.productId) return false;
+              if (filter?.warehouseId && balance.warehouseId !== filter.warehouseId) return false;
+              return true;
+            })
+          );
+        }
         if (filter?.productId) {
           const single = await this.getBalance(filter.productId, filter?.warehouseId || DEFAULT_WAREHOUSE_ID);
           if (single) return [single];

@@ -134,6 +134,14 @@ export const flipkartAdapter: MarketplaceAdapter = {
   },
 
   mapAttributes(listing) {
+    const length = Number(listing.commercials?.packageLengthCm) || 0;
+    const width = Number(listing.commercials?.packageWidthCm) || 0;
+    const height = Number(listing.commercials?.packageHeightCm) || 0;
+    const deadWeightGrams = Number(listing.commercials?.weightGrams) || 0;
+    const volumetricWeightKg = length > 0 && width > 0 && height > 0
+      ? Number(((length * width * height) / 5000).toFixed(3))
+      : undefined;
+
     return {
       product_name: listing.identity.productName,
       brand: listing.identity.brand,
@@ -147,6 +155,23 @@ export const flipkartAdapter: MarketplaceAdapter = {
       mrp: listing.pricing?.mrp,
       selling_price: listing.pricing?.sellingPrice,
       stock: listing.inventory?.available ?? 0,
+      model_number: listing.identity.modelNumber || undefined,
+      model_name: listing.identity.modelName || undefined,
+      part_number: listing.identity.mpn || undefined,
+      warranty_summary: listing.identity.warrantyPeriod || undefined,
+      serial_number_tracking: listing.identity.trackingMode === "SERIAL_NUMBER",
+      condition: listing.identity.conditionType || "NEW",
+      package_length: length || undefined,
+      package_width: width || undefined,
+      package_height: height || undefined,
+      weight_in_grams: deadWeightGrams || undefined,
+      volumetric_weight_kg: volumetricWeightKg,
+      country_of_origin: listing.compliance?.countryOfOrigin || "India",
+      manufacturer_details: listing.compliance?.manufacturerName || listing.identity.manufacturer,
+      packer_details: listing.compliance?.packerName,
+      consumer_care_email: listing.compliance?.consumerCareEmail,
+      consumer_care_phone: listing.compliance?.consumerCarePhone,
+      net_quantity: listing.compliance?.netQuantity || "1 N",
       ...Object.fromEntries(
         (listing.attributes || []).map((attribute) => [
           attribute.key,
@@ -157,15 +182,47 @@ export const flipkartAdapter: MarketplaceAdapter = {
   },
 
   transform(listing): MarketplacePublishPayload {
+    const length = Number(listing.commercials?.packageLengthCm) || 0;
+    const width = Number(listing.commercials?.packageWidthCm) || 0;
+    const height = Number(listing.commercials?.packageHeightCm) || 0;
+    const deadWeightGrams = Number(listing.commercials?.weightGrams) || 0;
+    const volumetricWeightKg = length > 0 && width > 0 && height > 0
+      ? Number(((length * width * height) / 5000).toFixed(3))
+      : undefined;
+
     return {
       marketplace: MarketplaceName.FLIPKART,
       externalSku: listing.identity.sku,
       title: listing.identity.productName,
       price: listing.pricing?.sellingPrice || 0,
+      mrp: listing.pricing?.mrp,
       quantity: listing.inventory?.available || 0,
       category: listing.identity.category,
+      subCategory: listing.identity.subCategory,
       brand: listing.identity.brand,
       hsn: listing.identity.hsn,
+      taxPercentage: listing.pricing?.taxPercentage,
+      description: listing.description,
+      bulletPoints: listing.growth?.bulletPoints || listing.bulletPoints,
+      barcode: listing.identity.barcode || listing.identity.ean,
+      isGtinExempt: listing.identity.isGtinExempt,
+      packageDimensions: {
+        lengthCm: length || undefined,
+        widthCm: width || undefined,
+        heightCm: height || undefined,
+        weightGrams: deadWeightGrams || undefined,
+        volumetricWeightKg,
+      },
+      legalMetrology: {
+        manufacturerName: listing.compliance?.manufacturerName || listing.identity.manufacturer,
+        manufacturerAddress: listing.compliance?.manufacturerAddress,
+        packerName: listing.compliance?.packerName,
+        consumerCareEmail: listing.compliance?.consumerCareEmail,
+        consumerCarePhone: listing.compliance?.consumerCarePhone,
+        netQuantity: listing.compliance?.netQuantity || "1 N",
+        countryOfOrigin: listing.compliance?.countryOfOrigin || "India",
+        mfgMonthYear: listing.compliance?.mfgMonthYear,
+      },
       images: (listing.media || [])
         .filter((item) => item.kind === "image")
         .map((item) => item.url),

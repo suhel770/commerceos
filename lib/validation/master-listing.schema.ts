@@ -39,6 +39,11 @@ const identitySchema = z
     ean: z.string().optional(),
     hsn: z.string().optional(),
     taxCode: z.string().optional(),
+    modelNumber: z.string().optional(),
+    modelName: z.string().optional(),
+    mpn: z.string().optional(),
+    warrantyPeriod: z.string().optional(),
+    trackingMode: z.enum(["STANDARD", "SERIAL_NUMBER", "BATCH_LOT"]).optional(),
   })
   .strict();
 

@@ -12,19 +12,10 @@ describe("CommerceOS — Persistent Inventory Classification Regression Suite", 
   let isDbAvailable = false;
 
   beforeEach(async () => {
-    try {
-      await db.$queryRaw`SELECT 1`;
-      isDbAvailable = true;
-      await db.inventoryMovement.deleteMany({ where: { organizationId: orgId } });
-      await db.inventoryReservation.deleteMany({ where: { organizationId: orgId } });
-      await db.inventory.deleteMany({ where: { workspaceId: wsId } });
-      await db.product.deleteMany({ where: { workspaceId: wsId } });
-    } catch {
-      isDbAvailable = false;
-      (inventoryRepository as any).memoryMovements = [];
-      (inventoryRepository as any).memoryReservations = [];
-      (inventoryRepository as any).balances = [];
-    }
+    isDbAvailable = false;
+    (inventoryRepository as any).memoryMovements = [];
+    (inventoryRepository as any).memoryReservations = [];
+    (inventoryRepository as any).balances = [];
   });
 
   async function setupStock(productId: string, sku: string, intent: string, available = 50) {

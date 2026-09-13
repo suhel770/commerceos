@@ -12,6 +12,7 @@ import {
   Settings2,
   ShieldCheck,
   TrendingUp,
+  Truck,
 } from "lucide-react";
 
 export type StudioWorkspaceId =
@@ -20,7 +21,7 @@ export type StudioWorkspaceId =
   | "media"
   | "commercials"
   | "inventory"
-  | "supply"
+  | "logistics"
   | "attributes"
   | "variants"
   | "growth"
@@ -36,6 +37,7 @@ export type StudioWorkspaceId =
 export interface StudioWorkspaceConfig {
   id: StudioWorkspaceId;
   label: string;
+  shortLabel?: string;
   icon: LucideIcon;
   enabled: boolean;
   badge?: "success" | "warning" | "ai";
@@ -47,20 +49,23 @@ export const PRODUCT_STUDIO_WORKSPACES: StudioWorkspaceConfig[] = [
   {
     id: "overview",
     label: "Overview",
+    shortLabel: "Overview",
     icon: Package2,
     enabled: true,
     badge: "success",
   },
   {
     id: "identity",
-    label: "Product Identity",
+    label: "Identity",
+    shortLabel: "Identity",
     icon: Package2,
     enabled: true,
     badge: "success",
   },
   {
     id: "media",
-    label: "Media Studio",
+    label: "Media",
+    shortLabel: "Media",
     icon: GalleryVertical,
     enabled: true,
     badge: "warning",
@@ -80,9 +85,10 @@ export const PRODUCT_STUDIO_WORKSPACES: StudioWorkspaceConfig[] = [
     badge: "success",
   },
   {
-    id: "supply",
-    label: "Supply",
-    icon: Boxes,
+    id: "logistics",
+    label: "Logistics & Packaging",
+    shortLabel: "Logistics",
+    icon: Truck,
     enabled: true,
     badge: "success",
   },
@@ -126,6 +132,27 @@ export const PRODUCT_STUDIO_WORKSPACES: StudioWorkspaceConfig[] = [
     enabled: true,
   },
   {
+    id: "preview",
+    label: "Live Preview",
+    shortLabel: "Preview",
+    icon: ScanSearch,
+    enabled: true,
+  },
+  {
+    id: "readiness",
+    label: "Readiness",
+    shortLabel: "Readiness",
+    icon: ShieldCheck,
+    enabled: true,
+  },
+  {
+    id: "category_mapping",
+    label: "Category Mapping",
+    shortLabel: "Taxonomy",
+    icon: FolderKanban,
+    enabled: true,
+  },
+  {
     id: "activity",
     label: "Activity",
     icon: History,
@@ -138,12 +165,15 @@ export const DEFAULT_STUDIO_WORKSPACE_ORDER: StudioWorkspaceId[] = [
   "media",
   "commercials",
   "inventory",
-  "supply",
+  "logistics",
   "attributes",
   "variants",
   "growth",
   "channels",
   "compliance",
   "publishing",
+  "preview",
+  "readiness",
+  "category_mapping",
   "activity",
 ];

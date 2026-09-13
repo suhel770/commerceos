@@ -137,6 +137,14 @@ export const amazonAdapter: MarketplaceAdapter = {
   },
 
   mapAttributes(listing) {
+    const length = Number(listing.commercials?.packageLengthCm) || 0;
+    const width = Number(listing.commercials?.packageWidthCm) || 0;
+    const height = Number(listing.commercials?.packageHeightCm) || 0;
+    const deadWeightGrams = Number(listing.commercials?.weightGrams) || 0;
+    const volumetricWeightKg = length > 0 && width > 0 && height > 0
+      ? Number(((length * width * height) / 5000).toFixed(3))
+      : undefined;
+
     return {
       item_name: listing.identity.productName,
       brand_name: listing.identity.brand,
@@ -152,6 +160,25 @@ export const amazonAdapter: MarketplaceAdapter = {
       list_price: listing.pricing.mrp,
       purchasable_offer_price: listing.pricing.sellingPrice,
       fulfillment_availability: listing.inventory?.available ?? 0,
+      model_number: listing.identity.modelNumber || undefined,
+      model_name: listing.identity.modelName || undefined,
+      part_number: listing.identity.mpn || undefined,
+      manufacturer_warranty_description: listing.identity.warrantyPeriod || undefined,
+      serial_number_tracking: listing.identity.trackingMode === "SERIAL_NUMBER",
+      is_gtin_exempt: listing.identity.isGtinExempt || false,
+      item_condition: listing.identity.conditionType || "NEW",
+      fulfillment_channel: listing.commercials?.fulfillmentChannel || "MERCHANT_FULFILLED",
+      package_length: length || undefined,
+      package_width: width || undefined,
+      package_height: height || undefined,
+      package_weight: deadWeightGrams || undefined,
+      volumetric_weight_kg: volumetricWeightKg,
+      country_of_origin: listing.compliance?.countryOfOrigin || "India",
+      manufacturer: listing.compliance?.manufacturerName || listing.identity.manufacturer,
+      packer: listing.compliance?.packerName,
+      consumer_care_email: listing.compliance?.consumerCareEmail,
+      consumer_care_phone: listing.compliance?.consumerCarePhone,
+      net_quantity: listing.compliance?.netQuantity || "1 N",
       ...Object.fromEntries(
         listing.attributes.map((attribute) => [
           attribute.key,
@@ -162,15 +189,47 @@ export const amazonAdapter: MarketplaceAdapter = {
   },
 
   transform(listing): MarketplacePublishPayload {
+    const length = Number(listing.commercials?.packageLengthCm) || 0;
+    const width = Number(listing.commercials?.packageWidthCm) || 0;
+    const height = Number(listing.commercials?.packageHeightCm) || 0;
+    const deadWeightGrams = Number(listing.commercials?.weightGrams) || 0;
+    const volumetricWeightKg = length > 0 && width > 0 && height > 0
+      ? Number(((length * width * height) / 5000).toFixed(3))
+      : undefined;
+
     return {
       marketplace: MarketplaceName.AMAZON,
       externalSku: listing.identity.sku,
       title: listing.identity.productName.slice(0, 200),
       price: listing.pricing.sellingPrice,
+      mrp: listing.pricing.mrp,
       quantity: listing.inventory.available,
       category: listing.identity.category,
+      subCategory: listing.identity.subCategory,
       brand: listing.identity.brand,
       hsn: listing.identity.hsn,
+      taxPercentage: listing.pricing.taxPercentage,
+      description: listing.description,
+      bulletPoints: listing.growth?.bulletPoints || listing.bulletPoints,
+      barcode: listing.identity.barcode || listing.identity.ean,
+      isGtinExempt: listing.identity.isGtinExempt,
+      packageDimensions: {
+        lengthCm: length || undefined,
+        widthCm: width || undefined,
+        heightCm: height || undefined,
+        weightGrams: deadWeightGrams || undefined,
+        volumetricWeightKg,
+      },
+      legalMetrology: {
+        manufacturerName: listing.compliance?.manufacturerName || listing.identity.manufacturer,
+        manufacturerAddress: listing.compliance?.manufacturerAddress,
+        packerName: listing.compliance?.packerName,
+        consumerCareEmail: listing.compliance?.consumerCareEmail,
+        consumerCarePhone: listing.compliance?.consumerCarePhone,
+        netQuantity: listing.compliance?.netQuantity || "1 N",
+        countryOfOrigin: listing.compliance?.countryOfOrigin || "India",
+        mfgMonthYear: listing.compliance?.mfgMonthYear,
+      },
       images: listing.media
         .filter((item) => item.kind === "image")
         .map((item) => item.url),

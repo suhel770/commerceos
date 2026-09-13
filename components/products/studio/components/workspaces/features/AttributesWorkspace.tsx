@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Plus,
   Trash2,
@@ -19,19 +19,50 @@ import {
 } from "@/lib/types/master-listing";
 import { useStudio } from "../../../context/StudioContext";
 import { Panel } from "./workspace-ui";
+import {
+  getCategorySpecs,
+  type CategoryVerticalConfig,
+  type CategorySpecDefinition,
+} from "@/lib/marketplace/specifications/category-specs.service";
 
 export function AttributesWorkspace() {
   const {
     listing,
     updateAttribute,
     removeAttribute,
+    product,
   } = useStudio();
 
   const [newLabel, setNewLabel] = useState("");
   const [newKey, setNewKey] = useState("");
   const [newGroup, setNewGroup] = useState("General");
 
+  const categoryConfig: CategoryVerticalConfig | null = useMemo(() => {
+    if (!listing) return null;
+    return getCategorySpecs(
+      listing.identity.category || (product as any)?.category,
+      listing.identity.subCategory || listing.identity.productName || (product as any)?.name
+    );
+  }, [listing?.identity.category, listing?.identity.subCategory, listing?.identity.productName, product]);
+
   if (!listing) return null;
+
+  const getAttributeValue = (key: string): string => {
+    const attr = listing.attributes?.find((a) => a.key === key);
+    return (attr?.value as string) || "";
+  };
+
+  const handleSpecChange = (key: string, label: string, group: string, value: string) => {
+    updateAttribute({
+      id: listing.attributes?.find((a) => a.key === key)?.id || crypto.randomUUID(),
+      key,
+      label,
+      value,
+      group: group.toUpperCase(),
+      searchable: true,
+      filterable: true,
+    });
+  };
 
   const addAttribute = () => {
     const key = newKey.trim() ||
@@ -65,6 +96,85 @@ export function AttributesWorkspace() {
       title="Universal Master Attributes"
       description="Enter attributes once in standard formats. CommerceOS automatically transforms and distributes them to match each marketplace's expected schema."
     >
+      {/* Dynamic Category Schema Specifications Panel */}
+      {categoryConfig && categoryConfig.specifications.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
+          <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs">
+                <Layers className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-900">Category Schema Specifications</h3>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80">
+                    {categoryConfig.badgeLabel}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-medium">
+                  Standard marketplace specifications dynamically adapted for {categoryConfig.displayName}
+                </p>
+              </div>
+            </div>
+
+            <span className="text-[10px] font-mono text-slate-500 font-bold bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+              {categoryConfig.specifications.length} Category Specs
+            </span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {categoryConfig.specifications.map((spec: CategorySpecDefinition) => {
+              const val = getAttributeValue(spec.key);
+              return (
+                <div key={spec.key} className="space-y-1.5 p-3 rounded-xl bg-slate-50/70 border border-slate-200/70">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                      <span>{spec.label}</span>
+                      {spec.required && <span className="text-rose-500">*</span>}
+                    </label>
+                    {val && (
+                      <span className="inline-flex items-center text-[9px] font-bold text-emerald-600">
+                        <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
+                        Set
+                      </span>
+                    )}
+                  </div>
+
+                  <Input
+                    value={val}
+                    onChange={(e) => handleSpecChange(spec.key, spec.label, spec.group, e.target.value)}
+                    placeholder={spec.placeholder}
+                    className="h-8 text-xs bg-white border-slate-200"
+                  />
+
+                  {spec.suggestions?.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                      <span className="text-[9px] font-bold text-slate-400 mr-0.5">Quick:</span>
+                      {spec.suggestions.slice(0, 4).map((sug: string) => {
+                        const isPicked = val.toLowerCase() === sug.toLowerCase();
+                        return (
+                          <button
+                            key={sug}
+                            type="button"
+                            onClick={() => handleSpecChange(spec.key, spec.label, spec.group, sug)}
+                            className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md border transition-all cursor-pointer ${
+                              isPicked
+                                ? "bg-indigo-600 text-white border-indigo-600 shadow-2xs"
+                                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                            }`}
+                          >
+                            {sug}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* Add Attribute Row */}
       <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-2xs">
         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">

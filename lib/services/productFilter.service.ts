@@ -32,6 +32,7 @@ export function filterProducts(
         name.includes(query) ||
         sku.includes(query) ||
         prdId.includes(query) ||
+        (product.barcode || "").toLowerCase().includes(query) ||
         brand.includes(query) ||
         category.includes(query);
 

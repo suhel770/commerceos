@@ -13,21 +13,25 @@ export class LedgerReconciliationService {
         where: { workspaceId },
         include: { product: true }
       });
-      inventoryBalances = rows.map((r) => ({
-        id: r.id,
-        organizationId,
-        workspaceId: r.workspaceId,
-        productId: r.productId,
-        sku: r.sku,
-        productName: r.product?.name || r.sku,
-        warehouseId: r.warehouseId,
-        available: r.available,
-        reserved: r.reserved,
-        incoming: r.incoming,
-        damaged: r.damaged,
-        inTransit: r.inTransit,
-        intent: r.intent,
-      }));
+      if (rows.length > 0) {
+        inventoryBalances = rows.map((r) => ({
+          id: r.id,
+          organizationId,
+          workspaceId: r.workspaceId,
+          productId: r.productId,
+          sku: r.sku,
+          productName: r.product?.name || r.sku,
+          warehouseId: r.warehouseId,
+          available: r.available,
+          reserved: r.reserved,
+          incoming: r.incoming,
+          damaged: r.damaged,
+          inTransit: r.inTransit,
+          intent: r.intent,
+        }));
+      } else {
+        inventoryBalances = await inventoryRepository.listBalances({ workspaceId, organizationId });
+      }
     } catch {
       // Fallback
       inventoryBalances = await inventoryRepository.listBalances({ workspaceId, organizationId });

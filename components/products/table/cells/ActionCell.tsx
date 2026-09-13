@@ -1,17 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Edit3 } from "lucide-react";
+import { Eye, Edit3, Globe } from "lucide-react";
 
 interface ActionCellProps {
   slug: string;
+  onUniversalListingClick?: () => void;
 }
 
-export default function ActionCell({ slug }: ActionCellProps) {
+export default function ActionCell({ slug, onUniversalListingClick }: ActionCellProps) {
   const currentOrigin = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/products/list";
 
   return (
     <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      {onUniversalListingClick && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onUniversalListingClick();
+          }}
+          className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-600 shadow-2xs transition hover:border-blue-400 hover:bg-blue-100 hover:text-blue-700 cursor-pointer"
+          title="Universal Listing & Syndication"
+          aria-label="Universal Listing"
+        >
+          <Globe className="h-3.5 w-3.5" />
+        </button>
+      )}
+
       <Link
         href={`/products/${slug}?from=${encodeURIComponent(currentOrigin)}`}
         onClick={(e) => e.stopPropagation()}

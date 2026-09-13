@@ -15,12 +15,14 @@ interface ProductRowProps {
   selected: boolean;
   onToggle: () => void;
   onViewClick?: () => void;
+  onUniversalListingClick?: (product: Product) => void;
 }
 
 export default function ProductRow({
   product,
   selected,
   onToggle,
+  onUniversalListingClick,
 }: ProductRowProps) {
   const router = useRouter();
   const ats = product.inventory?.available ?? 0;
@@ -117,7 +119,10 @@ export default function ProductRow({
       </td>
 
       <td className="w-40 px-3 py-3.5 text-center align-middle">
-        <MarketplaceBadges listings={product.listings} />
+        <MarketplaceBadges
+          listings={product.listings}
+          onBadgeClick={() => onUniversalListingClick?.(product)}
+        />
       </td>
 
       <td className="w-32 px-3 py-3.5 text-center align-middle">
@@ -129,7 +134,10 @@ export default function ProductRow({
       </td>
 
       <td className="w-24 px-3 py-3.5 text-center align-middle">
-        <ActionCell slug={productSlug} />
+        <ActionCell
+          slug={productSlug}
+          onUniversalListingClick={() => onUniversalListingClick?.(product)}
+        />
       </td>
     </tr>
   );

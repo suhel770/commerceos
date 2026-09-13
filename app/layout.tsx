@@ -15,6 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+import Script from "next/script";
 import { ExperienceProvider } from "@/providers/ExperienceProvider";
 import { LayoutProvider } from "@/providers/LayoutProvider";
 import { AuthProvider } from "@/providers/AuthContext";
@@ -33,7 +34,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <script
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html:
               "document.documentElement.classList.remove('dark');try{localStorage.removeItem('commerceos.theme.v1')}catch(e){}",

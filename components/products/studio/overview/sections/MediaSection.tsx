@@ -8,8 +8,13 @@ import {
 } from "lucide-react";
 
 import StudioField from "../../shared/StudioField";
+import { useStudio } from "../../context/StudioContext";
 
 export default function MediaSection() {
+  const { listing, setActiveWorkspace } = useStudio();
+  const mediaList = listing?.media || [];
+  const primaryMedia = mediaList.find((m) => m.isPrimary) || mediaList[0];
+
   return (
     <div className="space-y-8">
 
@@ -85,36 +90,52 @@ export default function MediaSection() {
 
           </div>
 
-          <div className="grid grid-cols-4 gap-4">
-
-            {Array.from({ length: 8 }).map((_, index) => (
+          <div className="grid grid-cols-4 gap-3">
+            {mediaList.slice(0, 8).map((item) => (
               <div
-                key={index}
-                className="aspect-square rounded-2xl border border-dashed border-slate-300 bg-slate-50"
-              />
+                key={item.id}
+                className="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+              >
+                <img
+                  src={item.url}
+                  alt={item.alt || "Product media"}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                {item.isPrimary && (
+                  <span className="absolute bottom-1.5 left-1.5 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-xs">
+                    Primary
+                  </span>
+                )}
+              </div>
             ))}
-
+            {mediaList.length < 8 && (
+              <button
+                type="button"
+                onClick={() => setActiveWorkspace("media")}
+                className="flex aspect-square flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-2 text-center text-slate-400 transition hover:border-violet-400 hover:bg-violet-50/30 hover:text-violet-600 cursor-pointer"
+              >
+                <ImageIcon className="h-5 w-5 mb-1" />
+                <span className="text-[10px] font-bold">+ Add Media</span>
+              </button>
+            )}
           </div>
 
           <div className="mt-6 space-y-5">
-
             <StudioField
               label="Primary Image"
-              value="—"
+              value={primaryMedia ? "Configured" : "Missing Primary Image"}
             />
 
             <StudioField
               label="Total Images"
-              value="0"
+              value={`${mediaList.length} Uploaded`}
             />
 
             <StudioField
-              label="Marketplace Resolution"
-              value="—"
+              label="Marketplace Resolution Standard"
+              value="1000×1000 px (White Background)"
             />
-
           </div>
-
         </div>
                 <div className="rounded-3xl border border-slate-200 bg-white p-7">
 

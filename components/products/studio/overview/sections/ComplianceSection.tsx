@@ -8,24 +8,42 @@ import {
 } from "lucide-react";
 
 import StudioField from "../../shared/StudioField";
-
-const marketplaceCompliance: Array<{
-  name: string;
-  status: string;
-  color: string;
-}> = [];
-
-const requiredDocuments: Array<{
-  title: string;
-  status: string;
-}> = [];
-
-const complianceTimeline: Array<{
-  title: string;
-  date: string;
-}> = [];
+import { useStudio } from "../../context/StudioContext";
 
 export default function ComplianceSection() {
+  const { listing, setActiveWorkspace } = useStudio();
+
+  const hasHsn = Boolean(listing?.identity.hsn?.trim());
+  const hasTax = Boolean(listing?.identity.taxCode?.trim());
+  const hasOrigin = Boolean(listing?.compliance.countryOfOrigin?.trim());
+  const hasMfg = Boolean(listing?.compliance.manufacturerName?.trim() || listing?.identity.manufacturer?.trim());
+  const hasConsumerCare = Boolean(listing?.compliance.consumerCareEmail?.trim() || listing?.compliance.consumerCarePhone?.trim());
+
+  let score = 0;
+  if (hasHsn) score += 25;
+  if (hasTax) score += 20;
+  if (hasOrigin) score += 20;
+  if (hasMfg) score += 20;
+  if (hasConsumerCare) score += 15;
+
+  const marketplaceCompliance = (listing?.marketplaces || []).map((m) => ({
+    name: m.marketplace.toUpperCase(),
+    status: m.enabled ? "Active" : "Not Enabled",
+    color: m.enabled ? "emerald" : "orange",
+  }));
+
+  const requiredDocuments = (listing?.compliance?.documents || []).map((d) => ({
+    title: d.name,
+    status: d.url ? "Uploaded" : "Pending",
+  }));
+
+  const complianceTimeline = (listing?.activity || [])
+    .filter((a) => a.type?.toLowerCase().includes("compliance") || a.title?.toLowerCase().includes("compliance"))
+    .map((a) => ({
+      title: a.title,
+      date: a.timestamp,
+    }));
+
   return (
     <div className="space-y-8">
 
@@ -45,9 +63,8 @@ export default function ComplianceSection() {
           </h2>
 
           <p className="mt-2 max-w-3xl text-[15px] leading-7 text-slate-500">
-            Manage GST, HSN, certifications, manufacturer details,
-            regulatory requirements and marketplace compliance from one
-            centralized workspace.
+            Manage GST, HSN, Legal Metrology declarations, manufacturer details,
+            and regulatory requirements across your marketplace channels.
           </p>
 
         </div>
@@ -67,7 +84,7 @@ export default function ComplianceSection() {
               </p>
 
               <h3 className="text-2xl font-bold text-emerald-700">
-                0%
+                {score}%
               </h3>
 
             </div>
@@ -82,56 +99,64 @@ export default function ComplianceSection() {
 
         <div className="rounded-3xl border border-slate-200 bg-white p-7">
 
-          <div className="mb-6 flex items-center gap-3">
+          <div className="mb-6 flex items-center justify-between">
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
-              <FileCheck2 className="h-5 w-5 text-emerald-600" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
+                <FileCheck2 className="h-5 w-5 text-emerald-600" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Tax & Legal Metrology
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Mandatory marketplace information
+                </p>
+              </div>
             </div>
 
-            <div>
-
-              <h3 className="text-lg font-semibold text-slate-900">
-                Tax & Regulatory
-              </h3>
-
-              <p className="text-sm text-slate-500">
-                Mandatory marketplace information
-              </p>
-
-            </div>
+            <button
+              type="button"
+              onClick={() => setActiveWorkspace("compliance")}
+              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+            >
+              Edit Compliance →
+            </button>
 
           </div>
 
           <div className="space-y-5">
 
             <StudioField
-              label="GST Rate"
-              value="—"
+              label="GST Rate Slab"
+              value={listing?.identity.taxCode || "18% (Standard)"}
             />
 
             <StudioField
               label="HSN Code"
-              value="—"
+              value={listing?.identity.hsn || "Not Configured"}
             />
 
             <StudioField
               label="Country of Origin"
-              value="—"
+              value={listing?.compliance.countryOfOrigin || "India"}
             />
 
             <StudioField
-              label="Manufacturer"
-              value="—"
+              label="Manufacturer Name"
+              value={listing?.compliance.manufacturerName || listing?.identity.manufacturer || "Not Configured"}
             />
 
             <StudioField
-              label="Importer"
-              value="—"
+              label="Net Quantity"
+              value={listing?.compliance.netQuantity || "1 N"}
             />
 
             <StudioField
-              label="Marketed By"
-              value="—"
+              label="Consumer Care Contact"
+              value={listing?.compliance.consumerCareEmail || listing?.compliance.consumerCarePhone || "Configured in Settings"}
             />
 
           </div>

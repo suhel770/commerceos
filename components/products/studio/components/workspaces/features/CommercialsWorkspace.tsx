@@ -424,6 +424,17 @@ export function CommercialsWorkspace() {
                   <Input type="number" min="0" value={listing.commercials[key] ?? ""} placeholder="—" onChange={(e) => updateCommercial(key, e.target.value)} />
                 </Field>
               ))}
+
+              {listing.commercials.packageLengthCm && listing.commercials.packageWidthCm && listing.commercials.packageHeightCm && (
+                <div className="sm:col-span-2 rounded-xl border border-violet-200 bg-violet-50/70 p-3 text-xs flex items-center justify-between text-violet-950">
+                  <span className="font-bold">
+                    📦 Volumetric Weight: {((listing.commercials.packageLengthCm * listing.commercials.packageWidthCm * listing.commercials.packageHeightCm) / 5000).toFixed(2)} kg
+                  </span>
+                  <span className="text-[11px] text-violet-700 font-medium">
+                    (Used by Amazon Easy Ship & Ekart for freight tiers)
+                  </span>
+                </div>
+              )}
             </div>
           </Panel>
         </div>

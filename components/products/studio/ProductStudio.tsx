@@ -1,7 +1,6 @@
 "use client";
 
 import StudioHeader from "./components/header/StudioHeader";
-import StudioAIDock from "./components/ai/StudioAIDock";
 import StudioLoadingScreen from "./components/shared/StudioLoadingScreen";
 import StudioFieldEditorDialog from "./components/dialogs/StudioFieldEditorDialog";
 import WorkspacePage from "./components/workspaces/WorkspacePage";
@@ -31,7 +30,7 @@ export default function ProductStudio() {
 
       <main className="flex-1">
         {activeWorkspace === "overview" ? (
-          <div className="mx-auto max-w-[1800px] px-4 py-3 sm:px-6">
+          <div className="w-full px-2 sm:px-3 py-2 sm:py-3">
             <ProductControlCenter />
             <WorkspaceGrid />
           </div>
@@ -39,8 +38,6 @@ export default function ProductStudio() {
           <WorkspacePage />
         )}
       </main>
-
-      <StudioAIDock />
 
       <StudioFieldEditorDialog
         open={Boolean(fieldEditor)}

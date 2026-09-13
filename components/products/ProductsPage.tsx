@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { X, AlertTriangle, CheckCircle, Upload } from "lucide-react";
 
@@ -9,6 +9,8 @@ import ProductKPIStrip from "./ProductKPIStrip";
 import ProductToolbar from "./toolbar/ProductToolbar";
 import ProductDataTable from "./table/ProductDataTable";
 import ProductPreviewDrawer from "./ProductPreviewDrawer";
+import UniversalListingDrawer from "./UniversalListingDrawer";
+import BulkPublishModal from "./dialogs/BulkPublishModal";
 
 import ProductPagination from "@/components/shared/pagination/ProductPagination";
 import CommerceSelect from "@/components/ui/CommerceSelect";
@@ -23,11 +25,20 @@ import {
   type ProductFilters,
 } from "@/lib/types/product-filter";
 
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
+
 export default function ProductsPage() {
+  const isMounted = useIsMounted();
   const searchParams = useSearchParams();
 
   // Parse filters from searchParams or defaults
-  const parseFiltersFromParams = (): { filters: ProductFilters; page: number } => {
+  const parseFiltersFromParams = useCallback((): { filters: ProductFilters; page: number } => {
     const s = searchParams?.get("search") || "";
     const st = searchParams?.get("status") || "all";
     const cat = searchParams?.get("category") || "all";
@@ -50,20 +61,22 @@ export default function ProductsPage() {
       },
       page: pg,
     };
-  };
+  }, [searchParams]);
 
   const initial = parseFiltersFromParams();
   const [filters, setFilters] = useState<ProductFilters>(initial.filters);
   const [page, setPage] = useState(initial.page);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(100);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Sync state from searchParams whenever searchParams update (e.g. Back navigation)
   useEffect(() => {
     const current = parseFiltersFromParams();
-    setFilters(current.filters);
-    setPage(current.page);
-  }, [searchParams]);
+    queueMicrotask(() => {
+      setFilters(current.filters);
+      setPage(current.page);
+    });
+  }, [parseFiltersFromParams]);
 
   const updateUrl = (nextFilters: ProductFilters, nextPage: number) => {
     if (typeof window === "undefined") return;
@@ -93,6 +106,9 @@ export default function ProductsPage() {
 
   // Inspector & modal states
   const [inspectingProduct, setInspectingProduct] = useState<Product | null>(null);
+  const [universalListingProduct, setUniversalListingProduct] = useState<Product | null>(null);
+  const [showBulkPublishModal, setShowBulkPublishModal] = useState(false);
+  const [bulkPublishSelectedIds, setBulkPublishSelectedIds] = useState<string[]>([]);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -129,6 +145,12 @@ export default function ProductsPage() {
   };
 
   const handleBulkAction = async (action: string, selectedIds: string[]) => {
+    if (action === "publish_channels") {
+      setBulkPublishSelectedIds(selectedIds);
+      setShowBulkPublishModal(true);
+      return;
+    }
+
     try {
       if (action === "activate") {
         await Promise.all(
@@ -360,6 +382,7 @@ export default function ProductsPage() {
         products={visibleProducts}
         loading={loading}
         onViewClick={handleInspect}
+        onUniversalListingClick={(p) => setUniversalListingProduct(p)}
         onBulkAction={handleBulkAction}
       />
 
@@ -380,8 +403,24 @@ export default function ProductsPage() {
         onClose={() => setInspectingProduct(null)}
       />
 
+      <UniversalListingDrawer
+        product={universalListingProduct}
+        isOpen={universalListingProduct !== null}
+        onClose={() => setUniversalListingProduct(null)}
+        onListingUpdated={() => setRefreshTrigger((prev) => prev + 1)}
+      />
+
+      <BulkPublishModal
+        selectedIds={bulkPublishSelectedIds}
+        isOpen={showBulkPublishModal}
+        onClose={() => setShowBulkPublishModal(false)}
+        onSuccess={() => {
+          setRefreshTrigger((prev) => prev + 1);
+        }}
+      />
+
       {/* Add Product Modal */}
-      {showAddProductModal && createPortal(
+      {isMounted && showAddProductModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs">
           <form onSubmit={handleCreateProductSubmit} className="bg-white rounded-2xl border border-slate-150 p-6 max-w-md w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
@@ -522,7 +561,7 @@ export default function ProductsPage() {
       )}
 
       {/* Import Modal */}
-      {showImportModal && createPortal(
+      {isMounted && showImportModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs">
           <form onSubmit={handleImportSubmit} className="bg-white rounded-2xl border border-slate-150 p-6 max-w-md w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">

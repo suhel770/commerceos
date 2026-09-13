@@ -105,6 +105,24 @@ export interface ProductIdentity {
   hsn?: string
 
   taxCode?: string
+
+  modelNumber?: string
+
+  modelName?: string
+
+  mpn?: string
+
+  warrantyPeriod?: string
+
+  trackingMode?: "STANDARD" | "SERIAL_NUMBER" | "BATCH_LOT"
+
+  isGtinExempt?: boolean
+
+  conditionType?: "NEW" | "REFURBISHED" | "USED_LIKE_NEW"
+
+  itemPackageQuantity?: number
+
+  handlingTimeDays?: number
 }
 
 /* -------------------------------------------------------------------------- */
@@ -353,6 +371,8 @@ export interface ProductCommercials {
   packageLengthCm?: number
   packageWidthCm?: number
   packageHeightCm?: number
+  volumetricWeightKg?: number
+  fulfillmentChannel?: "MERCHANT_FULFILLED" | "MARKETPLACE_FULFILLED"
 }
 
 export interface ProductSupply {
@@ -376,6 +396,16 @@ export interface ProductCompliance {
   countryOfOrigin?: string
   warranty?: string
   legalMetrology?: string
+  manufacturerName?: string
+  manufacturerAddress?: string
+  packerName?: string
+  packerAddress?: string
+  importerName?: string
+  importerAddress?: string
+  consumerCareEmail?: string
+  consumerCarePhone?: string
+  netQuantity?: string
+  mfgMonthYear?: string
   certifications: string[]
   documents: ComplianceDocument[]
 }

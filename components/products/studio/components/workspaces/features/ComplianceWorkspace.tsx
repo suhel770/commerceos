@@ -13,6 +13,16 @@ import {
 import { useStudio } from "../../../context/StudioContext";
 import { Panel, Field } from "./workspace-ui";
 
+import CommerceSelect, { type CommerceSelectOption } from "@/components/ui/CommerceSelect";
+
+const GST_SLAB_OPTIONS: CommerceSelectOption[] = [
+  { value: "0", label: "0% (Exempt / Nil Rated)" },
+  { value: "5", label: "5% (Essential / Apparel under ₹1,000)" },
+  { value: "12", label: "12% (Processed Goods / Specified Electronics)" },
+  { value: "18", label: "18% (Standard GST - Most Consumer Electronics & Goods)" },
+  { value: "28", label: "28% (Luxury Goods / High-End Appliances)" },
+];
+
 export function ComplianceWorkspace() {
   const {
     listing,
@@ -32,6 +42,7 @@ export function ComplianceWorkspace() {
       },
     });
   };
+
   const updateCompliance = (
     updates: Partial<
       MasterListing["compliance"]
@@ -46,14 +57,16 @@ export function ComplianceWorkspace() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Tax & Origin */}
       <Panel
         title="Tax & Regulatory Information"
-        description="Maintain the compliance source data required by Indian marketplaces."
+        description="Maintain the GST tax slabs, HSN, and origin certifications required by Indian marketplaces."
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Field label="HSN code">
+          <Field label="HSN Code" hint="6 or 8-digit Harmonized System of Nomenclature">
             <Input
+              placeholder="e.g. 85183000"
               value={listing.identity.hsn ?? ""}
               onChange={(event) =>
                 updateIdentity("hsn", event.target.value)
@@ -61,30 +74,23 @@ export function ComplianceWorkspace() {
             />
           </Field>
 
-          <Field label="Tax code">
-            <Input
-              value={listing.identity.taxCode ?? ""}
-              onChange={(event) =>
-                updateIdentity("taxCode", event.target.value)
-              }
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700">
+              GST Tax Rate Slab
+            </label>
+            <CommerceSelect
+              options={GST_SLAB_OPTIONS}
+              value={String(listing.identity.taxCode || "18").replace("%", "")}
+              onChange={(val: string) => updateIdentity("taxCode", `${val}%`)}
+              placeholder="Select GST Slab"
             />
-          </Field>
+          </div>
 
-          <Field label="Manufacturer">
+          <Field label="Country of Origin" hint="Mandatory for Indian customs & marketplace sync">
             <Input
-              value={listing.identity.manufacturer ?? ""}
-              onChange={(event) =>
-                updateIdentity("manufacturer", event.target.value)
-              }
-            />
-          </Field>
-
-          <Field label="Country of origin">
-            <Input
+              placeholder="e.g. India, Vietnam"
               value={
-                listing.compliance
-                  .countryOfOrigin ??
-                ""
+                listing.compliance.countryOfOrigin ?? "India"
               }
               onChange={(event) =>
                 updateCompliance({
@@ -95,11 +101,11 @@ export function ComplianceWorkspace() {
             />
           </Field>
 
-          <Field label="Warranty">
+          <Field label="Warranty Period & Terms" hint="e.g. 1 Year Brand Warranty">
             <Input
+              placeholder="e.g. 1 Year Replacement Warranty"
               value={
-                listing.compliance
-                  .warranty ?? ""
+                listing.compliance.warranty ?? ""
               }
               onChange={(event) =>
                 updateCompliance({
@@ -112,9 +118,10 @@ export function ComplianceWorkspace() {
 
           <Field
             label="Certifications"
-            hint="Comma-separated certification names"
+            hint="Comma-separated (BIS, RoHS, CE, FCC)"
           >
             <Input
+              placeholder="BIS, RoHS, CE"
               value={listing.compliance.certifications.join(
                 ", ",
               )}
@@ -132,10 +139,85 @@ export function ComplianceWorkspace() {
             />
           </Field>
         </div>
+      </Panel>
+
+      {/* Indian Legal Metrology Act (Packaged Commodities) Compliance */}
+      <Panel
+        title="Indian Legal Metrology (Packaged Commodities) Act"
+        description="Mandatory compliance by Govt. of India for all e-commerce listings on Amazon, Flipkart, Blinkit, and Meesho."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Manufacturer Full Registered Name" hint="As registered with GST / MCA">
+            <Input
+              placeholder="e.g. Acme Technologies India Pvt Ltd"
+              value={listing.compliance.manufacturerName ?? listing.identity.manufacturer ?? ""}
+              onChange={(e) => updateCompliance({ manufacturerName: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Manufacturer Registered Address" hint="Complete postal address with State & PIN">
+            <Input
+              placeholder="Plot No. 42, Electronics City, Bengaluru, Karnataka - 560100"
+              value={listing.compliance.manufacturerAddress ?? ""}
+              onChange={(e) => updateCompliance({ manufacturerAddress: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Packer / Importer Name (if applicable)" hint="Required if packed or imported by third party">
+            <Input
+              placeholder="e.g. Same as Manufacturer"
+              value={listing.compliance.packerName ?? ""}
+              onChange={(e) => updateCompliance({ packerName: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Packer / Importer Address" hint="Full address with PIN code">
+            <Input
+              placeholder="Full postal address"
+              value={listing.compliance.packerAddress ?? ""}
+              onChange={(e) => updateCompliance({ packerAddress: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Customer Care Email ID" hint="Consumer grievance email">
+            <Input
+              type="email"
+              placeholder="support@yourbrand.com"
+              value={listing.compliance.consumerCareEmail ?? ""}
+              onChange={(e) => updateCompliance({ consumerCareEmail: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Customer Care Helpline Phone" hint="Toll-free or support phone">
+            <Input
+              type="tel"
+              placeholder="1800-XXX-XXXX or +91-XXXXXXXXXX"
+              value={listing.compliance.consumerCarePhone ?? ""}
+              onChange={(e) => updateCompliance({ consumerCarePhone: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Net Quantity (Standardized)" hint="e.g. 1 N, 1 Pair, 100 ml, 500 g">
+            <Input
+              placeholder="1 N"
+              value={listing.compliance.netQuantity ?? "1 N"}
+              onChange={(e) => updateCompliance({ netQuantity: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Month & Year of Manufacture / Import" hint="Format MM/YYYY">
+            <Input
+              placeholder="e.g. 09/2026"
+              value={listing.compliance.mfgMonthYear ?? ""}
+              onChange={(e) => updateCompliance({ mfgMonthYear: e.target.value })}
+            />
+          </Field>
+        </div>
 
         <div className="mt-4">
-          <Field label="Legal metrology declaration">
+          <Field label="Additional Legal Metrology Declaration / Consumer Notice">
             <Textarea
+              placeholder="Any additional mandatory consumer notices, cautionary statements, or safety declarations."
               value={
                 listing.compliance
                   .legalMetrology ??

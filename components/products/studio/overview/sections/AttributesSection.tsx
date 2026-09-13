@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -11,6 +12,7 @@ import { useStudio } from "../../context/StudioContext";
 import StudioCard from "../../shared/StudioCard";
 import StudioProperty from "../../shared/StudioProperty";
 import StudioSection from "../../shared/StudioSection";
+import { computeDetailedChannelReadiness } from "@/lib/listing-engine/readiness/compute-readiness";
 
 export default function AttributesSection() {
   const {
@@ -18,6 +20,11 @@ export default function AttributesSection() {
     updateAttribute,
     openFieldEditor,
   } = useStudio();
+
+  const channelReadiness = useMemo(() => {
+    if (!listing) return [];
+    return computeDetailedChannelReadiness(listing);
+  }, [listing]);
 
   if (!listing) {
     return null;
@@ -64,88 +71,50 @@ export default function AttributesSection() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Marketplace
+                  Marketplace Channel
                 </th>
 
                 <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Status
+                  Attribute Coverage
                 </th>
 
                 <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Required Fields
+                  Channel Specification Details
                 </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-200 bg-white">
-              {[
-                {
-                  marketplace: "Amazon",
-                  status: "Complete",
-                  pending: 0,
-                },
-                {
-                  marketplace: "Flipkart",
-                  status: "Pending",
-                  pending: 3,
-                },
-                {
-                  marketplace: "Meesho",
-                  status: "Pending",
-                  pending: 2,
-                },
-                {
-                  marketplace: "Shopify",
-                  status: "Complete",
-                  pending: 0,
-                },
-              ].map((row) => (
-                <tr key={row.marketplace}>
-                  <td className="px-5 py-4 font-medium text-slate-800">
-                    {row.marketplace}
-                  </td>
+              {channelReadiness.map((ch) => {
+                const isReady = ch.factors.attributes.isReady;
+                return (
+                  <tr key={ch.marketplace}>
+                    <td className="px-5 py-4 font-bold text-slate-800">
+                      {ch.name}
+                    </td>
 
-                  <td className="px-5 py-4">
-                    {row.pending === 0 ? (
-                      <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                        <CheckCircle2 size={14} />
-                        {row.status}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                        <CircleDashed size={14} />
-                        {row.status}
-                      </span>
-                    )}
-                  </td>
+                    <td className="px-5 py-4">
+                      {isReady ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                          <CheckCircle2 size={13} />
+                          Ready
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+                          <CircleDashed size={13} />
+                          Action Required
+                        </span>
+                      )}
+                    </td>
 
-                  <td className="px-5 py-4 text-sm text-slate-600">
-                    {row.pending === 0
-                      ? "All attributes completed"
-                      : `${row.pending} attributes remaining`}
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-5 py-4 text-xs font-medium text-slate-600">
+                      {ch.factors.attributes.message || (isReady ? "All required channel attributes completed" : "Channel specific attributes need attention")}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-          <div className="flex items-center gap-3">
-            <AlertTriangle
-              size={18}
-              className="text-amber-600"
-            />
-
-            <h3 className="font-semibold text-amber-700">
-              Missing Attributes
-            </h3>
-          </div>
-
-          <p className="mt-3 text-sm leading-7 text-amber-700">
-            Flipkart and Meesho require additional mandatory attributes
-            before the listing can be published.
-          </p>
         </div>
 
         <div className="mt-6 rounded-2xl border border-violet-200 bg-violet-50 p-5">
